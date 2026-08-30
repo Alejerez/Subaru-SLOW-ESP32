@@ -24,9 +24,15 @@ verbatim in [`docs/00-concept/source/`](docs/00-concept/source/README.md).
 - Ten figures, drawn from code rather than extracted, dark-mode native, with
   automated overflow and collision checking
   ([`scripts/generate_diagrams.py`](scripts/generate_diagrams.py)).
-- Photograph of the OEM switch panel identifying the unused de-icer button.
+- Six reference photographs (`docs/01-hardware/photos/`): the car's switch panel,
+  clock unit and clock bay, plus a teardown of a donor unit — same generation and
+  housing, base clock-only trim — showing the board, the button contact pads and
+  the lens layers.
 - ADR [0002](docs/decisions/0002-speed-over-ssm2-not-vss.md): vehicle speed over
   SSM2, not from the VSS.
+- ADR [0004](docs/decisions/0004-reuse-oem-contact-pad-buttons.md): the four gauge
+  controls reuse the OEM **contact-pad** buttons — established by the teardown —
+  rather than new switches or a new bezel.
 - ADR [0003](docs/decisions/0003-onoff-button-direct-to-node-a.md): the ON/OFF
   button is the unused OEM wiper de-icer switch, wired direct to Node A on
   GPIO27; ESP-NOW becomes bidirectional so the mode can be confirmed on the OLED.
@@ -42,7 +48,7 @@ verbatim in [`docs/00-concept/source/`](docs/00-concept/source/README.md).
 
 ### Known open items
 
-- **Six open checks on the vehicle**, none treated as resolved — see
+- **Seven open checks on the vehicle**, none treated as resolved — see
   [`docs/04-integration/`](docs/04-integration/README.md#open-checks-on-the-vehicle).
 - **One contradiction in the source document corrected:** its BOM row gave two
   different perfboard sizes that disagreed with the layout figures. Both nodes use

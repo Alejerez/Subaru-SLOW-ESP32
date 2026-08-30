@@ -54,7 +54,7 @@ repurposed as the auto-lock toggle. Wired **directly to Node A**: it does not go
 through Node B and does not travel over ESP-NOW. See
 [ADR 0003](../decisions/0003-onoff-button-direct-to-node-a.md).
 
-![The unused OEM switch, marked in red](photos/oem-switch-panel.png)
+![The unused OEM switch, marked in red](photos/oem-switch-panel.jpg)
 
 **Photo** — The switch panel to the left of the steering wheel. The button marked
 in red is the unused wiper de-icer switch that becomes the auto-lock ON/OFF

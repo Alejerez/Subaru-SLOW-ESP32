@@ -47,7 +47,15 @@ button, it reuses the **windscreen-wiper de-icer switch** — a North-American
 market option this EDM car does not have, so the switch position exists in the
 console but does nothing. See [ADR 0003](docs/decisions/0003-onoff-button-direct-to-node-a.md).
 
-![The unused OEM switch, marked in red](docs/01-hardware/photos/oem-switch-panel.png)
+![The unused OEM switch, marked in red](docs/01-hardware/photos/oem-switch-panel.jpg)
+
+And the gauge controls are the OEM buttons themselves. A donor unit was taken
+apart to find out how they are built: they turn out to be contact pads on the
+OEM board, closed by a conductive rubber pad — an ordinary dry contact an ESP32
+input can read directly, with no new buttons to design or fit. See
+[ADR 0004](docs/decisions/0004-reuse-oem-contact-pad-buttons.md).
+
+![The OEM board, with the button contact pads outlined in red](docs/01-hardware/photos/donor-pcb-contact-pads.jpg)
 
 ## Why ESP32, and why two nodes
 

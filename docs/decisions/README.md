@@ -26,6 +26,7 @@ value that follows directly from a datasheet.
 | [0001](0001-template.md) | Template | — |
 | [0002](0002-speed-over-ssm2-not-vss.md) | Vehicle speed over SSM2, not from the VSS | Accepted |
 | [0003](0003-onoff-button-direct-to-node-a.md) | ON/OFF button: reused OEM switch, wired direct to Node A | Accepted |
+| [0004](0004-reuse-oem-contact-pad-buttons.md) | Reuse the OEM contact-pad buttons as the gauge controls | Accepted |
 
 Numbering is sequential and never reused. A superseded record is not deleted —
 its status changes to `Superseded by NNNN` and it stays in place, because the

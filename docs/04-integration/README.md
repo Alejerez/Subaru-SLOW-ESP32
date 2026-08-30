@@ -79,14 +79,26 @@ resolved anywhere in this repository:
   sits at 12 V only with the ignition on, and falls to 0 with the key out.
 - **SSM2 speed:** confirm that the speed parameter reads correctly from this car's
   ECU, and establish its unit and scale.
-- **OLED behind the OEM red filter:** verify that the chosen display is legible
-  through the filter; if it comes out dim, evaluate switching to amber.
+- **Display filter and OLED colour:** establish what the car's own lens actually
+  does. The donor unit's lens reads red in transmission, yet the installed unit
+  reads white when lit. Confirm by eye, day and night, and settle whether the
+  OLED should be amber (as the BOM provisionally says) or white. See
+  [display colour](../01-hardware/README.md#display-colour-amber-or-white-still-open).
 
-A sixth was added when the ON/OFF button was resolved
+Two more were added as the design progressed.
+
+From the ON/OFF button decision
 ([ADR 0003](../decisions/0003-onoff-button-direct-to-node-a.md)):
 
 - **Reused OEM switch (wiper de-icer):** confirm with a multimeter how many pins
   or ways it has and what each one does — it may carry its own integrated
   indicator lamp — before wiring it to Node A's GPIO27.
+
+From the button-reuse decision ([ADR 0004](../decisions/0004-reuse-oem-contact-pad-buttons.md)):
+
+- **Contact pads on the car's own unit:** the pad count, layout and finish were
+  established on a donor unit in the base clock-only trim, which has one button
+  fewer. Confirm them against the car's trip-computer unit before cutting the OEM
+  board or laying out the carrier.
 
 Track them as repository issues (or a PR checklist) so there is a record.

@@ -70,7 +70,40 @@ common GND. An L9637D breakout usually carries R7/C8 on board.*
 | --- | --- | --- |
 | OLED SSD1322 (SPI) | VCC 3.3 V · GND · SCLK 18 · MOSI 23 · CS 5 · DC 19 · RST 4 | set the jumpers to 4-wire SPI |
 | RTC DS3231 (I²C) | VCC 3.3 V · GND · SDA 21 · SCL 22 | I²C pull-ups already on the module |
-| 4 OEM buttons | GPIO 32/33/25/26 ↔ switch ↔ GND | `INPUT_PULLUP` + 100 nF debounce (optional) |
+| 4 OEM buttons | GPIO 32/33/25/26 ↔ contact pad ↔ GND | `INPUT_PULLUP` + 100 nF debounce (optional) |
+
+#### The buttons are the OEM ones, reused
+
+The four controls are the car's existing buttons — **DISP**, **SET** and the
+**− +** rocker — not new hardware. That is the retromod constraint, and the
+teardown of a donor unit confirmed it is practical.
+
+![The clock unit out of the dash, showing the button layout](photos/clock-unit-front.jpg)
+
+**Photo** — The unit out of the dash. DISP at bottom left, the **− +** rocker and
+**SET** at the right: the four functions the pin map above assumes.
+
+They are not tactile switches. They are **interdigitated contact pads etched on
+the OEM board**, closed by a conductive rubber pad behind the bezel — the same
+construction as a TV remote keypad.
+
+![The OEM board, with the button contact pads outlined in red](photos/donor-pcb-contact-pads.jpg)
+
+**Photo** — The donor unit's board: VFD display and driver, with the button
+contact pads outlined in red. A **donor unit** was taken apart for this — same
+generation and housing, but the base clock-only trim with one button fewer. It is
+not the unit going into the car.
+
+Electrically this is the good case: a pad closure is an ordinary dry contact with
+no OEM silicon in the path, so it wires straight to a GPIO with `INPUT_PULLUP`
+and the other side to ground. The internal pull-up is around 45 kΩ, high enough
+that even a conductive-rubber contact of a few kΩ pulls the pin firmly below the
+logic-low threshold — no external conditioning needed.
+
+Mechanically it constrains the carrier: either the OEM board's pad area is cut out
+and retained, or the carrier reproduces the pad geometry so the original rubber
+lands on it. That choice, and the pad layout on the car's own trim, are open — see
+[ADR 0004](../decisions/0004-reuse-oem-contact-pad-buttons.md).
 
 > **Mode confirmation from Node A.** The auto-lock ON/OFF button lives on **Node
 > A** (a reused OEM switch), not here. Node B does not generate that toggle — it
@@ -122,6 +155,22 @@ Node A.
 
 **Fig. 3** — Node B signal interface. No signal connector touches 12 V: the only
 12 V nets here are the L9637D's VS pin and the 510 Ω bus pull-up.
+
+### Where it goes in the car
+
+![The clock bay in the centre console, outlined in red](photos/clock-bay-in-dash.jpg)
+
+**Photo** — The bay the gauge has to keep: between the upper storage compartment
+and the head unit. Same position, same viewing angle, same night-time dimming
+behaviour as the OEM trip computer.
+
+![The donor housing at an angle, showing the lens layers and internal depth](photos/donor-housing-lens-layers.jpg)
+
+**Photo** — The donor housing at an angle: outer smoked lens, reddish inner panel
+behind it, and the internal depth the carrier board and the OLED have to fit
+into. The SSD1322 needs roughly 79 × 21 mm of active area and about 6 mm of
+depth; the carrier is 3 × 7 cm. Confirm both against the car's own unit before
+committing to a board outline.
 
 ### Full spatial layout
 

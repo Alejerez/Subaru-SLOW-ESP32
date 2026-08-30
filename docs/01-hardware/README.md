@@ -40,7 +40,7 @@ with exact values.
 | Item | Value / spec | Qty | ≈ Price | Where |
 | --- | --- | --- | --- | --- |
 | ESP32 DevKit V1 | WROOM-32, 30 pin | 2 | $7k CLP ea | CL retail / Ali |
-| OLED SSD1322 3.12" | 256×64 SPI amber | 1 | US$18–28 | Ali / Amazon |
+| OLED SSD1322 3.12" | 256×64 SPI amber — colour still open, see below | 1 | US$18–28 | Ali / Amazon |
 | RTC DS3231 | module + coin cell | 1 | $2–3k CLP | CL retail |
 | L9637D breakout | K-line ISO 9141 | 1 | US$4–10 | Ali / Mouser |
 | Buck **Recom R-78E5.0-1.0** | encapsulated switcher 5 V/1 A · drop-in 7805 · in 6.5–32 V (budget alt: MP1584EN) | 2 | US$6–9 ea | Mouser / DigiKey |
@@ -59,6 +59,29 @@ with exact values.
 
 *Prices are as recorded in the v0.1 source document. They have not been verified
 or refreshed.*
+
+### Display colour: amber or white, still open
+
+The BOM specifies an **amber** OLED, and the v0.1 source document justified that
+by saying it passes better through a red OEM filter. That justification is now in
+question.
+
+The lens of the donor unit, photographed in transmission against a white screen
+([`donor-lens-backlit.jpg`](photos/donor-lens-backlit.jpg)), shows a clear red /
+burgundy band across the display window. But the unit installed in the car reads
+**white** when lit, as does the head unit below it — the red elements on that part
+of the dash are the surrounding button legends and knob rings, not the displays.
+
+![The donor unit's lens against a white screen](photos/donor-lens-backlit.jpg)
+
+**Photo** — The donor lens in transmission: a red / burgundy band across the
+display window, smoked grey around it.
+
+Those two facts have not been reconciled, and the donor is the base clock-only
+trim, so its lens may simply not be the same part as the car's. **The choice
+between an amber and a white OLED is therefore not settled**, and the BOM row
+above should be read as provisional. It is tracked as an
+[open check](../04-integration/README.md#open-checks-on-the-vehicle).
 
 ### Perfboard size: correction to the source document
 
