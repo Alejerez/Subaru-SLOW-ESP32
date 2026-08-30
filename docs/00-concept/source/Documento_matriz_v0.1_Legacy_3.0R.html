@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Documento matriz v0.1 · Prototipo Cierre + Gauge · Subaru Legacy 3.0R</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--void:#0a0e14;--panel:#111823;--panel2:#0d141d;--line:#1e2a38;--ink:#e9eef6;--muted:#8695a8;
+    --amber:#ffab40;--amber-dim:#c9822c;--cyan:#4fd6e0;--green:#57d98b;--red:#ff6b5e;--copper:#d79a5b;}
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;background:var(--void);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;
+    line-height:1.62;font-size:16px;
+    background-image:radial-gradient(900px 500px at 82% -12%,rgba(255,171,64,.07),transparent 60%),
+      radial-gradient(700px 400px at -5% 8%,rgba(79,214,224,.045),transparent 60%);}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 22px}
+  code,.mono{font-family:"IBM Plex Mono",monospace}
+  a{color:var(--cyan);text-decoration:none;border-bottom:1px solid rgba(79,214,224,.3)}a:hover{border-bottom-color:var(--cyan)}
+  header.hero{padding:56px 0 28px;border-bottom:1px solid var(--line)}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--amber);margin:0 0 14px}
+  h1{font-family:"Chakra Petch",sans-serif;font-weight:700;font-size:clamp(27px,5.2vw,46px);line-height:1.05;margin:0 0 12px}
+  h1 span{color:var(--amber)}
+  .lede{color:var(--muted);max-width:74ch;font-size:16px;margin:0 0 18px}
+  .idchips{display:flex;flex-wrap:wrap;gap:8px}
+  .idchip{font-family:"IBM Plex Mono",monospace;font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 10px}
+  .idchip b{color:var(--cyan)}
+  nav.toc{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin:24px 0}
+  nav.toc h4{margin:0 0 10px;font-family:"Chakra Petch",sans-serif;font-size:13px;letter-spacing:.06em;color:var(--amber-dim);text-transform:uppercase}
+  nav.toc ol{margin:0;padding-left:22px;columns:2;column-gap:28px;font-size:14.5px}
+  nav.toc li{margin:4px 0;break-inside:avoid}
+  section{padding:42px 0;border-bottom:1px solid var(--line)}
+  .sec-label{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--amber-dim);margin:0 0 8px}
+  h2{font-family:"Chakra Petch",sans-serif;font-weight:600;font-size:clamp(21px,3.4vw,30px);margin:0 0 10px}
+  h3{font-family:"Chakra Petch",sans-serif;font-weight:600;font-size:18px;margin:26px 0 8px}
+  p{margin:0 0 12px}.sub{color:var(--muted);max-width:76ch}
+  .diagram{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:16px;margin:20px 0 8px;overflow-x:auto}
+  .diagram svg{display:block;width:100%;height:auto}.diagram.narrow svg{min-width:560px}.diagram.wide svg{min-width:700px}
+  .cap{color:var(--muted);font-size:12.5px;margin:6px 2px 0;font-family:"IBM Plex Mono",monospace}
+  .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:16px 0}
+  table{border-collapse:collapse;width:100%;min-width:560px;font-size:14px}
+  th,td{text-align:left;padding:10px 13px;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{background:var(--panel);color:var(--amber);font-family:"Chakra Petch",sans-serif;font-weight:600;white-space:nowrap}
+  tbody tr:hover{background:rgba(255,171,64,.03)}
+  td.mono,th.mono{font-family:"IBM Plex Mono",monospace;font-size:12.5px;white-space:nowrap}
+  .ref{font-family:"IBM Plex Mono",monospace;font-weight:600;color:var(--amber)}
+  .val{font-family:"IBM Plex Mono",monospace;color:var(--green);font-weight:600}
+  .pin{font-family:"IBM Plex Mono",monospace;font-weight:600;color:var(--cyan)}
+  .na{color:var(--muted)}
+  .wire{display:inline-flex;align-items:center;gap:7px;font-family:"IBM Plex Mono",monospace;font-size:12px;white-space:nowrap}
+  .sw{width:24px;height:11px;border-radius:3px;border:1px solid #000;flex:0 0 auto}
+  .w-brwh{background:linear-gradient(90deg,#6b4423 0 50%,#f0f0f0 50%)}.w-brbk{background:linear-gradient(90deg,#6b4423 0 50%,#111 50%)}
+  .badge{font-family:"IBM Plex Mono",monospace;font-size:10.5px;padding:2px 7px;border-radius:20px;border:1px solid;display:inline-block;white-space:nowrap}
+  .ok{color:var(--green);border-color:rgba(87,217,139,.4);background:rgba(87,217,139,.08)}
+  .warn{color:var(--amber);border-color:rgba(255,171,64,.4);background:rgba(255,171,64,.08)}
+  .new{color:var(--cyan);border-color:rgba(79,214,224,.4);background:rgba(79,214,224,.08)}
+  .call{border-left:3px solid var(--amber);background:var(--panel);border-radius:0 10px 10px 0;padding:14px 16px;margin:18px 0}
+  .call.red{border-left-color:var(--red)}.call.green{border-left-color:var(--green)}.call.cyan{border-left-color:var(--cyan)}
+  .call h4{margin:0 0 5px;font-family:"Chakra Petch",sans-serif;font-size:14px;color:var(--amber)}
+  .call.red h4{color:var(--red)}.call.green h4{color:var(--green)}.call.cyan h4{color:var(--cyan)}
+  .call p{margin:0 0 6px;color:var(--muted);font-size:14px}.call p:last-child{margin:0}
+  ul.tight{margin:6px 0 14px;padding-left:20px}ul.tight li{margin:6px 0}
+  ol.steps{counter-reset:s;list-style:none;padding:0;margin:16px 0}
+  ol.steps>li{position:relative;padding:14px 16px 14px 54px;margin:10px 0;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+  ol.steps>li::before{counter-increment:s;content:counter(s);position:absolute;left:14px;top:12px;width:28px;height:28px;border-radius:7px;background:var(--amber);color:#1a1206;font-family:"Chakra Petch",sans-serif;font-weight:700;display:flex;align-items:center;justify-content:center}
+  ol.steps b{color:var(--ink)}
+  .chk{list-style:none;padding:0;margin:14px 0}
+  .chk li{padding:8px 8px 8px 30px;position:relative;border-bottom:1px solid var(--line);font-size:14.5px}
+  .chk li::before{content:"☐";position:absolute;left:6px;color:var(--amber);font-size:16px}
+  /* catalogo */
+  .cat{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin:18px 0}
+  .item{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;gap:14px}
+  .item .ic{flex:0 0 56px;width:56px;height:56px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center}
+  .item h3{margin:0 0 3px;font-size:15.5px}
+  .item .qty{font-family:"IBM Plex Mono",monospace;font-size:11px;color:#1a1206;background:var(--amber);border-radius:5px;padding:1px 7px;margin-left:6px;vertical-align:middle;font-weight:600}
+  .item .fx{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--copper);margin:0 0 6px}
+  .item p{font-size:13px;color:var(--muted);margin:0}
+  .src{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13.5px;margin:7px 0}
+  .src .n{font-family:"IBM Plex Mono",monospace;color:var(--amber-dim)}
+  footer{padding:34px 0 64px;color:var(--muted);font-size:12.5px}
+  @media (max-width:640px){nav.toc ol{columns:1}section{padding:34px 0}}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero" id="top">
+  <p class="eyebrow">Documento matriz · prototipo v0.1</p>
+  <h1>Prototipo <span>Cierre + Gauge</span> — documento matriz v0.1</h1>
+  <p class="lede">Documento matriz de ingeniería del prototipo <b>v0.1</b>: reúne los criterios funcionales y técnicos, las decisiones de diseño con su fundamento, los esquemas eléctricos, la disposición física en perfboard de ambos nodos, la especificación de firmware y la bibliografía. Pensado para que cualquier persona técnica del área de electrónica retome el proyecto y entienda el porqué de cada decisión, no solo el qué.</p>
+  <p class="sub" style="font-size:14px">Vehículo: Subaru Legacy 3.0R (BL/BP, EDM/SAM, motor EZ30R, 5EAT) · VIN JF1BLELU56G022682 · ECU ID 45AA344006. Arquitectura: dos nodos ESP32 independientes enlazados por ESP‑NOW. La velocidad para el cierre se obtiene por SSM2 (K‑line), no por VSS.</p>
+  <div class="idchips">
+    <span class="idchip">EZ30R H6</span><span class="idchip">BL/BP · EDM/SAM</span>
+    <span class="idchip">2× ESP32 DevKit V1</span><span class="idchip">Display <b>85201AG200</b></span>
+  </div>
+</header>
+
+<nav class="toc">
+  <h4>Contenido</h4>
+  <ol>
+    <li><a href="#proposito">Propósito, alcance y estado v0.1</a></li>
+    <li><a href="#arq">Arquitectura del sistema</a></li>
+    <li><a href="#fundamentos">Fundamentos de diseño (por qué)</a></li>
+    <li><a href="#catalogo">Catálogo de componentes</a></li>
+    <li><a href="#nodob">Nodo B — etapas y valores</a></li>
+    <li><a href="#diagb">Nodo B — esquemas y disposición</a></li>
+    <li><a href="#nodoa">Nodo A — etapas y valores</a></li>
+    <li><a href="#nodoa2">Nodo A — lógica, esquemas y disposición</a></li>
+    <li><a href="#pines">Mapas de pines ESP32</a></li>
+    <li><a href="#firmware">Firmware — especificación funcional</a></li>
+    <li><a href="#bom">Lista de materiales (BOM)</a></li>
+    <li><a href="#consumibles">Consumibles y herramientas</a></li>
+    <li><a href="#arnes">Arnés i59</a></li>
+    <li><a href="#cableado">Cableado y conexiones</a></li>
+    <li><a href="#largos">Largos de cable</a></li>
+    <li><a href="#instalacion">Instalación</a></li>
+    <li><a href="#checklist">Checklist de verificación</a></li>
+    <li><a href="#experto">Notas de experto</a></li>
+    <li><a href="#verificar">Pendientes en el vehículo</a></li>
+    <li><a href="#roadmap">Roadmap v0.1 → v0.2</a></li>
+    <li><a href="#biblio">Bibliografía (IEEE)</a></li>
+    <li><a href="#fuentes">Fuentes web</a></li>
+  </ol>
+</nav>
+
+<section id="proposito">
+  <p class="sec-label">00 · Propósito</p>
+  <h2>Propósito, alcance y estado v0.1</h2>
+  <p class="sub">Este documento es la <b>fuente única de verdad</b> del prototipo v0.1. Define qué se construye, con qué criterios y por qué. El sistema agrega dos funciones al vehículo sin alterar su electrónica de fábrica de forma irreversible: (1) un <b>gauge multifunción</b> que reemplaza el display del reloj OEM leyendo la ECU por SSM2, y (2) un <b>cierre centralizado por velocidad</b> con apertura al detenerse. Ambos se implementan como nodos ESP32 independientes que se comunican por radio (ESP‑NOW).</p>
+  <h3>Estado del prototipo v0.1</h3>
+  <ul class="tight">
+    <li><b>Diseño de alto nivel:</b> cerrado — arquitectura, particiones funcionales, interfaces.</li>
+    <li><b>Diseño de detalle:</b> cerrado a nivel de componente (valores por etapa), disposición física en perfboard y esquemas eléctricos de ambos nodos.</li>
+    <li><b>Materiales:</b> especificados (ver BOM). En abastecimiento.</li>
+    <li><b>Firmware:</b> especificado funcionalmente (este documento). Implementación pendiente para la fase de integración.</li>
+    <li><b>Puntos a validar en el vehículo:</b> colores/pines del conector i59 EDM, confirmación de pines 15/29 del BIU, fuente de IG en pilar A. Ver sección correspondiente.</li>
+  </ul>
+  <div class="call cyan"><h4>Decisión que requiere tu confirmación</h4><p>El <b>botón para desactivar</b> el cierre/apertura automáticos se documenta como <b>botón del gauge (Nodo B) enviado por ESP‑NOW</b> al Nodo A (recomendado: cero cable/HW extra en el Nodo A). Alternativa: botón dedicado cableado al Nodo A (GPIO27). Marcado como <span class="badge warn">a confirmar</span> en la sección del Nodo A.</p></div>
+  <h3>Historial de decisiones estructurales</h3>
+  <ul class="tight">
+    <li><b>Se descarta buscar el VSS.</b> El Nodo A no tapea la señal de velocidad ni usa comparador. Recibe la velocidad del Nodo B por ESP‑NOW; el Nodo B la obtiene de la ECU por SSM2. Fundamento en la sección "Fundamentos de diseño".</li>
+    <li><b>Diseño 100% serviceable.</b> Ningún módulo caro va soldado permanente; todo por zócalo o conector con traba.</li>
+    <li><b>Cero consumo parásito.</b> Todo alimentado por IG; con el contacto fuera, el sistema muere. El reloj lo sostiene la pila del RTC.</li>
+  </ul>
+</section>
+
+<section id="cambios" style="display:none">
+  <p class="sec-label">00 · Δ</p>
+  <h2>Cambios respecto de la v1</h2>
+  <ul class="tight">
+    <li><b>Se elimina la búsqueda del VSS.</b> El Nodo A ya no tapea la señal de velocidad ni lleva el comparador LM393. Recibe la velocidad del <b>Nodo B por ESP‑NOW</b> (fuente: SSM2). Nodo A queda más simple.</li>
+    <li><b>Se agrega el nivel de componente:</b> valores exactos por etapa (divisores, protección, K‑line, filtros).</li>
+    <li><b>Catálogo</b> con descripción y función de cada ítem.</li>
+  </ul>
+  <div class="call cyan"><h4>Compromiso de la decisión VSS→ESP‑NOW</h4><p>El cierre depende de que el Nodo B esté vivo y leyendo SSM2 (ambos nodos van en IG, así que lo están al conducir). En los usos puntuales del Tactrix, el Nodo B puede perder la lectura y el cierre no dispararía durante esa sesión — algo que ya aceptaste. El cierre se "arma" apenas llega velocidad válida por radio.</p></div>
+</section>
+
+<section id="arq">
+  <p class="sec-label">01 · Arquitectura</p>
+  <h2>Arquitectura (actualizada)</h2>
+  <div class="diagram wide">
+    <svg viewBox="0 0 860 320" role="img" aria-label="Arquitectura actualizada">
+      <defs>
+        <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="#8695a8"/></marker>
+        <style>
+          .b{fill:#111823;stroke:#2a3a4d;stroke-width:1.5}.bA{fill:#0f1720;stroke:#57d98b;stroke-width:2}.bB{fill:#0f1720;stroke:#ffab40;stroke-width:2}
+          .t{fill:#e9eef6;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:14px}
+          .s{fill:#8695a8;font-family:'IBM Plex Mono',monospace;font-size:11px}
+          .l{stroke:#5a6b7d;stroke-width:1.6;fill:none}.lw{stroke:#4fd6e0;stroke-width:2;stroke-dasharray:6 5;fill:none}
+        </style>
+      </defs>
+      <rect class="bA" x="30" y="56" width="230" height="86" rx="11"/>
+      <text class="t" x="48" y="84" style="fill:#57d98b">NODO A · CIERRE</text>
+      <text class="s" x="48" y="106">ESP32 · junto al BIU</text><text class="s" x="48" y="124">recibe velocidad por radio</text>
+      <rect class="b" x="30" y="186" width="230" height="44" rx="8"/>
+      <text class="s" x="46" y="204">salidas: relé → BIU pin 15 / pin 29</text><text class="s" x="46" y="220">entrada: IG 12V (alimentación)</text>
+      <line class="l" x1="145" y1="142" x2="145" y2="186" marker-end="url(#ar)"/>
+
+      <rect class="bB" x="600" y="56" width="230" height="86" rx="11"/>
+      <text class="t" x="618" y="84" style="fill:#ffab40">NODO B · GAUGE</text>
+      <text class="s" x="618" y="106">ESP32 · consola central</text><text class="s" x="618" y="124">lee SSM2 · envía velocidad</text>
+      <rect class="b" x="600" y="186" width="230" height="44" rx="8"/>
+      <text class="s" x="616" y="204">i59: IG · GND · ILL</text><text class="s" x="616" y="220">K‑line → OBD pin 7 (SSM2)</text>
+      <line class="l" x1="715" y1="142" x2="715" y2="186" marker-end="url(#ar)"/>
+
+      <line class="lw" x1="260" y1="99" x2="600" y2="99"/>
+      <rect x="378" y="80" width="104" height="38" rx="8" fill="#0a0e14" stroke="#4fd6e0" stroke-width="1.5"/>
+      <text x="430" y="104" text-anchor="middle" style="fill:#4fd6e0;font-family:'IBM Plex Mono',monospace;font-size:12px">ESP‑NOW</text>
+      <text x="430" y="270" text-anchor="middle" class="s">Nodo B lee velocidad por SSM2 y la envía al Nodo A · sin cable entre nodos</text>
+    </svg>
+  </div>
+  <p class="cap">Fig. 1 — La velocidad viaja por radio del gauge al cierre. Líneas de taps verticales, enlace por detrás de su caja: sin cruces.</p>
+</section>
+
+<!-- ===== FUNDAMENTOS ===== -->
+<section id="fundamentos">
+  <p class="sec-label">02 · Por qué</p>
+  <h2>Fundamentos de diseño</h2>
+  <p class="sub">Cada decisión de este prototipo tiene un argumento funcional (qué problema resuelve) y uno técnico (por qué esta solución y no otra). Se referencian normas y hojas de datos del autor original entre corchetes; ver <a href="#biblio">Bibliografía</a>.</p>
+
+  <h3>Dos nodos independientes enlazados por radio</h3>
+  <p class="sub"><b>Funcional:</b> el gauge y el cierre son funciones sin relación eléctrica entre sí y viven en zonas físicas distintas del auto (consola central vs. pilar A/BIU). <b>Técnico:</b> separarlas evita tender un mazo largo entre ambas y desacopla fallas — si un nodo se reinicia, el otro sigue. El enlace se hace con <b>ESP‑NOW</b>, un protocolo peer‑to‑peer de baja latencia sobre el PHY de 2.4 GHz del ESP32 que no requiere router ni emparejamiento por infraestructura <a href="#biblio">[3]</a>. El ESP32 aporta doble núcleo, WiFi/BT y periféricos suficientes (UART, I²C, SPI, ADC) para ambos roles <a href="#biblio">[4]</a>.</p>
+
+  <h3>Velocidad por SSM2, no por VSS</h3>
+  <p class="sub"><b>Funcional:</b> el cierre necesita la velocidad del vehículo. <b>Técnico:</b> en el chasis BL/BP la velocidad se distribuye desde el módulo ABS y no existe un pin/cable de "VSS" único y documentado que se pueda tapear con certeza; buscar una señal cuadrada exige tiempo e instrumentación. En cambio, el Nodo B ya lee la ECU por <b>SSM2</b> sobre K‑line, y la velocidad es uno de sus parámetros. Se obtiene ahí y se envía al Nodo A por ESP‑NOW. El compromiso: el cierre depende de que el Nodo B esté leyendo SSM2 (ambos nodos están energizados al conducir, así que se cumple salvo durante un uso puntual del Tactrix).</p>
+
+  <h3>Interfaz K‑line con L9637D</h3>
+  <p class="sub"><b>Funcional:</b> hablar SSM2 con la ECU por el pin 7 del OBD‑II. <b>Técnico:</b> SSM2 corre sobre K‑line ISO 9141‑2 — bus bidireccional de un hilo, en reposo alto a tensión de batería, con pull‑up <a href="#biblio">[1]</a>. El <b>L9637D</b> es un transceptor monolítico diseñado para ISO 9141 que adapta el bus de 12 V al UART de 3.3 V del ESP32; su hoja de datos fija la red de bus recomendada: pull‑up de ~510 Ω a V<sub>S</sub> y capacitor de ≤1.3 nF a masa <a href="#biblio">[2]</a>. Por eso el 510 Ω y el 1 nF son externos y de valor fijo.</p>
+
+  <h3>Conversión 12 V → 5 V con regulador conmutado</h3>
+  <p class="sub"><b>Funcional:</b> alimentar el ESP32 (5 V) desde los 12–14.4 V del auto sin disipar calor en un espacio cerrado. <b>Técnico:</b> un lineal (7805) disiparía P=(V<sub>in</sub>−5)·I, del orden de varios vatios, inviable en el housing. Se usa el <b>Recom R‑78E5.0‑1.0</b>, un conmutador encapsulado pin‑compatible con el 78xx, entrada 7–28 V, 5 V/1 A y ~91 % de eficiencia sin disipador <a href="#biblio">[5]</a>. El condensador de 470 µF en el riel de 5 V absorbe los picos de corriente de las ráfagas de radio del ESP32; principio de reserva local de carga descrito en <a href="#biblio">[11]</a>.</p>
+
+  <h3>Protección de entrada (ambiente automotriz)</h3>
+  <p class="sub"><b>Funcional:</b> sobrevivir a la red eléctrica del auto. <b>Técnico:</b> la línea de 12 V sufre transitorios (conmutación de cargas inductivas, "load dump") caracterizados en ISO 7637‑2 <a href="#biblio">[9]</a> y descritos en la práctica automotriz <a href="#biblio">[12]</a>. La cadena de entrada es: fusible 2 A (protege el mazo), <b>SS34</b> Schottky en serie (bloquea polaridad inversa) y <b>SMAJ18A</b> TVS a masa (recorta el transitorio antes de llegar al buck). El TVS unidireccional de 18 V de standoff deja pasar el rango normal (≤14.4 V) y solo conduce en el pico.</p>
+
+  <h3>Todo el mundo lógico a 3.3 V</h3>
+  <p class="sub"><b>Funcional:</b> proteger las entradas del ESP32. <b>Técnico:</b> las señales de 12 V (ignición, iluminación, sensores 0–5 V) se escalan con divisores resistivos a &lt;3.3 V y se recortan con un Schottky de señal (BAT85) al riel de 3.3 V, con un capacitor de filtro. El diseño de divisores, la referencia de tensión de entrada y el desacople local siguen los criterios de <a href="#biblio">[11]</a>. El bus del RTC es I²C con pull‑ups en el módulo <a href="#biblio">[8]</a>; el reloj es un <b>DS3231</b> con TCXO (±2 ppm) y pila propia, lo que da hora estable sin drenar la batería del auto <a href="#biblio">[7]</a>.</p>
+
+  <h3>Conectores con traba, no Dupont · diseño serviceable</h3>
+  <p class="sub"><b>Funcional:</b> que resista la vibración y que cualquier módulo (incluida la pantalla) se pueda sustituir sin desoldar. <b>Técnico:</b> los conectores tipo Dupont carecen de traba positiva y su retención depende de la fricción del pin, que cede con vibración. Se usan conectores con enclavamiento (JST‑XH/SM, Molex Micro‑Fit 3.0) en los bordes de cada caja <a href="#biblio">[14]</a>, y los módulos van en zócalo con retención mecánica removible. El aporte dominante a la fiabilidad bajo vibración no es el conector sino el <b>alivio de tensión</b> (que la junta no flexe), criterio alineado con la validación de robustez de módulos E/E automotrices <a href="#biblio">[10]</a>.</p>
+
+  <h3>Cero consumo parásito</h3>
+  <p class="sub"><b>Funcional:</b> no descargar la batería con el auto apagado. <b>Técnico:</b> todo el sistema se alimenta de <b>IG</b> (conmutada por contacto), nunca de B+ constante. Con la llave fuera, ambos nodos quedan sin energía y el consumo es nulo; la hora la mantiene la pila del DS3231 <a href="#biblio">[7]</a>.</p>
+</section>
+
+<!-- ===== CATALOGO ===== -->
+<section id="catalogo">
+  <p class="sec-label">02 · Piezas</p>
+  <h2>Catálogo de componentes</h2>
+  <p class="sub">Qué es cada pieza, para qué sirve y <b>cuántas se necesitan</b> (badge ámbar). Recuerda: son 2 nodos — lo del Nodo B (gauge) y lo del Nodo A (cierre). Fotos reales en el chat.</p>
+  <div class="cat">
+
+    <div class="item"><div class="ic"><svg width="34" height="34" viewBox="0 0 34 34"><rect x="6" y="4" width="22" height="26" rx="2" fill="none" stroke="#ffab40" stroke-width="1.6"/><g stroke="#8695a8" stroke-width="1.4"><path d="M6 9H2M6 14H2M6 19H2M6 24H2M28 9h4M28 14h4M28 19h4M28 24h4"/></g><path d="M13 8a6 6 0 0 1 8 0" fill="none" stroke="#4fd6e0" stroke-width="1.4"/></svg></div>
+      <div><h3>ESP32 DevKit V1 <span class="qty">×2</span></h3><p class="fx">función · cerebro de cada nodo</p><p>Microcontrolador con WiFi/Bluetooth (usa ESP‑NOW), lógica 3.3V. Nodo B lee SSM2 y maneja pantalla; Nodo A dispara los relés. Se alimenta con 5V por su pin 5V.</p></div></div>
+
+    <div class="item"><div class="ic"><svg width="40" height="30" viewBox="0 0 40 30"><rect x="3" y="6" width="34" height="18" rx="2" fill="#0d141d" stroke="#ffab40" stroke-width="1.4"/><text x="20" y="19" text-anchor="middle" fill="#ffab40" font-family="monospace" font-size="9">88:88</text></svg></div>
+      <div><h3>OLED SSD1322 3.12" <span class="qty">×1</span></h3><p class="fx">función · la pantalla</p><p>256×64 mono, interfaz SPI, 3.3V. Muestra las variables. En amarillo/ámbar para pasar mejor por el filtro rojo OEM. Área activa ~79×21 mm, ~6 mm de profundidad.</p></div></div>
+
+    <div class="item"><div class="ic"><svg width="34" height="34" viewBox="0 0 34 34"><rect x="7" y="8" width="20" height="14" rx="1.5" fill="none" stroke="#8695a8" stroke-width="1.4"/><circle cx="17" cy="26" r="4" fill="none" stroke="#57d98b" stroke-width="1.4"/><path d="M11 8v-3M23 8v-3" stroke="#8695a8" stroke-width="1.2"/></svg></div>
+      <div><h3>RTC DS3231 <span class="qty">×1</span></h3><p class="fx">función · reloj sin drenar batería</p><p>Reloj de tiempo real con pila propia CR2032: mantiene la hora años sin consumir del auto. I²C. El ESP32 le lee la hora al encender.</p></div></div>
+
+    <div class="item"><div class="ic"><svg width="34" height="34" viewBox="0 0 34 34"><rect x="9" y="8" width="16" height="18" rx="1.5" fill="#0d141d" stroke="#4fd6e0" stroke-width="1.4"/><g stroke="#8695a8" stroke-width="1.3"><path d="M9 12H4M9 17H4M9 22H4M25 12h5M25 17h5M25 22h5"/></g></svg></div>
+      <div><h3>L9637D (transceptor K‑line) <span class="qty">×1</span></h3><p class="fx">función · traductor motor ↔ ESP32</p><p>Convierte entre el bus K‑line de 12V (SSM2) y el UART 3.3V del ESP32. Es lo que permite leer la ECU. Se recomienda en breakout con pads rotulados.</p></div></div>
+
+    <div class="item"><div class="ic"><svg width="34" height="34" viewBox="0 0 34 34"><rect x="5" y="9" width="24" height="16" rx="2" fill="none" stroke="#d79a5b" stroke-width="1.4"/><circle cx="12" cy="17" r="4" fill="none" stroke="#8695a8" stroke-width="1.3"/><circle cx="23" cy="14" r="2" fill="none" stroke="#57d98b" stroke-width="1.3"/></svg></div>
+      <div><h3>Recom R‑78E5.0‑1.0 (12→5V) <span class="qty">×2</span></h3><p class="fx">función · alimentación premium</p><p>Regulador conmutado encapsulado, drop‑in del 7805 (IN·GND·OUT), entrada 6.5–32V, salida fija 5.0V / 1A sin ajustar ni calentar. Fit‑and‑forget. Alternativa económica: MP1584EN (hay que ajustarlo a 5.00V con multímetro).</p></div></div>
+
+    <div class="item"><div class="ic"><svg width="34" height="34" viewBox="0 0 34 34"><rect x="5" y="8" width="24" height="18" rx="2" fill="none" stroke="#8695a8" stroke-width="1.4"/><rect x="9" y="12" width="7" height="10" rx="1" fill="none" stroke="#57d98b" stroke-width="1.3"/><path d="M19 13l5 4-5 4" fill="none" stroke="#4fd6e0" stroke-width="1.3"/></svg></div>
+      <div><h3>Módulo relé 2 canales <span class="qty">×1</span></h3><p class="fx">función · pulsa las líneas del BIU</p><p>Dos relés opto‑aislados (bobina 5V, contactos 10A). El contacto seco aísla el ESP32 y aguanta lo que tire la línea del BIU. Un canal cierra, otro abre.</p></div></div>
+
+    <div class="item"><div class="ic"><svg width="34" height="34" viewBox="0 0 34 34"><path d="M4 17h9l6-8 6 8h5" fill="none" stroke="#8695a8" stroke-width="1.5"/><path d="M13 11l0 12 9-6z" fill="none" stroke="#57d98b" stroke-width="1.4"/><path d="M22 9v16" stroke="#57d98b" stroke-width="1.4"/></svg></div>
+      <div><h3>Schottky SS34 <span class="qty">×2</span></h3><p class="fx">función · protección polaridad inversa</p><p>Diodo de "una sola dirección" en serie con el +12V. Si algún día se invierten + y −, no deja pasar corriente y salva el circuito.</p></div></div>
+
+    <div class="item"><div class="ic"><svg width="34" height="34" viewBox="0 0 34 34"><path d="M17 4v9M17 21v9" stroke="#8695a8" stroke-width="1.5"/><path d="M11 13l6 4 6-4M11 21l6-4 6 4" fill="none" stroke="#ff6b5e" stroke-width="1.4"/></svg></div>
+      <div><h3>TVS SMAJ18A <span class="qty">×2</span></h3><p class="fx">función · absorbe transitorios</p><p>Diodo supresor que recorta los picos de voltaje del sistema eléctrico (load dump). Va del riel de 12V a masa; protege todo lo que sigue.</p></div></div>
+
+    <div class="item"><div class="ic"><svg width="34" height="34" viewBox="0 0 34 34"><path d="M17 5v8M17 21v8" stroke="#8695a8" stroke-width="1.5"/><path d="M8 13h18M8 21h18" stroke="#57d98b" stroke-width="2"/></svg></div>
+      <div><h3>Condensadores <span class="qty">surtido</span></h3><p class="fx">función · reserva y filtro</p><p>El electrolítico grande estabiliza el riel y absorbe los picos de corriente del WiFi; los cerámicos de 100nF limpian el ruido de alta frecuencia. Surtido: 4× 470µF (2×35V + 2×16V), ~10× 100nF, 2× 1nF, 2× 1µF.</p></div></div>
+
+    <div class="item"><div class="ic"><svg width="34" height="34" viewBox="0 0 34 34"><path d="M4 17h6l2-5 4 10 4-10 2 5h6" fill="none" stroke="#ffab40" stroke-width="1.5"/></svg></div>
+      <div><h3>Resistencias <span class="qty">surtido</span></h3><p class="fx">función · escalan 12V → 3.3V</p><p>Los pares 10k/3.3k y 10k/20k bajan las señales de 12V o 5V al rango seguro de 3.3V del ESP32, para sensar ignición, iluminación y sensores analógicos. Surtido: 10k ×6, 3.3k ×3, 20k ×2, 510Ω ×2.</p></div></div>
+
+    <div class="item"><div class="ic"><svg width="34" height="34" viewBox="0 0 34 34"><path d="M6 17h9l4-8 4 8h5" fill="none" stroke="#4fd6e0" stroke-width="1.5"/><path d="M15 9l4 0" stroke="#4fd6e0" stroke-width="1.5"/></svg></div>
+      <div><h3>Diodo clamp BAT85 <span class="qty">×6</span></h3><p class="fx">función · tope de seguridad</p><p>Recorta cualquier sobrepaso por encima de 3.3V antes de que llegue al pin del ESP32. Es el seguro final de las entradas.</p></div></div>
+
+    <div class="item"><div class="ic"><svg width="34" height="34" viewBox="0 0 34 34"><rect x="5" y="12" width="24" height="10" rx="2" fill="none" stroke="#8695a8" stroke-width="1.4"/><path d="M11 12v-4h5v4" fill="none" stroke="#57d98b" stroke-width="1.3"/><path d="M20 22l4 4" stroke="#4fd6e0" stroke-width="1.3"/></svg></div>
+      <div><h3>Posi‑Tap / iWire <span class="qty">iWire ×3</span></h3><p class="fx">función · unión limpia y reversible</p><p>Posi‑Tap conecta a un cable del auto sin cortarlo, mejor que los "quick‑splice". Los conectores i59 de iWire (1 macho + 2 hembra) arman el adaptador reversible del gauge. Posi‑Tap: los que necesites.</p></div></div>
+
+    <div class="item"><div class="ic"><svg width="34" height="34" viewBox="0 0 34 34"><rect x="7" y="11" width="20" height="12" rx="6" fill="none" stroke="#ff6b5e" stroke-width="1.4"/><path d="M12 17h10" stroke="#ffab40" stroke-width="1.4"/></svg></div>
+      <div><h3>Fusible 2A + portafusible <span class="qty">×2</span></h3><p class="fx">función · protege el cableado</p><p>Se sacrifica ante un cortocircuito y corta la corriente antes de que se dañe el mazo. Va en cada toma de 12V, sin excepción.</p></div></div>
+
+  </div>
+</section>
+
+<!-- ===== NODO B ETAPAS ===== -->
+<section id="nodob">
+  <p class="sec-label">04 · Nodo B</p>
+  <h2>Nodo B — etapas y valores exactos</h2>
+
+  <h3>Etapa 1 · Alimentación (IG → 5V)</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th class="mono">Ref</th><th>Componente</th><th>Valor</th><th>Conexión</th><th>Función</th></tr></thead>
+    <tbody>
+      <tr><td class="ref">F1</td><td>Fusible + portafusible</td><td class="val">2 A</td><td class="mono">serie en +12V (IG)</td><td>corta ante corto</td></tr>
+      <tr><td class="ref">D1</td><td>Diodo Schottky</td><td class="val">SS34</td><td class="mono">+12V → VBAT (serie)</td><td>polaridad inversa</td></tr>
+      <tr><td class="ref">D2</td><td>TVS unidireccional</td><td class="val">SMAJ18A</td><td class="mono">VBAT → GND</td><td>transitorios</td></tr>
+      <tr><td class="ref">C1</td><td>Electrolítico</td><td class="val">470 µF / 35 V</td><td class="mono">VBAT → GND</td><td>reserva de entrada</td></tr>
+      <tr><td class="ref">C2</td><td>Cerámico</td><td class="val">100 nF</td><td class="mono">VBAT → GND</td><td>filtro HF</td></tr>
+      <tr><td class="ref">U1</td><td>Regulador switching</td><td class="val">Recom R‑78E5.0‑1.0</td><td class="mono">VBAT → 5V</td><td>12V→5V fijo (drop‑in 7805)</td></tr>
+      <tr><td class="ref">C3</td><td>Electrolítico</td><td class="val">470 µF / 16 V</td><td class="mono">5V → GND</td><td>picos WiFi</td></tr>
+      <tr><td class="ref">C4</td><td>Cerámico</td><td class="val">100 nF</td><td class="mono">5V → GND</td><td>filtro HF</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Etapa 2 · Sensado de ignición y de iluminación (ILL)</h3>
+  <p class="sub">Dos divisores idénticos que bajan 12V a un nivel seguro. El de ILL lleva un cap mayor para promediar si la iluminación es PWM (regulada por el reóstato).</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th class="mono">Ref</th><th>Componente</th><th>Valor</th><th>Conexión</th><th>Función</th></tr></thead>
+    <tbody>
+      <tr><td class="ref">R1</td><td>Resistencia</td><td class="val">10 kΩ</td><td class="mono">IG → nodo_IGN</td><td>brazo superior</td></tr>
+      <tr><td class="ref">R2</td><td>Resistencia</td><td class="val">3.3 kΩ</td><td class="mono">nodo_IGN → GND</td><td>brazo inferior (~3.0V@12V)</td></tr>
+      <tr><td class="ref">D3</td><td>Schottky clamp</td><td class="val">BAT85</td><td class="mono">nodo_IGN → 3.3V</td><td>recorta sobre 3.3V</td></tr>
+      <tr><td class="ref">C5</td><td>Cerámico</td><td class="val">100 nF</td><td class="mono">nodo_IGN → GND</td><td>filtro → GPIO</td></tr>
+      <tr><td class="ref">R3</td><td>Resistencia</td><td class="val">10 kΩ</td><td class="mono">ILL → nodo_ILL</td><td>brazo superior</td></tr>
+      <tr><td class="ref">R4</td><td>Resistencia</td><td class="val">3.3 kΩ</td><td class="mono">nodo_ILL → GND</td><td>brazo inferior</td></tr>
+      <tr><td class="ref">D4</td><td>Schottky clamp</td><td class="val">BAT85</td><td class="mono">nodo_ILL → 3.3V</td><td>recorta</td></tr>
+      <tr><td class="ref">C6</td><td>Cerámico</td><td class="val">1 µF</td><td class="mono">nodo_ILL → GND</td><td>promedia PWM → ADC</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Etapa 3 · Entrada analógica (sensor 0–5V, opcional)</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th class="mono">Ref</th><th>Componente</th><th>Valor</th><th>Conexión</th><th>Función</th></tr></thead>
+    <tbody>
+      <tr><td class="ref">R5</td><td>Resistencia</td><td class="val">10 kΩ</td><td class="mono">sensor → nodo_AN</td><td>superior</td></tr>
+      <tr><td class="ref">R6</td><td>Resistencia</td><td class="val">20 kΩ</td><td class="mono">nodo_AN → GND</td><td>inferior (5V→3.3V)</td></tr>
+      <tr><td class="ref">D5</td><td>Schottky clamp</td><td class="val">BAT85</td><td class="mono">nodo_AN → 3.3V</td><td>recorta</td></tr>
+      <tr><td class="ref">C7</td><td>Cerámico</td><td class="val">100 nF</td><td class="mono">nodo_AN → GND</td><td>filtro → ADC</td></tr>
+    </tbody>
+  </table></div>
+  <div class="call cyan"><h4>Termocuplas</h4><p>Una termocupla no va a un divisor: entrega milivoltios. Para temperatura de aceite/caja usa un amplificador dedicado <b>MAX31855</b> (tipo K, salida SPI) como módulo aparte. Queda para la fase de ampliación.</p></div>
+
+  <h3>Etapa 4 · Transceptor K‑line (L9637D → OBD pin 7)</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th class="mono">Ref</th><th>Componente</th><th>Valor</th><th>Conexión</th><th>Función</th></tr></thead>
+    <tbody>
+      <tr><td class="ref">U2</td><td>Transceptor</td><td class="val">L9637D</td><td class="mono">—</td><td>K‑line ↔ UART</td></tr>
+      <tr><td class="ref">R7</td><td>Resistencia (RKO)</td><td class="val">510 Ω</td><td class="mono">K → VS (12V)</td><td>pull‑up del bus</td></tr>
+      <tr><td class="ref">C8</td><td>Cerámico (CK)</td><td class="val">1 nF</td><td class="mono">K → GND</td><td>filtro del bus (≤1.3nF)</td></tr>
+      <tr><td class="ref">C9</td><td>Cerámico</td><td class="val">100 nF</td><td class="mono">VCC (3.3V) → GND</td><td>desacople lógico</td></tr>
+      <tr><td class="ref">C10</td><td>Cerámico</td><td class="val">100 nF</td><td class="mono">VS (12V) → GND</td><td>desacople potencia</td></tr>
+      <tr><td colspan="5" class="na">Conexiones: VS→12V(IG) · VCC→3.3V · RX→GPIO16 · TX→GPIO17 · K→OBD pin 7 · GND común. Un breakout L9637D ya trae R7/C8 a bordo.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Etapa 5 · Pantalla, reloj y botones</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Bloque</th><th>Conexión</th><th>Nota de componente</th></tr></thead>
+    <tbody>
+      <tr><td>OLED SSD1322 (SPI)</td><td class="mono">VCC 3.3V·GND·SCLK 18·MOSI 23·CS 5·DC 19·RST 4</td><td>fijar jumpers a 4‑wire SPI</td></tr>
+      <tr><td>RTC DS3231 (I²C)</td><td class="mono">VCC 3.3V·GND·SDA 21·SCL 22</td><td>pull‑ups I²C ya en el módulo</td></tr>
+      <tr><td>4 botones OEM</td><td class="mono">GPIO 32/33/25/26 ↔ switch ↔ GND</td><td><code>INPUT_PULLUP</code> + 100 nF antirrebote (opc)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ===== NODO B DIAGRAMAS ===== -->
+<section id="diagb">
+  <p class="sec-label">05 · Nodo B · esquemas</p>
+  <h2>Nodo B — esquemas eléctricos y disposición física</h2>
+  <p class="sub">Cuatro vistas complementarias: la etapa de potencia, la interfaz de señal, la disposición espacial completa y el plano exacto en la cuadrícula de la perfboard 3×7. Código de color de cables: <b>amarillo +12V · cobre +5V · rojo +3.3V · gris GND · azul señal</b>.</p>
+  <h3>Etapa de potencia</h3>
+  <div class="diagram wide"><svg viewBox="0 0 680 380" role="img" aria-label="Esquema de potencia del Nodo B"><defs><marker id="arB" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="#8695a8"/></marker><style>.t{fill:#e9eef6;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13px}.s{fill:#8695a8;font-family:'IBM Plex Mono',monospace;font-size:11px}.bx{fill:#0f1720;stroke:#2a3a4d;stroke-width:1}</style></defs>
+<rect class="bx" x="40" y="42" width="72" height="36" rx="6"/><text class="s" x="76" y="64" text-anchor="middle">i59 · IG</text>
+<rect class="bx" x="142" y="42" width="64" height="36" rx="6"/><text class="s" x="174" y="64" text-anchor="middle">Fus. 2A</text>
+<rect class="bx" x="236" y="42" width="58" height="36" rx="6"/><text class="s" x="265" y="64" text-anchor="middle">SS34</text>
+<line x1="112" y1="60" x2="142" y2="60" stroke="#ffab40" stroke-width="2.5"/><line x1="206" y1="60" x2="236" y2="60" stroke="#ffab40" stroke-width="2.5"/><line x1="265" y1="78" x2="265" y2="112" stroke="#ffab40" stroke-width="2.5"/>
+<line x1="265" y1="112" x2="632" y2="112" stroke="#ffab40" stroke-width="3"/><text class="s" x="632" y="104" text-anchor="end" fill="#ffab40">+12V</text>
+<circle cx="347" cy="112" r="3" fill="#ffab40"/><circle cx="437" cy="112" r="3" fill="#ffab40"/><circle cx="520" cy="112" r="3" fill="#ffab40"/>
+<rect class="bx" x="320" y="150" width="54" height="38" rx="6"/><text class="s" x="347" y="173" text-anchor="middle">TVS</text>
+<line x1="347" y1="112" x2="347" y2="150" stroke="#ffab40" stroke-width="2.5"/><line x1="347" y1="188" x2="347" y2="332" stroke="#8695a8" stroke-width="2.5"/>
+<rect class="bx" x="410" y="150" width="54" height="38" rx="6"/><text class="s" x="437" y="173" text-anchor="middle">470µF</text>
+<line x1="437" y1="112" x2="437" y2="150" stroke="#ffab40" stroke-width="2.5"/><line x1="437" y1="188" x2="437" y2="332" stroke="#8695a8" stroke-width="2.5"/>
+<rect x="500" y="146" width="104" height="54" rx="6" fill="#0f1720" stroke="#ffab40" stroke-width="1.5"/><text class="t" x="552" y="169" text-anchor="middle">Buck R-78</text><text class="s" x="552" y="187" text-anchor="middle">12V → 5V</text>
+<line x1="520" y1="112" x2="520" y2="146" stroke="#ffab40" stroke-width="2.5"/><line x1="520" y1="200" x2="520" y2="332" stroke="#8695a8" stroke-width="2.5"/><line x1="586" y1="200" x2="586" y2="250" stroke="#d79a5b" stroke-width="2.5"/>
+<line x1="470" y1="250" x2="632" y2="250" stroke="#d79a5b" stroke-width="3"/><text class="s" x="470" y="242" fill="#d79a5b">+5V → pin 5V del ESP32</text>
+<circle cx="586" cy="250" r="3" fill="#d79a5b"/><circle cx="500" cy="250" r="3" fill="#d79a5b"/>
+<rect class="bx" x="474" y="280" width="52" height="36" rx="6"/><text class="s" x="500" y="302" text-anchor="middle">470µF</text>
+<line x1="500" y1="250" x2="500" y2="280" stroke="#d79a5b" stroke-width="2.5"/><line x1="500" y1="316" x2="500" y2="332" stroke="#8695a8" stroke-width="2.5"/>
+<line x1="265" y1="332" x2="632" y2="332" stroke="#8695a8" stroke-width="3"/><text class="s" x="632" y="352" text-anchor="end">GND (masa común)</text>
+<text class="s" x="60" y="352">El ESP32 genera +3.3V → ver interfaz</text></svg></div>
+<p class="cap">Fig. 2 — Nodo B, etapa de potencia. Amarillo +12V · cobre +5V · gris GND. El 12V solo llega al buck, la protección y (en la interfaz) al L9637D.</p>
+  <h3>Interfaz de señal (K‑line, OLED, RTC)</h3>
+  <div class="diagram narrow"><svg viewBox="0 0 680 420" role="img" aria-label="Esquema de interfaz del Nodo B"><defs><marker id="arB" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="#8695a8"/></marker><style>.t{fill:#e9eef6;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13px}.s{fill:#8695a8;font-family:'IBM Plex Mono',monospace;font-size:11px}.bx{fill:#0f1720;stroke:#2a3a4d;stroke-width:1}</style></defs>
+<rect x="250" y="56" width="180" height="110" rx="8" fill="#0f1720" stroke="#ff6b5e" stroke-width="1.5"/><text class="t" x="340" y="84" text-anchor="middle">L9637D</text><text class="s" x="340" y="102" text-anchor="middle">(en adaptador)</text>
+<line x1="250" y1="120" x2="168" y2="120" stroke="#ffab40" stroke-width="2.5"/><text class="s" x="163" y="124" text-anchor="end">VS · +12V</text>
+<line x1="250" y1="140" x2="168" y2="140" stroke="#ff6b5e" stroke-width="2.5"/><text class="s" x="163" y="144" text-anchor="end">VCC · +3.3V</text>
+<line x1="250" y1="160" x2="168" y2="160" stroke="#8695a8" stroke-width="2.5"/><text class="s" x="163" y="164" text-anchor="end">GND</text>
+<line x1="430" y1="140" x2="520" y2="140" stroke="#4fd6e0" stroke-width="2.5" marker-end="url(#arB)"/><text class="s" x="525" y="144" text-anchor="start">RX → GPIO16</text>
+<line x1="520" y1="160" x2="430" y2="160" stroke="#4fd6e0" stroke-width="2.5" marker-end="url(#arB)"/><text class="s" x="525" y="164" text-anchor="start">TX ← GPIO17</text>
+<line x1="430" y1="86" x2="470" y2="86" stroke="#4fd6e0" stroke-width="2.5"/><circle cx="470" cy="86" r="3" fill="#4fd6e0"/><line x1="470" y1="86" x2="560" y2="86" stroke="#4fd6e0" stroke-width="2.5" marker-end="url(#arB)"/><text class="s" x="565" y="90" text-anchor="start">K → OBD p7</text>
+<rect class="bx" x="446" y="40" width="48" height="20" rx="4"/><text class="s" x="470" y="54" text-anchor="middle">510Ω</text><line x1="470" y1="60" x2="470" y2="86" stroke="#ffab40" stroke-width="2.5"/><text class="s" x="470" y="34" text-anchor="middle" fill="#ffab40">+12V</text>
+<rect class="bx" x="500" y="102" width="44" height="20" rx="4"/><text class="s" x="522" y="116" text-anchor="middle">1nF</text><line x1="522" y1="86" x2="522" y2="102" stroke="#4fd6e0" stroke-width="2"/><circle cx="522" cy="86" r="3" fill="#4fd6e0"/><line x1="522" y1="122" x2="522" y2="140" stroke="#8695a8" stroke-width="2.5"/><text class="s" x="522" y="154" text-anchor="middle">GND</text>
+<rect x="250" y="212" width="180" height="60" rx="8" fill="#0f1720" stroke="#a78bfa" stroke-width="1.5"/><text class="t" x="340" y="238" text-anchor="middle">Conector OLED (J3)</text><text class="s" x="340" y="256" text-anchor="middle">7 pines · SPI</text>
+<line x1="250" y1="228" x2="168" y2="228" stroke="#ff6b5e" stroke-width="2.5"/><text class="s" x="163" y="232" text-anchor="end">+3.3V</text>
+<line x1="250" y1="256" x2="168" y2="256" stroke="#8695a8" stroke-width="2.5"/><text class="s" x="163" y="260" text-anchor="end">GND</text>
+<line x1="430" y1="234" x2="510" y2="234" stroke="#4fd6e0" stroke-width="2.5" marker-end="url(#arB)"/><text class="s" x="515" y="230" text-anchor="start">→ ESP32 SPI:</text><text class="s" x="515" y="246" text-anchor="start">SCLK18 MOSI23 CS5 DC19 RST4</text>
+<rect x="250" y="312" width="180" height="60" rx="8" fill="#0f1720" stroke="#a78bfa" stroke-width="1.5"/><text class="t" x="340" y="338" text-anchor="middle">Conector RTC (J4)</text><text class="s" x="340" y="356" text-anchor="middle">4 pines · I²C</text>
+<line x1="250" y1="328" x2="168" y2="328" stroke="#ff6b5e" stroke-width="2.5"/><text class="s" x="163" y="332" text-anchor="end">+3.3V</text>
+<line x1="250" y1="356" x2="168" y2="356" stroke="#8695a8" stroke-width="2.5"/><text class="s" x="163" y="360" text-anchor="end">GND</text>
+<line x1="430" y1="342" x2="510" y2="342" stroke="#4fd6e0" stroke-width="2.5" marker-end="url(#arB)"/><text class="s" x="515" y="346" text-anchor="start">→ ESP32: SDA21 · SCL22</text></svg></div>
+<p class="cap">Fig. 3 — Nodo B, interfaz. Rojo +3.3V · azul señal. Ningún conector de señal toca el 12V: el 12V solo va a VS del L9637D y al 510Ω.</p>
+  <h3>Distribución espacial completa</h3>
+  <div class="diagram wide"><svg viewBox="0 0 680 600" role="img" aria-label="Distribución espacial del Nodo B"><defs><marker id="arB" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="#8695a8"/></marker><style>.t{fill:#e9eef6;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13px}.s{fill:#8695a8;font-family:'IBM Plex Mono',monospace;font-size:11px}.bx{fill:#0f1720;stroke:#2a3a4d;stroke-width:1}</style></defs>
+<rect x="40" y="50" width="290" height="500" rx="10" fill="none" stroke="#3a4a5d" stroke-width="1.5"/><text class="t" x="52" y="72">Perfboard 3×7 (en el housing)</text>
+<rect x="54" y="80" width="262" height="200" rx="8" fill="rgba(79,214,224,0.10)" stroke="#4fd6e0" stroke-width="0.8"/><text class="t" x="185" y="100" text-anchor="middle">ESP32 socketeado</text>
+<rect x="66" y="116" width="116" height="34" rx="6" fill="rgba(87,217,139,0.12)" stroke="#57d98b" stroke-width="0.8"/><text class="s" x="124" y="137" text-anchor="middle">div. ignición</text>
+<rect x="66" y="158" width="116" height="34" rx="6" fill="rgba(87,217,139,0.12)" stroke="#57d98b" stroke-width="0.8"/><text class="s" x="124" y="179" text-anchor="middle">div. ILL</text>
+<rect x="66" y="200" width="116" height="34" rx="6" fill="rgba(87,217,139,0.12)" stroke="#57d98b" stroke-width="0.8"/><text class="s" x="124" y="221" text-anchor="middle">div. analógico</text>
+<rect x="194" y="116" width="110" height="34" rx="6" fill="rgba(87,217,139,0.12)" stroke="#57d98b" stroke-width="0.8"/><text class="s" x="249" y="137" text-anchor="middle">100nF desacople</text>
+<text class="s" x="185" y="256" text-anchor="middle">pasivos DEBAJO del ESP32</text>
+<line x1="54" y1="292" x2="316" y2="292" stroke="#1e2a38" stroke-width="1" stroke-dasharray="4 4"/>
+<rect x="54" y="302" width="76" height="48" rx="6" fill="rgba(255,171,64,0.12)" stroke="#ffab40" stroke-width="0.8"/><text class="s" x="92" y="323" text-anchor="middle">Buck</text><text class="s" x="92" y="339" text-anchor="middle">R-78</text>
+<rect x="144" y="302" width="110" height="48" rx="6" fill="rgba(255,107,94,0.12)" stroke="#ff6b5e" stroke-width="0.8"/><text class="s" x="199" y="323" text-anchor="middle">L9637D</text><text class="s" x="199" y="339" text-anchor="middle">+510Ω +1nF</text>
+<rect x="266" y="302" width="50" height="60" rx="6" fill="rgba(255,171,64,0.12)" stroke="#ffab40" stroke-width="0.8"/><text class="s" x="291" y="327" text-anchor="middle">470µF</text><text class="s" x="291" y="343" text-anchor="middle">×2</text>
+<rect x="54" y="382" width="180" height="30" rx="6" fill="rgba(167,139,250,0.14)" stroke="#a78bfa" stroke-width="0.8"/><text class="s" x="144" y="401" text-anchor="middle">RTC 4p · K-line 2p (vert.)</text>
+<rect x="54" y="430" width="262" height="30" rx="6" fill="rgba(167,139,250,0.14)" stroke="#a78bfa" stroke-width="0.8"/><text class="s" x="185" y="449" text-anchor="middle">OLED 7p · i59 3p  (90°)</text>
+<rect x="380" y="300" width="260" height="200" rx="10" fill="none" stroke="#3a4a5d" stroke-width="1" stroke-dasharray="7 5"/><text class="t" x="392" y="322">Fuera de la placa — por cable</text>
+<rect x="400" y="338" width="210" height="52" rx="8" fill="rgba(87,217,139,0.12)" stroke="#57d98b" stroke-width="0.8"/><text class="t" x="505" y="361" text-anchor="middle">RTC DS3231</text><text class="s" x="505" y="379" text-anchor="middle">con pila · montado aparte</text>
+<rect x="400" y="414" width="210" height="60" rx="8" fill="rgba(87,217,139,0.12)" stroke="#57d98b" stroke-width="0.8"/><text class="t" x="505" y="439" text-anchor="middle">OLED SSD1322</text><text class="s" x="505" y="457" text-anchor="middle">anclado a la PCB vieja</text>
+<path d="M234 397 L400 364" fill="none" stroke="#8695a8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arB)"/>
+<path d="M316 445 L400 444" fill="none" stroke="#8695a8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arB)"/>
+<line x1="120" y1="550" x2="120" y2="566" stroke="#8695a8" stroke-width="1.5" marker-end="url(#arB)"/><text class="s" x="120" y="584" text-anchor="middle">→ al auto (i59)</text>
+<line x1="240" y1="550" x2="240" y2="566" stroke="#8695a8" stroke-width="1.5" marker-end="url(#arB)"/><text class="s" x="240" y="584" text-anchor="middle">→ al OBD p7 (K-line)</text></svg></div>
+  <p class="cap">Fig. 4 — Distribución espacial. Borde sólido = en la placa · borde/líneas segmentadas = fuera, por cable. OLED y RTC llegan solo por cable a la línea de conectores.</p>
+  <h3>Plano exacto en la cuadrícula (11 × 27 agujeros)</h3>
+  <div class="diagram narrow"><svg viewBox="0 0 680 650" role="img" aria-label="Plano en cuadrícula del Nodo B"><defs><style>.t{fill:#e9eef6;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13px}.s{fill:#8695a8;font-family:'IBM Plex Mono',monospace;font-size:11px}.bx{fill:#0f1720;stroke:#2a3a4d;stroke-width:1}</style></defs>
+<rect x="200" y="60" width="220" height="540" rx="10" fill="none" stroke="#3a4a5d" stroke-width="1"/>
+<g stroke="#1e2a38" stroke-width="0.6"><line x1="210" y1="70" x2="210" y2="590"/><line x1="230" y1="70" x2="230" y2="590"/><line x1="250" y1="70" x2="250" y2="590"/><line x1="270" y1="70" x2="270" y2="590"/><line x1="290" y1="70" x2="290" y2="590"/><line x1="310" y1="70" x2="310" y2="590"/><line x1="330" y1="70" x2="330" y2="590"/><line x1="350" y1="70" x2="350" y2="590"/><line x1="370" y1="70" x2="370" y2="590"/><line x1="390" y1="70" x2="390" y2="590"/><line x1="410" y1="70" x2="410" y2="590"/>
+<line x1="210" y1="70" x2="410" y2="70"/><line x1="210" y1="150" x2="410" y2="150"/><line x1="210" y1="250" x2="410" y2="250"/><line x1="210" y1="350" x2="410" y2="350"/><line x1="210" y1="450" x2="410" y2="450"/><line x1="210" y1="550" x2="410" y2="550"/><line x1="210" y1="590" x2="410" y2="590"/></g>
+<text class="s" x="210" y="52" text-anchor="middle">1</text><text class="s" x="250" y="52" text-anchor="middle">3</text><text class="s" x="290" y="52" text-anchor="middle">5</text><text class="s" x="330" y="52" text-anchor="middle">7</text><text class="s" x="370" y="52" text-anchor="middle">9</text><text class="s" x="410" y="52" text-anchor="middle">11</text>
+<text class="s" x="192" y="74" text-anchor="end">1</text><text class="s" x="192" y="154" text-anchor="end">5</text><text class="s" x="192" y="254" text-anchor="end">10</text><text class="s" x="192" y="354" text-anchor="end">15</text><text class="s" x="192" y="454" text-anchor="end">20</text><text class="s" x="192" y="554" text-anchor="end">25</text><text class="s" x="192" y="594" text-anchor="end">27</text>
+<rect x="201" y="61" width="18" height="378" rx="4" fill="rgba(134,149,168,0.15)" stroke="#8695a8" stroke-width="0.6"/><rect x="401" y="61" width="18" height="378" rx="4" fill="rgba(134,149,168,0.15)" stroke="#8695a8" stroke-width="0.6"/>
+<rect x="221" y="61" width="178" height="378" rx="8" fill="rgba(79,214,224,0.08)" stroke="#4fd6e0" stroke-width="0.6"/><text class="t" x="310" y="82" text-anchor="middle">ESP32 socketeado</text><text class="s" x="310" y="99" text-anchor="middle">pines: col 1 y col 11 · debajo ↓</text>
+<rect x="221" y="121" width="98" height="58" rx="6" fill="rgba(87,217,139,0.12)" stroke="#57d98b" stroke-width="0.6"/><text class="s" x="270" y="153" text-anchor="middle">div. ignición</text>
+<rect x="221" y="221" width="98" height="58" rx="6" fill="rgba(87,217,139,0.12)" stroke="#57d98b" stroke-width="0.6"/><text class="s" x="270" y="253" text-anchor="middle">div. ILL</text>
+<rect x="221" y="321" width="98" height="58" rx="6" fill="rgba(87,217,139,0.12)" stroke="#57d98b" stroke-width="0.6"/><text class="s" x="270" y="353" text-anchor="middle">div. analóg.</text>
+<rect x="331" y="121" width="68" height="38" rx="6" fill="rgba(87,217,139,0.12)" stroke="#57d98b" stroke-width="0.6"/><text class="s" x="365" y="143" text-anchor="middle">100nF</text>
+<rect x="201" y="441" width="58" height="58" rx="6" fill="rgba(255,171,64,0.12)" stroke="#ffab40" stroke-width="0.6"/><text class="s" x="230" y="473" text-anchor="middle">Buck</text>
+<rect x="281" y="441" width="78" height="58" rx="6" fill="rgba(255,107,94,0.12)" stroke="#ff6b5e" stroke-width="0.6"/><text class="s" x="320" y="466" text-anchor="middle">L9637D</text><text class="s" x="320" y="482" text-anchor="middle">adaptador</text>
+<rect x="361" y="441" width="58" height="78" rx="6" fill="rgba(255,171,64,0.12)" stroke="#ffab40" stroke-width="0.6"/><text class="s" x="390" y="483" text-anchor="middle">470µF ×2</text>
+<rect x="281" y="521" width="78" height="18" rx="4" fill="rgba(255,107,94,0.12)" stroke="#ff6b5e" stroke-width="0.6"/><text class="s" x="320" y="533" text-anchor="middle">510Ω+1nF</text>
+<rect x="221" y="541" width="138" height="18" rx="4" fill="rgba(167,139,250,0.14)" stroke="#a78bfa" stroke-width="0.6"/><text class="s" x="290" y="553" text-anchor="middle">RTC 4p · K-line 2p</text>
+<rect x="221" y="581" width="198" height="18" rx="4" fill="rgba(167,139,250,0.14)" stroke="#a78bfa" stroke-width="0.6"/><text class="s" x="320" y="593" text-anchor="middle">OLED 7p · i59 3p (90°)</text></svg></div>
+  <p class="cap">Fig. 5 — Plano exacto sobre la cuadrícula. Fila 27 (borde) = headers a 90°; fila 25 (detrás) = headers verticales; fila 26 de aire. Los divisores van como zona (cada resistencia se ubica dentro de su banda al soldar).</p>
+</section>
+
+<!-- ===== NODO A ETAPAS ===== -->
+<section id="nodoa">
+  <p class="sec-label">06 · Nodo A</p>
+  <h2>Nodo A — etapas y valores exactos</h2>
+  <p class="sub">Simplificado: alimentación + sensado de ignición + relés. La velocidad llega por ESP‑NOW (sin hardware de VSS).</p>
+
+  <h3>Etapa 1 · Alimentación (IG → 5V)</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th class="mono">Ref</th><th>Componente</th><th>Valor</th><th>Conexión</th><th>Función</th></tr></thead>
+    <tbody>
+      <tr><td class="ref">F1</td><td>Fusible</td><td class="val">2 A</td><td class="mono">serie +12V (IG)</td><td>protección</td></tr>
+      <tr><td class="ref">D1</td><td>Schottky</td><td class="val">SS34</td><td class="mono">+12V → VBAT</td><td>polaridad inversa</td></tr>
+      <tr><td class="ref">D2</td><td>TVS</td><td class="val">SMAJ18A</td><td class="mono">VBAT → GND</td><td>transitorios</td></tr>
+      <tr><td class="ref">C1</td><td>Electrolítico</td><td class="val">470 µF / 35 V</td><td class="mono">VBAT → GND</td><td>reserva</td></tr>
+      <tr><td class="ref">U1</td><td>Regulador switching</td><td class="val">Recom R‑78E5.0‑1.0</td><td class="mono">VBAT → 5V</td><td>12V→5V fijo (drop‑in 7805)</td></tr>
+      <tr><td class="ref">C3</td><td>Electrolítico</td><td class="val">470 µF / 16 V</td><td class="mono">5V → GND</td><td>picos WiFi</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Etapa 2 · Sensado de ignición</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th class="mono">Ref</th><th>Componente</th><th>Valor</th><th>Conexión</th></tr></thead>
+    <tbody>
+      <tr><td class="ref">R1</td><td>Resistencia</td><td class="val">10 kΩ</td><td class="mono">IG → nodo_IGN</td></tr>
+      <tr><td class="ref">R2</td><td>Resistencia</td><td class="val">3.3 kΩ</td><td class="mono">nodo_IGN → GND</td></tr>
+      <tr><td class="ref">D3</td><td>Schottky clamp</td><td class="val">BAT85</td><td class="mono">nodo_IGN → 3.3V</td></tr>
+      <tr><td class="ref">C5</td><td>Cerámico</td><td class="val">100 nF</td><td class="mono">nodo_IGN → GND → GPIO34</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Etapa 3 · Relés al BIU</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Ref</th><th>Componente</th><th>Conexión de control</th><th>Contactos</th></tr></thead>
+    <tbody>
+      <tr><td class="ref">K1</td><td>Módulo relé 2 canales (5V)</td><td class="mono">VCC→3.3V · JD‑VCC→5V (sin jumper) · IN1→GPIO25 · IN2→GPIO26</td><td>—</td></tr>
+      <tr><td class="ref">K1·CH1</td><td>Relé LOCK</td><td class="mono">GPIO25</td><td><span class="wire"><span class="sw w-brwh"></span>COM→BIU p15</span> · NO→GND</td></tr>
+      <tr><td class="ref">K1·CH2</td><td>Relé UNLOCK</td><td class="mono">GPIO26</td><td><span class="wire"><span class="sw w-brbk"></span>COM→BIU p29</span> · NO→GND</td></tr>
+    </tbody>
+  </table></div>
+  <div class="call"><h4>Regla del disparo</h4><p>Cada relé se activa un <b>pulso corto (~0.4 s)</b>, nunca sostenido. COM al cable del BIU, NO a masa: al energizar, el cable queda momentáneamente a masa = pulso negativo = cierra/abre.</p></div>
+</section>
+
+<!-- ===== NODO A LOGICA ===== -->
+<section id="nodoa2">
+  <p class="sec-label">06 · Nodo A · lógica</p>
+  <h2>Nodo A — lógica, esquemas y disposición</h2>
+  <h3>Comportamiento funcional</h3>
+  <p class="sub">El Nodo A recibe por ESP‑NOW la velocidad (y un flag de activación) desde el Nodo B, y acciona los relés que pulsan las líneas del BIU. La lógica es una máquina de estados simple:</p>
+  <ul class="tight">
+    <li><b>Arranque:</b> al energizarse (IG on), el sistema inicia <b>ARMADO</b> por defecto.</li>
+    <li><b>Cierre:</b> estando ARMADO, al alcanzar <b>v ≥ 20 km/h</b> emite un pulso de cierre en el CH1 → BIU pin 15.</li>
+    <li><b>Apertura:</b> estando ARMADO, al detenerse (<b>v = 0 km/h</b>) emite un pulso de apertura en el CH2 → BIU pin 29.</li>
+    <li><b>Re‑bloqueo:</b> es consecuencia natural del ciclo — si el auto se detiene (abre) y vuelve a superar 20 km/h, cierra de nuevo. No se detecta "puerta abierta".</li>
+    <li><b>Desactivación:</b> un botón alterna entre ARMADO y <b>DESACTIVADO</b>. En DESACTIVADO no cierra ni abre automáticamente. La desactivación es <b>válida solo para ese ciclo de encendido</b>: al apagar y volver a encender, arranca ARMADO otra vez.</li>
+    <li><b>Umbral:</b> 20 km/h, parametrizable en el firmware.</li>
+  </ul>
+  <div class="call cyan"><h4>Origen del botón ON/OFF <span class="badge warn">a confirmar</span></h4><p>Recomendado: reutilizar un botón del gauge (Nodo B) y enviar el toggle por ESP‑NOW — el Nodo A no necesita botón ni cable propios, y como el sistema ya depende del enlace ESP‑NOW, no agrega dependencia nueva. Alternativa: un botón dedicado cableado al Nodo A en GPIO27 (pull‑up interno). Se documentan ambas; queda pendiente tu preferencia.</p></div>
+  <div class="diagram narrow"><svg viewBox="0 0 680 330" role="img" aria-label="Máquina de estados del Nodo A"><defs><marker id="arA" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="#8695a8"/></marker><style>.t{fill:#e9eef6;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13px}.s{fill:#8695a8;font-family:'IBM Plex Mono',monospace;font-size:11px}.bx{fill:#0f1720;stroke:#2a3a4d;stroke-width:1}</style></defs>
+<rect x="60" y="60" width="300" height="50" rx="8" fill="rgba(87,217,139,0.12)" stroke="#57d98b" stroke-width="1.2"/><text class="t" x="210" y="90" text-anchor="middle">ARMADO (por defecto al arrancar)</text>
+<rect x="430" y="60" width="190" height="50" rx="8" fill="#0f1720" stroke="#8695a8" stroke-width="1.2"/><text class="t" x="525" y="90" text-anchor="middle">DESACTIVADO</text>
+<line x1="360" y1="76" x2="428" y2="72" stroke="#8695a8" stroke-width="1.5" marker-end="url(#arA)"/>
+<line x1="430" y1="96" x2="362" y2="100" stroke="#8695a8" stroke-width="1.5" marker-end="url(#arA)"/>
+<text class="s" x="395" y="52" text-anchor="middle">botón (toggle)</text>
+<rect x="60" y="170" width="145" height="58" rx="8" fill="rgba(255,171,64,0.12)" stroke="#ffab40" stroke-width="1"/><text class="s" x="132" y="194" text-anchor="middle">v ≥ 20 km/h</text><text class="s" x="132" y="212" text-anchor="middle">→ CIERRE (p15)</text>
+<rect x="215" y="170" width="145" height="58" rx="8" fill="rgba(255,171,64,0.12)" stroke="#ffab40" stroke-width="1"/><text class="s" x="287" y="194" text-anchor="middle">v = 0 km/h</text><text class="s" x="287" y="212" text-anchor="middle">→ APERTURA (p29)</text>
+<line x1="130" y1="110" x2="130" y2="170" stroke="#8695a8" stroke-width="1.5" marker-end="url(#arA)"/>
+<line x1="290" y1="110" x2="290" y2="170" stroke="#8695a8" stroke-width="1.5" marker-end="url(#arA)"/>
+<text class="s" x="60" y="262">Al apagar IG se pierde el estado → al reiniciar vuelve a ARMADO.</text>
+<text class="s" x="60" y="282">Umbral 20 km/h ajustable. Ciclo: 20→cierra, 0→abre, 20→cierra…</text></svg></div>
+<p class="cap">Fig. 6 — Nodo A, máquina de estados. El re‑bloqueo es consecuencia del ciclo (se detiene→abre, vuelve a 20→cierra); no requiere detectar "puerta abierta".</p>
+  <h3>Esquema de interfaz</h3>
+  <div class="diagram narrow"><svg viewBox="0 0 680 400" role="img" aria-label="Esquema de interfaz del Nodo A"><defs><marker id="arA" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="#8695a8"/></marker><style>.t{fill:#e9eef6;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13px}.s{fill:#8695a8;font-family:'IBM Plex Mono',monospace;font-size:11px}.bx{fill:#0f1720;stroke:#2a3a4d;stroke-width:1}</style></defs>
+<text class="s" x="60" y="44">velocidad + flag ON/OFF ← ESP-NOW (Nodo B)</text>
+<rect x="250" y="60" width="200" height="150" rx="8" fill="#0f1720" stroke="#a78bfa" stroke-width="1.5"/><text class="t" x="350" y="80" text-anchor="middle">Módulo relé 2 canales</text><text class="s" x="350" y="98" text-anchor="middle">(externo, bornes atornillados)</text>
+<line x1="250" y1="120" x2="170" y2="120" stroke="#ff6b5e" stroke-width="2.5"/><text class="s" x="165" y="124" text-anchor="end">+3.3V (VCC)</text>
+<line x1="250" y1="140" x2="170" y2="140" stroke="#d79a5b" stroke-width="2.5"/><text class="s" x="165" y="144" text-anchor="end">+5V (JD-VCC)</text>
+<line x1="250" y1="160" x2="170" y2="160" stroke="#8695a8" stroke-width="2.5"/><text class="s" x="165" y="164" text-anchor="end">GND</text>
+<line x1="250" y1="182" x2="170" y2="182" stroke="#4fd6e0" stroke-width="2.5" marker-end="url(#arA)"/><text class="s" x="165" y="186" text-anchor="end">IN1 ← GPIO25</text>
+<line x1="250" y1="200" x2="170" y2="200" stroke="#4fd6e0" stroke-width="2.5" marker-end="url(#arA)"/><text class="s" x="165" y="204" text-anchor="end">IN2 ← GPIO26</text>
+<line x1="450" y1="118" x2="530" y2="118" stroke="#8695a8" stroke-width="2.5"/><text class="s" x="535" y="122" text-anchor="start">CH1 COM → BIU p15</text>
+<line x1="450" y1="138" x2="530" y2="138" stroke="#8695a8" stroke-width="2.5"/><text class="s" x="535" y="142" text-anchor="start">CH1 NO → GND</text>
+<line x1="450" y1="176" x2="530" y2="176" stroke="#8695a8" stroke-width="2.5"/><text class="s" x="535" y="180" text-anchor="start">CH2 COM → BIU p29</text>
+<line x1="450" y1="196" x2="530" y2="196" stroke="#8695a8" stroke-width="2.5"/><text class="s" x="535" y="200" text-anchor="start">CH2 NO → GND</text>
+<rect x="250" y="250" width="200" height="46" rx="8" fill="rgba(87,217,139,0.12)" stroke="#57d98b" stroke-width="1.2"/><text class="t" x="350" y="277" text-anchor="middle">Divisor ignición 10k/3.3k</text>
+<line x1="250" y1="264" x2="170" y2="264" stroke="#ffab40" stroke-width="2.5"/><text class="s" x="165" y="268" text-anchor="end">IG 12V</text>
+<line x1="250" y1="284" x2="170" y2="284" stroke="#8695a8" stroke-width="2.5"/><text class="s" x="165" y="288" text-anchor="end">GND</text>
+<line x1="450" y1="273" x2="530" y2="273" stroke="#4fd6e0" stroke-width="2.5" marker-end="url(#arA)"/><text class="s" x="535" y="277" text-anchor="start">→ GPIO34</text>
+<text class="s" x="60" y="340">El botón ON/OFF llega por ESP-NOW desde el gauge (Nodo B) — sin cable ni botón propio en el Nodo A.</text>
+<text class="s" x="60" y="360">Alternativa (a confirmar): botón dedicado en GPIO27 con pull-up interno.</text></svg></div>
+<p class="cap">Fig. 7 — Nodo A, interfaz. El módulo relé va externo con sus bornes atornillados. Rojo +3.3V · cobre +5V · gris GND/contactos · azul señal.</p>
+  <h3>Disposición espacial</h3>
+  <div class="diagram wide"><svg viewBox="0 0 680 500" role="img" aria-label="Distribución espacial del Nodo A"><defs><marker id="arA" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="#8695a8"/></marker><style>.t{fill:#e9eef6;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13px}.s{fill:#8695a8;font-family:'IBM Plex Mono',monospace;font-size:11px}.bx{fill:#0f1720;stroke:#2a3a4d;stroke-width:1}</style></defs>
+<rect x="40" y="60" width="290" height="400" rx="10" fill="none" stroke="#3a4a5d" stroke-width="1.5"/><text class="t" x="52" y="82">Perfboard 3×7 (junto al BIU)</text>
+<text class="s" x="300" y="46" text-anchor="middle">← ESP-NOW (Nodo B)</text><line x1="300" y1="52" x2="300" y2="90" stroke="#4fd6e0" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arA)"/>
+<rect x="54" y="96" width="262" height="130" rx="8" fill="rgba(79,214,224,0.10)" stroke="#4fd6e0" stroke-width="0.8"/><text class="t" x="185" y="116" text-anchor="middle">ESP32 socketeado</text>
+<rect x="66" y="132" width="116" height="34" rx="6" fill="rgba(87,217,139,0.12)" stroke="#57d98b" stroke-width="0.8"/><text class="s" x="124" y="153" text-anchor="middle">div. ignición</text>
+<text class="s" x="250" y="153" text-anchor="middle">(resto libre)</text>
+<rect x="54" y="250" width="90" height="44" rx="6" fill="rgba(255,171,64,0.12)" stroke="#ffab40" stroke-width="0.8"/><text class="s" x="99" y="277" text-anchor="middle">Buck R-78</text>
+<rect x="160" y="250" width="80" height="44" rx="6" fill="rgba(255,171,64,0.12)" stroke="#ffab40" stroke-width="0.8"/><text class="s" x="200" y="277" text-anchor="middle">470µF ×2</text>
+<rect x="250" y="250" width="66" height="44" rx="6" fill="rgba(255,171,64,0.12)" stroke="#ffab40" stroke-width="0.8"/><text class="s" x="283" y="277" text-anchor="middle">SS34·TVS</text>
+<rect x="54" y="320" width="200" height="30" rx="6" fill="rgba(167,139,250,0.14)" stroke="#a78bfa" stroke-width="0.8"/><text class="s" x="154" y="339" text-anchor="middle">→ relé (5p, con traba)</text>
+<line x1="120" y1="460" x2="120" y2="478" stroke="#8695a8" stroke-width="1.5" marker-end="url(#arA)"/><text class="s" x="120" y="494" text-anchor="middle">→ IG del pilar A</text>
+<rect x="380" y="120" width="260" height="320" rx="10" fill="none" stroke="#3a4a5d" stroke-width="1" stroke-dasharray="7 5"/><text class="t" x="392" y="142">Fuera de la placa</text>
+<rect x="400" y="168" width="210" height="60" rx="8" fill="rgba(87,217,139,0.12)" stroke="#57d98b" stroke-width="0.8"/><text class="t" x="505" y="191" text-anchor="middle">Módulo relé 2 canales</text><text class="s" x="505" y="209" text-anchor="middle">bornes atornillados</text>
+<path d="M254 335 L400 200" fill="none" stroke="#8695a8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arA)"/>
+<line x1="450" y1="228" x2="450" y2="300" stroke="#8695a8" stroke-width="1.5" marker-end="url(#arA)"/><text class="s" x="450" y="318" text-anchor="middle">→ BIU p15 (cierre)</text>
+<line x1="560" y1="228" x2="560" y2="360" stroke="#8695a8" stroke-width="1.5" marker-end="url(#arA)"/><text class="s" x="560" y="378" text-anchor="middle">→ BIU p29 (apertura)</text></svg></div>
+<p class="cap">Fig. 9 — Nodo A, distribución espacial. La velocidad y el flag ON/OFF entran por ESP-NOW (sin cable). El relé va fuera de la placa con sus bornes hacia el BIU. IG se toma del pilar A.</p>
+  <h3>Plano en cuadrícula (3×7)</h3>
+  <div class="diagram narrow"><svg viewBox="0 0 680 650" role="img" aria-label="Plano en cuadrícula del Nodo A"><defs><style>.t{fill:#e9eef6;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:13px}.s{fill:#8695a8;font-family:'IBM Plex Mono',monospace;font-size:11px}.bx{fill:#0f1720;stroke:#2a3a4d;stroke-width:1}</style></defs>
+<rect x="200" y="60" width="220" height="540" rx="10" fill="none" stroke="#3a4a5d" stroke-width="1"/>
+<g stroke="#1e2a38" stroke-width="0.6"><line x1="210" y1="70" x2="210" y2="590"/><line x1="230" y1="70" x2="230" y2="590"/><line x1="250" y1="70" x2="250" y2="590"/><line x1="270" y1="70" x2="270" y2="590"/><line x1="290" y1="70" x2="290" y2="590"/><line x1="310" y1="70" x2="310" y2="590"/><line x1="330" y1="70" x2="330" y2="590"/><line x1="350" y1="70" x2="350" y2="590"/><line x1="370" y1="70" x2="370" y2="590"/><line x1="390" y1="70" x2="390" y2="590"/><line x1="410" y1="70" x2="410" y2="590"/>
+<line x1="210" y1="70" x2="410" y2="70"/><line x1="210" y1="150" x2="410" y2="150"/><line x1="210" y1="250" x2="410" y2="250"/><line x1="210" y1="350" x2="410" y2="350"/><line x1="210" y1="450" x2="410" y2="450"/><line x1="210" y1="550" x2="410" y2="550"/><line x1="210" y1="590" x2="410" y2="590"/></g>
+<text class="s" x="210" y="52" text-anchor="middle">1</text><text class="s" x="290" y="52" text-anchor="middle">5</text><text class="s" x="330" y="52" text-anchor="middle">7</text><text class="s" x="410" y="52" text-anchor="middle">11</text>
+<text class="s" x="192" y="74" text-anchor="end">1</text><text class="s" x="192" y="454" text-anchor="end">20</text><text class="s" x="192" y="594" text-anchor="end">27</text>
+<rect x="201" y="61" width="18" height="378" rx="4" fill="rgba(134,149,168,0.15)" stroke="#8695a8" stroke-width="0.6"/><rect x="401" y="61" width="18" height="378" rx="4" fill="rgba(134,149,168,0.15)" stroke="#8695a8" stroke-width="0.6"/>
+<rect x="221" y="61" width="178" height="378" rx="8" fill="rgba(79,214,224,0.08)" stroke="#4fd6e0" stroke-width="0.6"/><text class="t" x="310" y="82" text-anchor="middle">ESP32 socketeado</text><text class="s" x="310" y="99" text-anchor="middle">pines: col 1 y col 11</text>
+<rect x="221" y="121" width="98" height="58" rx="6" fill="rgba(87,217,139,0.12)" stroke="#57d98b" stroke-width="0.6"/><text class="s" x="270" y="153" text-anchor="middle">div. ignición</text>
+<text class="s" x="360" y="260" text-anchor="middle">resto</text><text class="s" x="360" y="276" text-anchor="middle">libre</text>
+<rect x="201" y="441" width="58" height="58" rx="6" fill="rgba(255,171,64,0.12)" stroke="#ffab40" stroke-width="0.6"/><text class="s" x="230" y="473" text-anchor="middle">Buck</text>
+<rect x="281" y="441" width="58" height="58" rx="6" fill="rgba(255,171,64,0.12)" stroke="#ffab40" stroke-width="0.6"/><text class="s" x="310" y="466" text-anchor="middle">470µF</text><text class="s" x="310" y="482" text-anchor="middle">×2</text>
+<rect x="361" y="441" width="58" height="40" rx="6" fill="rgba(255,171,64,0.12)" stroke="#ffab40" stroke-width="0.6"/><text class="s" x="390" y="464" text-anchor="middle">SS34·TVS</text>
+<rect x="221" y="541" width="178" height="18" rx="4" fill="rgba(167,139,250,0.14)" stroke="#a78bfa" stroke-width="0.6"/><text class="s" x="310" y="553" text-anchor="middle">→ relé 5p (IN1·IN2·VCC·JD·GND)</text>
+<rect x="221" y="581" width="110" height="18" rx="4" fill="rgba(167,139,250,0.14)" stroke="#a78bfa" stroke-width="0.6"/><text class="s" x="276" y="593" text-anchor="middle">IG · GND (90°)</text></svg></div>
+<p class="cap">Fig. 8 — Nodo A, plano en cuadrícula. Mucho más holgado que el Nodo B: solo ESP32, potencia, un divisor y los conectores. El relé va externo.</p>
+  <div class="call"><h4>Pulso, no nivel</h4><p>Cada relé se activa un pulso corto (~0.4 s), nunca sostenido. COM al cable del BIU, NO a masa: al energizar, el cable queda momentáneamente a masa (pulso negativo) = cierra/abre. La misma etapa de potencia del Nodo B (fusible → SS34 → TVS/470µF → buck → 5V) aplica al Nodo A.</p></div>
+</section>
+
+<!-- ===== PINES ===== -->
+<section id="pines">
+  <p class="sec-label">05 · Pines</p>
+  <h2>Mapas de pines ESP32</h2>
+  <h3>Nodo B (Gauge)</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Periférico</th><th>Señal</th><th class="mono">GPIO</th><th>Nota</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="5">OLED (SPI)</td><td>MOSI</td><td class="mono">23</td><td rowspan="5">4‑wire SPI</td></tr>
+      <tr><td>SCLK</td><td class="mono">18</td></tr><tr><td>CS</td><td class="mono">5</td></tr><tr><td>DC</td><td class="mono">19</td></tr><tr><td>RST</td><td class="mono">4</td></tr>
+      <tr><td rowspan="2">RTC (I²C)</td><td>SDA</td><td class="mono">21</td><td rowspan="2">DS3231</td></tr><tr><td>SCL</td><td class="mono">22</td></tr>
+      <tr><td rowspan="2">K‑line (UART2)</td><td>RX</td><td class="mono">16</td><td rowspan="2">L9637D VCC=3.3V</td></tr><tr><td>TX</td><td class="mono">17</td></tr>
+      <tr><td rowspan="4">Botones</td><td>DISP</td><td class="mono">32</td><td rowspan="4"><code>INPUT_PULLUP</code></td></tr>
+      <tr><td>SET</td><td class="mono">33</td></tr><tr><td>[+]</td><td class="mono">25</td></tr><tr><td>[−]</td><td class="mono">26</td></tr>
+      <tr><td>ILL (dimming)</td><td>ADC</td><td class="mono">35</td><td>Etapa 2</td></tr>
+      <tr><td>Sensor analógico</td><td>ADC</td><td class="mono">34</td><td>Etapa 3</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Nodo A (Cierre)</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Función</th><th class="mono">GPIO</th><th>Nota</th></tr></thead>
+    <tbody>
+      <tr><td>Sensado ignición</td><td class="mono">34</td><td>ADC · Etapa 2</td></tr>
+      <tr><td>Relé LOCK (IN1)</td><td class="mono">25</td><td>→ BIU p15</td></tr>
+      <tr><td>Relé UNLOCK (IN2)</td><td class="mono">26</td><td>→ BIU p29</td></tr>
+      <tr><td>Velocidad + flag ON/OFF</td><td class="mono">— (radio)</td><td>ESP‑NOW desde Nodo B</td></tr>
+      <tr><td>Botón ON/OFF (alternativa)</td><td class="mono">27</td><td>solo si se usa botón dedicado; por defecto vía Nodo B</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ===== BOM ===== -->
+<section id="bom">
+  <p class="sec-label">06 · Compras</p>
+  <h2>BOM v2 con precios</h2>
+  <p class="sub">CLP = tienda chilena; USD = AliExpress/Mouser. Sin partes de VSS (eliminado). Añadidos los pasivos con valor exacto.</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Ítem</th><th>Valor/spec</th><th class="mono">Cant</th><th>≈ Precio</th><th>Dónde</th></tr></thead>
+    <tbody>
+      <tr><td>ESP32 DevKit V1</td><td>WROOM‑32, 30 pines</td><td class="mono">2</td><td class="val">$7k CLP c/u</td><td>tienda CL / Ali</td></tr>
+      <tr><td>OLED SSD1322 3.12"</td><td>256×64 SPI ámbar</td><td class="mono">1</td><td class="val">US$18–28</td><td>Ali / Amazon</td></tr>
+      <tr><td>RTC DS3231</td><td>módulo + CR2032</td><td class="mono">1</td><td class="val">$2–3k CLP</td><td>tienda CL</td></tr>
+      <tr><td>Breakout L9637D</td><td>K‑line ISO9141</td><td class="mono">1</td><td class="val">US$4–10</td><td>Ali / Mouser</td></tr>
+      <tr><td>Buck <b>Recom R‑78E5.0‑1.0</b></td><td>switching encapsulado 5V/1A · drop‑in 7805 · in 6.5–32V (alt. económica: MP1584EN)</td><td class="mono">2</td><td class="val">US$6–9 c/u</td><td>Mouser / DigiKey</td></tr>
+      <tr><td>Módulo relé 2ch</td><td>opto, bobina 5V, 10A</td><td class="mono">1</td><td class="val">$4–6k CLP</td><td>tienda CL</td></tr>
+      <tr><td>Schottky SS34</td><td>3A/40V</td><td class="mono">2</td><td class="val">$1k</td><td>tienda CL / Ali</td></tr>
+      <tr><td>TVS SMAJ18A</td><td>unidireccional 400W</td><td class="mono">2</td><td class="val">$1k</td><td>Ali / Mouser</td></tr>
+      <tr><td>Electrolíticos</td><td>470µF/35V y 470µF/16V</td><td class="mono">4</td><td class="val">$2k</td><td>tienda CL</td></tr>
+      <tr><td>Cerámicos</td><td>100nF ×10, 1nF ×2, 1µF ×2</td><td class="mono">set</td><td class="val">$2k</td><td>tienda CL</td></tr>
+      <tr><td>Resistencias</td><td>10k ×6, 3.3k ×3, 20k ×2, 510Ω ×2</td><td class="mono">set</td><td class="val">$2k</td><td>tienda CL</td></tr>
+      <tr><td>Diodos clamp</td><td>BAT85 ×6 (o zener 5.1V)</td><td class="mono">set</td><td class="val">$2k</td><td>tienda CL / Ali</td></tr>
+      <tr><td>Fusibles + portafusible</td><td>2A en línea</td><td class="mono">2</td><td class="val">$2k</td><td>tienda auto</td></tr>
+      <tr><td>Conectores i59</td><td>1 macho + 2 hembra</td><td class="mono">3</td><td class="val">US$5–12 c/u</td><td>iWire</td></tr>
+      <tr><td><b>Perfboard doble cara</b> (carrier)</td><td>FR4 2.54mm, kit 5 tamaños + headers M/H (usa 7×9 cm para Nodo B, 5×7 cm para Nodo A)</td><td class="mono">1 kit</td><td class="val">US$10–15</td><td><a href="https://www.amazon.com/Soldering-Electronic-Compatible-Ar-duino-Connector/dp/B0948VC6P4">Amazon (kit 100pcs)</a> / Ali / ML</td></tr>
+      <tr><td>Cable, termorretráctil, Posi‑Tap, caja, grommets</td><td>montaje</td><td class="mono">—</td><td class="val">$15k CLP</td><td>local</td></tr>
+      <tr><td>(Futuro) MAX31855</td><td>amp termocupla tipo K</td><td class="mono">0–1</td><td class="val">US$5</td><td>Ali</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ===== CONSUMIBLES ===== -->
+<section id="consumibles">
+  <p class="sec-label">Taller · consumibles</p>
+  <h2>Consumibles y herramientas</h2>
+  <p class="sub">Lo que se gasta durante el armado y lo que necesitas tener en la mesa. Marcado lo <b>imprescindible</b> vs lo <b>recomendado</b>. Pensado para que no te falte nada a mitad de trabajo.</p>
+
+  <h3>Consumibles (se gastan)</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Consumible</th><th>Especificación</th><th>Para qué sirve</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>Soldadura (estaño)</td><td>63/37 o 60/40 con núcleo de flux, Ø 0.6–0.8 mm</td><td>unir componentes y cables; el 63/37 solidifica parejo (más fácil)</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Flux</td><td>lápiz o pasta "no‑clean"</td><td>que el estaño fluya y moje bien; clave en pines finos del ESP32/L9637D</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Termorretráctil</td><td>surtido 2/3/5/10 mm, <b>con adhesivo interior</b> (3:1)</td><td>aísla y sella empalmes; el adhesivo lo hace estanco para el auto</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Malla desoldadora + bomba</td><td>mecha 2 mm + succionador</td><td>corregir errores y <b>retirar los componentes OEM</b> de la placa del reloj</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Bridas / amarras</td><td>surtido 100–200 mm</td><td>fijar mazos, alejar de partes móviles y calor</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Zócalos (headers hembra 2.54mm)</td><td>tiras de 40 pines, cortables</td><td>socketear ESP32 y módulos en la carrier → drop‑in serviceable</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Headers macho 2.54mm</td><td>rectos y acodados</td><td>pines de los módulos que no los traen</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Conectores con traba</td><td>JST‑SM/XH y/o Molex Micro‑Fit 3.0 + pines</td><td>salidas de cada caja (K‑line, BIU, 12V) — NO Dupont</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Cables pre‑crimpados</td><td>leads JST/Molex de fábrica</td><td>evitan el punto débil de un crimp mal hecho</td><td><span class="badge warn">recomendado</span></td></tr>
+      <tr><td>Pasacables (grommets)</td><td>goma, según Ø del mazo</td><td>sellan y protegen donde el cable sale de la caja</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Sujeción removible</td><td>bridas + clip impreso 3D / gota de silicona</td><td>retiene los módulos socketeados sin soldarlos (serviceable)</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Barniz conformal (opcional)</td><td>spray/pincel acrílico</td><td>"congela" soldaduras y respaldos de conector contra vibración</td><td><span class="badge warn">recomendado</span></td></tr>
+      <tr><td>Posi‑Tap / Posi‑Lock</td><td>10–22 AWG</td><td>conectar a cables del auto sin cortarlos; reversible</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Terminales de anillo</td><td>para masa, 20 AWG + tornillo</td><td>masa firme al chasis (punto de tierra)</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Empalmes crimp (butt)</td><td>termocontraíbles, 20–22 AWG</td><td>unir tramos de cable con sello</td><td><span class="badge warn">recomendado</span></td></tr>
+      <tr><td>Funda espiral / split loom</td><td>Ø 6–10 mm</td><td>agrupar y proteger el tendido del K‑line y los mazos</td><td><span class="badge warn">recomendado</span></td></tr>
+      <tr><td>Cinta autofundente + aislante</td><td>silicona autovulcanizante</td><td>sella y protege sobre el termorretráctil en zonas expuestas</td><td><span class="badge warn">recomendado</span></td></tr>
+      <tr><td>Alcohol isopropílico + hisopos</td><td>≥ 99%</td><td>limpiar residuo de flux (evita corrosión y falsos contactos)</td><td><span class="badge warn">recomendado</span></td></tr>
+      <tr><td>Silicona caliente / hot glue</td><td>barras + pistola</td><td>alivio de tensión (strain relief) de cables dentro de la caja</td><td><span class="badge warn">recomendado</span></td></tr>
+      <tr><td>Cinta Kapton</td><td>alta temperatura</td><td>aislar zonas cerca de la etapa de 12V / soldaduras</td><td><span class="badge warn">recomendado</span></td></tr>
+      <tr><td>Standoffs + tornillos</td><td>M2/M3 nylon</td><td>montar las placas dentro de la caja / housing 3D</td><td><span class="badge warn">recomendado</span></td></tr>
+      <tr><td>Cinta doble contacto VHB</td><td>3M automotriz</td><td>fijar cajas/módulos a superficies del tablero</td><td><span class="badge warn">recomendado</span></td></tr>
+      <tr><td>Fusibles de repuesto</td><td>2 A (mismos de la BOM)</td><td>por si saltan durante las pruebas</td><td><span class="badge warn">recomendado</span></td></tr>
+      <tr><td>Cable automotriz surtido</td><td>20 AWG (12V) y 22 AWG (señal), varios colores</td><td>stock para todos los tramos; usa colores distintos por función</td><td><span class="badge ok">imprescindible</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Herramientas (no se gastan, pero las necesitas)</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Herramienta</th><th>Uso</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>Cautín con control de temperatura + punta fina</td><td>soldar los pines finos sin dañar componentes (ideal 300–350 °C)</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Pistola de calor</td><td>contraer el termorretráctil parejo (mejor que encendedor)</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Multímetro</td><td>verificar voltajes, continuidad y confirmar pines en el auto</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Crimpadora</td><td>terminales + <b>pines Dupont</b> (matriz específica para Dupont)</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Pela cables</td><td>pelar sin dañar los hilos</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Alicate de corte + pinza de punta</td><td>cortar, formar y posicionar</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Fuente de banco (o batería 12V con fusible)</td><td>probar cada nodo en mesa antes del auto</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Cable USB (según ESP32)</td><td>cargar el firmware (fase posterior)</td><td><span class="badge ok">imprescindible</span></td></tr>
+      <tr><td>Tercera mano + lupa</td><td>sostener y ver el trabajo fino</td><td><span class="badge warn">recomendado</span></td></tr>
+      <tr><td>Destornilladores de precisión</td><td>abrir el 85201AG200 y montar placas</td><td><span class="badge warn">recomendado</span></td></tr>
+      <tr><td>Rotulador / cinta para etiquetar</td><td>marcar cada cable por función (evita errores)</td><td><span class="badge warn">recomendado</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="call cyan"><h4>Criterio de experto para no‑experto</h4>
+    <p>• <b>Termorretráctil con adhesivo</b> (no el común): en un auto vibra y entra humedad; el de pared adhesiva sella el cobre.</p>
+    <p>• <b>Estaño con plomo 63/37</b> es más fácil para principiante que el sin plomo (funde más bajo y parejo). Lávate las manos al terminar.</p>
+    <p>• <b>Colores por función:</b> rojo=12V, negro=masa, otro color por señal. Etiqueta los extremos. Te ahorra el 90% de los errores.</p>
+    <p>• <b>Nada de "quick‑splice" que pinchan el cable:</b> fallan con vibración. Usa Posi‑Tap o soldadura + termorretráctil.</p>
+  </div>
+</section>
+
+<!-- ===== ARNES ===== -->
+<section id="arnes">
+  <p class="sec-label">07 · Arnés</p>
+  <h2>Adaptador i59 (1 macho + 2 hembra)</h2>
+  <p class="sub">Sin cambios respecto de la v1. Adaptador reversible: no cortas el arnés. Las señales OEM pasan derecho; el K‑line entra desde el OBD y viaja en el pin 7 libre.</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th class="mono">Pin i59</th><th>Señal</th><th>Hembra #1 (auto)</th><th>Macho / Hembra #2 (módulo)</th></tr></thead>
+    <tbody>
+      <tr><td class="pin">8</td><td>IG 12V</td><td>✔</td><td>✔ alimentación + ign</td></tr>
+      <tr><td class="pin">6</td><td>GND</td><td>✔</td><td>✔ masa común</td></tr>
+      <tr><td class="pin">1</td><td>ILL</td><td>✔</td><td>✔ dimming</td></tr>
+      <tr><td class="pin">7</td><td><b>K‑line</b> (nuevo)</td><td class="na">— vacío</td><td>✔ desde OBD p7</td></tr>
+      <tr><td class="pin">2/3</td><td>analógicos (nuevo)</td><td class="na">— vacío</td><td>◦ sensores</td></tr>
+      <tr><td class="pin">10</td><td>B constante</td><td>✔</td><td>✖ no conectar</td></tr>
+      <tr><td class="pin">9 / 5</td><td>ACC / UART OEM</td><td>✔</td><td>◦ opcional/futuro</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ===== CABLEADO ===== -->
+<section id="cableado">
+  <p class="sec-label">07·b · Cableado</p>
+  <h2>Cableado y conexiones (todo serviceable)</h2>
+  <p class="sub"><b>Principio:</b> ningún módulo caro va soldado. Cada uno se socketea o se conecta con traba, para sustituirlo sin desoldar — incluida la pantalla. Lo único soldado a la placa son los zócalos, los conectores y los pasivos baratos. Nada de Dupont (no tienen traba y se salen con la vibración).</p>
+
+  <h3>Método por conexión</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Conexión</th><th>Tipo</th><th>Método serviceable</th></tr></thead>
+    <tbody>
+      <tr><td>ESP32 ↔ carrier</td><td>módulo</td><td>zócalo (headers hembra) + sujeción removible</td></tr>
+      <tr><td><b>OLED ↔ carrier</b></td><td>módulo (caro)</td><td>conector con traba o zócalo; <b>retenido por el bisel 3D con tornillos</b>, no por el header</td></tr>
+      <tr><td>RTC · L9637D · buck · relé ↔ carrier</td><td>módulo</td><td>zócalo + sujeción removible</td></tr>
+      <tr><td>Botones OEM ↔ carrier</td><td>bisel</td><td>conector con traba (JST) para separar el bisel</td></tr>
+      <tr><td>Pasivos (divisores, R/C K‑line)</td><td>discretos</td><td>soldados a la carrier (la carrier es la unidad reparable)</td></tr>
+      <tr><td>i59 (al auto)</td><td>mazo</td><td>adaptador reversible (ya resuelto)</td></tr>
+      <tr><td>K‑line → OBD pin 7</td><td>mazo</td><td>conector con traba en la pared de la caja</td></tr>
+      <tr><td>BIU p15 / p29</td><td>mazo</td><td>conector con traba + Posi‑Tap/soldadura en el BIU</td></tr>
+      <tr><td>12V (IG) / GND</td><td>mazo</td><td>conector con traba en la pared de la caja</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Conectores (con traba, no Dupont)</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Conector</th><th class="mono">Paso</th><th>Traba</th><th>Uso ideal</th></tr></thead>
+    <tbody>
+      <tr><td>Dupont</td><td class="mono">2.54</td><td>✗ ninguna</td><td class="na">evitar en el auto</td></tr>
+      <tr><td>JST‑XH</td><td class="mono">2.5</td><td>fricción</td><td>señal a placa</td></tr>
+      <tr><td>JST‑SM</td><td class="mono">2.5</td><td>✓ clip</td><td>wire‑to‑wire (desconexión de mazo)</td></tr>
+      <tr><td>JST‑VH</td><td class="mono">3.96</td><td>fricción</td><td>potencia 12V</td></tr>
+      <tr><td><b>Molex Micro‑Fit 3.0</b></td><td class="mono">3.0</td><td>✓ latch</td><td>señal + potencia — <b>recomendado</b></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>La placa "carrier" por nodo</h3>
+  <div class="diagram narrow">
+    <svg viewBox="0 0 720 300" role="img" aria-label="Concepto de placa carrier con módulos socketeados">
+      <defs><style>
+        .cb{fill:#0f1720;stroke:#ffab40;stroke-width:2}
+        .mod{fill:#111823;stroke:#4fd6e0;stroke-width:1.4}
+        .con{fill:#141a12;stroke:#57d98b;stroke-width:1.4}
+        .tt{fill:#e9eef6;font-family:'Chakra Petch',sans-serif;font-weight:600;font-size:12px}
+        .ss{fill:#8695a8;font-family:'IBM Plex Mono',monospace;font-size:10px}
+      </style></defs>
+      <rect class="cb" x="20" y="20" width="680" height="220" rx="12"/>
+      <text class="ss" x="34" y="40">CARRIER (perfboard doble cara) — zócalos soldados, módulos enchufados</text>
+      <!-- fila de modulos socketeados, sin solaparse -->
+      <rect class="mod" x="40" y="60" width="150" height="70" rx="8"/><text class="tt" x="54" y="90">ESP32</text><text class="ss" x="54" y="108">en zócalo</text>
+      <rect class="mod" x="210" y="60" width="150" height="70" rx="8"/><text class="tt" x="224" y="90">OLED (conector)</text><text class="ss" x="224" y="108">+ bisel 3D</text>
+      <rect class="mod" x="380" y="60" width="140" height="70" rx="8"/><text class="tt" x="394" y="90">L9637D</text><text class="ss" x="394" y="108">en zócalo</text>
+      <rect class="mod" x="540" y="60" width="140" height="70" rx="8"/><text class="tt" x="554" y="90">RTC / buck</text><text class="ss" x="554" y="108">en zócalo</text>
+      <!-- pasivos soldados -->
+      <rect class="mod" x="40" y="150" width="320" height="50" rx="8" style="stroke:#8695a8"/><text class="ss" x="54" y="180">pasivos (divisores, R/C K‑line) — soldados a la carrier</text>
+      <!-- conectores al borde -->
+      <rect class="con" x="380" y="150" width="90" height="50" rx="8"/><text class="ss" x="392" y="172">→ i59</text><text class="ss" x="392" y="188">(traba)</text>
+      <rect class="con" x="480" y="150" width="90" height="50" rx="8"/><text class="ss" x="492" y="172">→ K‑line</text><text class="ss" x="492" y="188">(traba)</text>
+      <rect class="con" x="580" y="150" width="100" height="50" rx="8"/><text class="ss" x="592" y="172">→ 12V/BIU</text><text class="ss" x="592" y="188">(traba)</text>
+      <text class="ss" x="34" y="228">Módulos = zócalo + sujeción removible · salidas al auto = conector con traba · nada de Dupont</text>
+    </svg>
+  </div>
+  <p class="cap">Fig. 5 — Layout, no esquemático: cajas que no se tocan, sin líneas cruzadas. Cada módulo enchufado, conectores con traba al borde.</p>
+
+  <ul class="tight">
+    <li><b>Socketear:</b> suelda headers <b>hembra</b> a la carrier; el ESP32 y cada módulo (con sus pines macho) se enchufan y se pueden sacar.</li>
+    <li><b>Retención mecánica (clave anti‑vibración):</b> el zócalo solo no basta. Fija cada módulo con una <b>sujeción removible</b> — un clip impreso 3D atornillado, una brida sobre el módulo, o una gota de silicona caliente en una esquina (se retira con alcohol para servicio). Así la vibración no lo desenchufa, pero sigue siendo serviceable.</li>
+    <li><b>Compacto:</b> la carrier es plana y chica; elimina el cableado suelto. No crece como los shields de borneras atornilladas.</li>
+  </ul>
+
+  <div class="call green"><h4>Pantalla reemplazable (tu requisito)</h4>
+    <p>El OLED conecta a la carrier por un <b>conector con traba (JST) o un zócalo</b>, y queda <b>sujeto mecánicamente por el bisel/marco 3D con tornillos</b> — nunca colgando de sus pines. Si falla: sacas el bisel, desenchufas, enchufas el nuevo OLED. Cinco minutos, sin soldador.</p>
+  </div>
+
+  <h3>Alivio de tensión (strain relief) — importa más que el conector</h3>
+  <ul class="tight">
+    <li>Termorretráctil sobre cada junta + <b>brida o gota de silicona caliente</b> que fije el cable a la placa/caja, para que la junta no flexe.</li>
+    <li><b>Pasacables (grommet)</b> donde el mazo sale de la caja.</li>
+    <li>Opcional: <b>barniz conformal</b> o una gota de silicona en el respaldo de cada conector y sobre las soldaduras — "congela" todo contra la vibración (lo que hace la industria).</li>
+    <li>Un <b>mal crimp es peor que una buena soldadura</b>: si no dominas la crimpadora, usa cables pre‑crimpados de fábrica.</li>
+  </ul>
+</section>
+
+<!-- ===== LARGOS ===== -->
+<section id="largos">
+  <p class="sec-label">08 · Cableado</p>
+  <h2>Largos de cable</h2>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Tramo</th><th>Desde → hasta</th><th class="mono">Largo</th><th class="mono">Calibre</th></tr></thead>
+    <tbody>
+      <tr><td>K‑line</td><td>OBD pin 7 → módulo gauge</td><td class="mono">1.2–1.5 m</td><td class="mono">22 AWG</td></tr>
+      <tr><td>i59 ↔ módulo</td><td>adaptador → ESP32 gauge</td><td class="mono">15–20 cm</td><td class="mono">22 AWG</td></tr>
+      <tr><td>Cierre LOCK/UNLOCK</td><td>Nodo A → BIU p15/p29</td><td class="mono">15–30 cm</td><td class="mono">20 AWG</td></tr>
+      <tr><td>IG + GND Nodo A</td><td>fusiblera/masa → Nodo A</td><td class="mono">30–50 cm</td><td class="mono">20 AWG</td></tr>
+      <tr><td>Nodo A ↔ Nodo B</td><td>ESP‑NOW (radio)</td><td class="mono">0</td><td class="mono">—</td></tr>
+    </tbody>
+  </table></div>
+  <p class="cap">Sin fila de VSS: eliminada. Compra ~30% extra de cable y deja lazos de servicio.</p>
+</section>
+
+<!-- ===== FIRMWARE ===== -->
+<section id="firmware">
+  <p class="sec-label">08 · Firmware</p>
+  <h2>Firmware — especificación funcional</h2>
+  <p class="sub">Especificación de comportamiento (no código) de ambos nodos, suficiente para implementar. Los dos usan Arduino‑ESP32 o ESP‑IDF. El enlace es ESP‑NOW en un canal fijo; cada nodo conoce la MAC del otro.</p>
+
+  <h3>Nodo B (gauge) — tareas</h3>
+  <ul class="tight">
+    <li><b>Init:</b> UART a 10400 baud para SSM2 sobre el L9637D; SPI para el OLED SSD1322; I²C para el DS3231; ESP‑NOW como emisor.</li>
+    <li><b>Adquisición SSM2:</b> consultar cíclicamente los parámetros de la ECU (RPM, MAF, velocidad, temp. refrigerante, O2/AFR, IAM, apertura de mariposa, tensión de batería). SSM2 es petición/respuesta por direcciones.</li>
+    <li><b>Cálculo de consumo:</b> L/100km instantáneo a partir del <b>MAF</b> y la relación aire/combustible (AFR de la O2 banda angosta): caudal de combustible = MAF ÷ AFR; se integra contra la velocidad para L/100km. Media móvil para estabilizar la lectura.</li>
+    <li><b>UI:</b> renderizar páginas en el OLED (reloj desde RTC, consumo, AFR, IAM, y las que se definan). Los 4 botones OEM navegan páginas y ajustan; uno de ellos (mantener pulsado o combinación) <b>alterna el auto‑cierre</b> del Nodo A.</li>
+    <li><b>Emisión ESP‑NOW:</b> enviar periódicamente (~cada 100–200 ms) un paquete con la velocidad actual y el flag de auto‑cierre.</li>
+  </ul>
+
+  <h3>Nodo A (cierre) — tareas</h3>
+  <ul class="tight">
+    <li><b>Init:</b> ESP‑NOW como receptor; GPIO25/26 como salidas a los relés (reposo = inactivo); GPIO34 sensa ignición. Estado inicial = <b>ARMADO</b>.</li>
+    <li><b>Recepción:</b> en cada paquete ESP‑NOW, actualizar velocidad y flag. Si no llegan paquetes por un tiempo (watchdog), no accionar (fail‑safe: no cerrar a ciegas).</li>
+    <li><b>Máquina de estados:</b> ARMADO ⇄ DESACTIVADO según el flag. En ARMADO: al cruzar 20 km/h ascendente → pulso CIERRE; al llegar a 0 km/h → pulso APERTURA. Anti‑rebote por histéresis (p. ej. cierra a ≥20, rearma la condición bajo cierto umbral) para no repetir el pulso.</li>
+    <li><b>Pulsos:</b> activar el relé correspondiente ~0.4 s y liberar. Nunca sostener.</li>
+    <li><b>Reset por ciclo:</b> el estado no se persiste; cada IG on parte ARMADO.</li>
+  </ul>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>Parámetro</th><th class="mono">Valor v0.1</th><th>Nota</th></tr></thead>
+    <tbody>
+      <tr><td>Umbral de cierre</td><td class="mono">20 km/h</td><td>ajustable en firmware</td></tr>
+      <tr><td>Umbral de apertura</td><td class="mono">0 km/h</td><td>detención sostenida</td></tr>
+      <tr><td>Duración de pulso relé</td><td class="mono">~0.4 s</td><td>pulso negativo al BIU</td></tr>
+      <tr><td>Intervalo ESP‑NOW</td><td class="mono">100–200 ms</td><td>velocidad + flag</td></tr>
+      <tr><td>Watchdog de radio</td><td class="mono">~1 s</td><td>sin paquetes → no acciona</td></tr>
+      <tr><td>Baud SSM2</td><td class="mono">10400</td><td>K‑line ISO 9141</td></tr>
+      <tr><td>Estado inicial</td><td class="mono">ARMADO</td><td>por ciclo de encendido</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ===== INSTALACION ===== -->
+<section id="instalacion">
+  <p class="sec-label">09 · Procedimiento</p>
+  <h2>Secuencia de instalación</h2>
+  <ol class="steps">
+    <li><b>Prueba de mesa de cada nodo</b> con fuente de 12V (con fusible). Verifica 5.0V del buck y encendido del ESP32.</li>
+    <li><b>Arma y verifica el Nodo B</b> etapa por etapa (alimentación, divisores, K‑line, OLED, RTC, botones). Mide 3.3V donde corresponde; ninguna entrada del ESP32 debe superar 3.3V.</li>
+    <li><b>Arma y verifica el Nodo A</b> (alimentación, sensado ignición, relés). Escucha el clic de los relés.</li>
+    <li><b>Arma el adaptador i59</b> con las 3 piezas iWire y comprueba continuidad pin a pin antes de enchufar al auto.</li>
+    <li><b>Desconecta la batería.</b> Recién ahora se trabaja en el auto.</li>
+    <li><b>Instala Nodo A junto al BIU.</b> Confirma pin 15/29 con multímetro (pulsando el botón físico de cerrar/abrir). Conecta relés, IG y masa.</li>
+    <li><b>Tiende el K‑line</b> de OBD pin 7 (confirma ~12V en reposo con llave ON) a la consola, lejos de ruido.</li>
+    <li><b>Instala Nodo B:</b> enchufa el adaptador al i59, monta el OLED en la carcasa, reinstala el ahumado.</li>
+    <li><b>Reconecta la batería</b> y corre el <a href="#checklist">checklist</a>.</li>
+    <li><b>Firmware y calibración</b> (fase siguiente): parear ESP‑NOW y fijar el umbral de 20 km/h desde la lectura SSM2.</li>
+  </ol>
+</section>
+
+<!-- ===== CHECKLIST ===== -->
+<section id="checklist">
+  <p class="sec-label">10 · Verificación</p>
+  <h2>Checklist con multímetro</h2>
+  <ul class="chk">
+    <li>Fusible 2A en cada toma de 12V.</li>
+    <li>Salida del buck = 5.0V ±0.1V (ambos nodos).</li>
+    <li>3.3V en VCC de ESP32, OLED, RTC y L9637D.</li>
+    <li>Ninguna entrada del ESP32 supera 3.3V (mide IGN, ILL, analógico ya divididos).</li>
+    <li>Continuidad correcta en los 3 conectores i59.</li>
+    <li>Pin 10 (B constante) no conectado a la alimentación.</li>
+    <li>BIU pin 15/29 confirmados con el pulso del botón físico.</li>
+    <li>OBD pin 7 en ~12V en reposo con llave ON.</li>
+    <li>Masa común firme entre nodos, BIU e i59.</li>
+    <li>Con llave afuera: 0V en la alimentación de ambos nodos.</li>
+  </ul>
+</section>
+
+<!-- ===== EXPERTO ===== -->
+<section id="experto">
+  <p class="sec-label">11 · Criterio</p>
+  <h2>Notas de experto</h2>
+  <div class="cat">
+    <div class="item"><div class="ic"><svg width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="10" fill="none" stroke="#ff6b5e" stroke-width="1.6"/><path d="M13 8v6M13 17.5v.5" stroke="#ff6b5e" stroke-width="1.8"/></svg></div>
+      <div><h3>DS3231 y la pila</h3><p>Muchos módulos "ZS‑042" traen un circuito que intenta <b>cargar</b> la pila. Con una CR2032 (no recargable) es peligroso: usa una <b>LIR2032</b> recargable, o desactiva la carga quitando la resistencia de carga del módulo.</p></div></div>
+    <div class="item"><div class="ic"><svg width="26" height="26" viewBox="0 0 26 26"><path d="M6 13h14M14 7l6 6-6 6" fill="none" stroke="#4fd6e0" stroke-width="1.6"/></svg></div>
+      <div><h3>Dependencia de la velocidad</h3><p>El cierre necesita la velocidad por ESP‑NOW. Se "arma" al recibir dato válido; en el arranque hay ~1–2 s sin dato (no estás a 20 km/h aún, así que no importa).</p></div></div>
+    <div class="item"><div class="ic"><svg width="26" height="26" viewBox="0 0 26 26"><rect x="4" y="7" width="18" height="12" rx="2" fill="none" stroke="#ffab40" stroke-width="1.5"/><path d="M8 13h4l1-3 2 6 1-3h2" fill="none" stroke="#57d98b" stroke-width="1.3"/></svg></div>
+      <div><h3>Picos de WiFi</h3><p>El cap de 470µF en el riel de 5V absorbe los picos de radio; con el R‑78E5.0‑1.0 (1A) + ese cap va sobrado (ESP‑NOW son ráfagas cortas). No uses LM7805 (se calienta).</p></div></div>
+    <div class="item"><div class="ic"><svg width="26" height="26" viewBox="0 0 26 26"><path d="M4 13h6l3-7 4 14 3-7h2" fill="none" stroke="#4fd6e0" stroke-width="1.5"/></svg></div>
+      <div><h3>K‑line no responde</h3><p>Revisa: pull‑up 510Ω, VS=12V, VCC=3.3V, RX/TX no invertidos. Antes, confirma con FreeSSM que el auto responde por ese K‑line.</p></div></div>
+    <div class="item"><div class="ic"><svg width="26" height="26" viewBox="0 0 26 26"><rect x="5" y="6" width="16" height="14" rx="2" fill="none" stroke="#8695a8" stroke-width="1.5"/><path d="M9 6V3h8v3" fill="none" stroke="#57d98b" stroke-width="1.3"/></svg></div>
+      <div><h3>Módulo relé a 3.3V</h3><p>Alimenta la bobina con 5V (JD‑VCC) y la lógica con 3.3V (quita el jumper VCC–JD‑VCC). Así el GPIO dispara el opto sin problema.</p></div></div>
+    <div class="item"><div class="ic"><svg width="26" height="26" viewBox="0 0 26 26"><path d="M13 4v18M6 10l7-6 7 6" fill="none" stroke="#ffab40" stroke-width="1.5"/></svg></div>
+      <div><h3>Reversibilidad</h3><p>Todo cuelga del adaptador i59 y del K‑line. Desenchufas y el auto queda original. Fotografía cada empalme por si necesitas revertir.</p></div></div>
+  </div>
+</section>
+
+<!-- ===== VERIFICAR ===== -->
+<section id="verificar">
+  <p class="sec-label">14 · Pendientes</p>
+  <h2>Pendientes a verificar en el vehículo</h2>
+  <p class="sub">Puntos que dependen del cableado real del vehículo EDM y deben confirmarse antes o durante la instalación. No son supuestos: son mediciones a realizar.</p>
+  <ul class="tight">
+    <li><b>Conector i59 (85201AG200):</b> confirmar colores y posición de los pines de IG, GND e ILL con multímetro sobre el conector real; el pinout puede variar respecto de referencias JDM/USDM.</li>
+    <li><b>Pines del BIU:</b> confirmar que <b>pin 15 = cierre</b> y <b>pin 29 = apertura</b> pulsando cada línea a masa con un cable de prueba y observando el actuador, antes de conectar los relés.</li>
+    <li><b>Fuente de IG en el pilar A:</b> validar con multímetro que la línea elegida (IG de la radio o del Nodo B) esté a 12V solo con contacto y caiga a 0 con la llave fuera.</li>
+    <li><b>Velocidad SSM2:</b> confirmar que el parámetro de velocidad se lee correctamente en la ECU del vehículo y su unidad/escala.</li>
+    <li><b>OLED tras el filtro rojo OEM:</b> validar legibilidad de la pantalla blanca elegida detrás del filtro; si queda tenue, evaluar cambio a ámbar.</li>
+  </ul>
+</section>
+
+<!-- ===== ROADMAP ===== -->
+<section id="roadmap">
+  <p class="sec-label">15 · Roadmap</p>
+  <h2>Roadmap v0.1 → v0.2 y futuro</h2>
+  <ul class="tight">
+    <li><b>v0.1 (actual):</b> prototipo en perfboard, módulos socketeados, conectores con traba en los bordes. Objetivo: validar funcionalidad e integración en el vehículo.</li>
+    <li><b>v0.2:</b> migrar a <b>PCB formal</b> (Gerbers desde EasyEDA/KiCad) con conectores modulares en placa. Fabricación local (CAEM, PCB Chile) o JLCPCB/PCBWay; opción turnkey (Enerful, KELTRONIC, CIGA) si se quiere ensamblado.</li>
+    <li><b>Futuro — TPMS:</b> integrar presión de neumáticos aftermarket como página del gauge.</li>
+    <li><b>Futuro — data logging:</b> Raspberry Pi con el Tactrix Openport 2.0 para logging extendido, en paralelo al gauge.</li>
+  </ul>
+</section>
+
+<!-- ===== BIBLIO ===== -->
+<section id="biblio">
+  <p class="sec-label">16 · Bibliografía</p>
+  <h2>Bibliografía (IEEE)</h2>
+  <p class="sub">Referencias al autor original de cada criterio técnico citado en "Fundamentos de diseño".</p>
+  <ol style="padding-left:22px;font-size:14px;line-height:1.7">
+    <li>International Organization for Standardization, <i>ISO 9141‑2:1994 — Road vehicles — Diagnostic systems — Part 2: CARB requirements for interchange of digital information</i>. Geneva: ISO, 1994.</li>
+    <li>STMicroelectronics, <i>L9637 — Monolithic bus driver with ISO 9141 interface</i>, Datasheet. [En línea]. Disponible: https://www.st.com/resource/en/datasheet/l9637.pdf</li>
+    <li>Espressif Systems, <i>ESP‑NOW User Guide</i>, ESP‑IDF Programming Guide. [En línea]. Disponible: https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/network/esp_now.html</li>
+    <li>Espressif Systems, <i>ESP32 Series Datasheet</i>. [En línea]. Disponible: https://www.espressif.com/sites/default/files/documentation/esp32_datasheet_en.pdf</li>
+    <li>RECOM Power GmbH, <i>R‑78E‑1.0 Series — DC/DC Switching Regulator</i>, Datasheet. [En línea]. Disponible: https://recom-power.com</li>
+    <li>Solomon Systech, <i>SSD1322 — Dot Matrix OLED/PLED Segment/Common Driver with Controller</i>, Datasheet.</li>
+    <li>Analog Devices (Maxim Integrated), <i>DS3231 — Extremely Accurate I²C‑Integrated RTC/TCXO/Crystal</i>, Datasheet. [En línea]. Disponible: https://www.analog.com/media/en/technical-documentation/data-sheets/DS3231.pdf</li>
+    <li>NXP Semiconductors, <i>UM10204 — I²C‑bus specification and user manual</i>, Rev. 7.0, 2021.</li>
+    <li>International Organization for Standardization, <i>ISO 7637‑2 — Road vehicles — Electrical disturbances from conduction and coupling — Part 2</i>. Geneva: ISO.</li>
+    <li>SAE International, <i>J1211 — Handbook for Robustness Validation of Automotive Electrical/Electronic Modules</i>. Warrendale, PA: SAE.</li>
+    <li>P. Horowitz and W. Hill, <i>The Art of Electronics</i>, 3rd ed. Cambridge, U.K.: Cambridge Univ. Press, 2015.</li>
+    <li>Robert Bosch GmbH, <i>Automotive Handbook</i>, 10th ed. Karlsruhe, Germany: Bosch, 2018.</li>
+    <li>RomRaider Project, <i>Subaru Select Monitor (SSM2) — logging protocol and definitions</i>, documentación de código abierto. [En línea]. Disponible: https://www.romraider.com</li>
+    <li>Molex LLC, <i>Micro‑Fit 3.0 Connector System — Product Specification PS‑43045</i>. [En línea]. Disponible: https://www.molex.com</li>
+  </ol>
+</section>
+
+<!-- ===== FUENTES ===== -->
+<section id="fuentes">
+  <p class="sec-label">17 · Fuentes web</p>
+  <h2>Fuentes web consultadas</h2>
+  <div class="src"><span class="n">01</span><span>K‑line en OBD‑II pin 7 (ISO 9141‑2 / KWP2000), reposo alto Vbatt, pull‑up 510Ω. <a href="https://pinoutguide.com/CarElectronics/car_obd2_pinout.shtml">PinoutGuide</a> · <a href="https://obd-cable.com/iso-9141-2-k-line-5-baud-handshake-guide/">obd-cable</a></span></div>
+  <div class="src"><span class="n">02</span><span>Transceptor L9637D: RKO 510Ω, CK ≤1.3nF, VS batería, VCC lógico, RX/TX con pull‑up interno. <a href="https://www.st.com/resource/en/datasheet/l9637.pdf">Datasheet ST</a></span></div>
+  <div class="src"><span class="n">03</span><span>Velocidad BL/BP distribuida desde ABS (no VSS único) → se lee por SSM2. <a href="https://www.go-parts.com/garage/obd-p0500-subaru-legacy-2005-2009-ej253-2-5l">Go‑Parts P0500</a></span></div>
+  <div class="src"><span class="n">04</span><span>Cierre por BIU: lock p15 (Mar/Bl), unlock p29 (Mar/Ne), pulso negativo. <a href="https://www.modifiedlife.com/2005-subaru-legacy-auto-alarm-wiring-schematic/">ModifiedLife</a></span></div>
+  <div class="src"><span class="n">05</span><span>ESP‑NOW (ESP32 ↔ ESP32 sin router). <a href="https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/network/esp_now.html">Espressif</a></span></div>
+  <div class="src"><span class="n">06</span><span>OLED 3.12" SSD1322 256×64, ~79×21 mm activo, 3.3V. <a href="https://www.winstar.com.tw/products/oled-module/graphic-oled-display/3_12-oled.html">Winstar</a></span></div>
+  <div class="src"><span class="n">07</span><span>Antecedente SSM2 en micro (pull‑up y polling). <a href="https://www.clubwrx.net/threads/clock-pod-mod-with-subarb-select-monitor-ecu-polling-and-arduino.134423369/">Clock Pod Mod</a> · <a href="https://github.com/rpkish/Subduino-SSM">Subduino‑SSM</a></span></div>
+  <div class="src"><span class="n">08</span><span>Conectores Subaru: <a href="https://iwireusa.com/">iWire</a>. Compras CL: <a href="https://mcielectronics.cl/">MCI</a> · <a href="https://altronics.cl/">Altronics</a> · <a href="https://maxelectronica.cl/">MaxElectrónica</a> · <a href="https://especificar.cl/">Especificar</a></span></div>
+</section>
+
+<footer>
+  <div class="wrap" style="padding:0">
+    Documento matriz v0.1 · Prototipo Cierre + Gauge · Subaru Legacy 3.0R (BL/BP, EDM/SAM · VIN JF1BLELU56G022682). Velocidad del cierre por ESP‑NOW desde SSM2 (sin tap de VSS). Los colores/pines del i59 y del BIU son de referencia: confirmar con multímetro antes de soldar. Fusiona siempre el +12V; el BIU conserva su lógica de seguridad. Botón ON/OFF: decisión a confirmar (recomendado vía Nodo B por ESP‑NOW).
+  </div>
+</footer>
+
+</div>
+</body>
+</html>

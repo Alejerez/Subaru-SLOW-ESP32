@@ -1,0 +1,32 @@
+SPDX-License-Identifier: GPL-3.0-or-later
+
+Copyright (C) <YEAR> <COPYRIGHT HOLDER>
+
+Licence chosen for the FIRMWARE and SOFTWARE in this repository: GNU General
+Public License v3.0 or later. Strong copyleft, consistent with the CERN-OHL-S
+licence used for the hardware (see LICENSE-HARDWARE.txt): any distributed
+derivative has to stay open under the same terms.
+
+--------------------------------------------------------------------------
+IMPORTANT: this file does NOT yet carry the full licence text.
+
+Fetching the official text verbatim failed in the session where this repo was
+assembled -- gnu.org was not reachable through the available fetch tool, and
+choosealicense.com declined to reproduce the full text. Rather than retype
+~700 lines of legal text from memory and risk an error in it, the text is
+left to be filled in from an authoritative source.
+
+Safest way to complete it, with nothing copied by hand:
+  On GitHub, use "Add file" -> "Create new file", name the file (for example,
+  replace this same LICENSE-SOFTWARE.txt), then click "Choose a license
+  template" -> "GNU General Public License v3.0". GitHub inserts the full
+  official text automatically. Step-by-step in SETUP-GITHUB.md, section 5.
+
+Official sources, if you would rather copy it yourself:
+  - https://www.gnu.org/licenses/gpl-3.0.txt
+  - https://choosealicense.com/licenses/gpl-3.0/
+  - https://spdx.org/licenses/GPL-3.0-or-later.html
+
+This is not legal advice. If the project ever acquires commercial
+implications, have a lawyer review it before publishing.
+--------------------------------------------------------------------------

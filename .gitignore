@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Note: the figure generator writes intermediate SVGs to a temp directory
+# outside the repository. Only the rendered PNGs are committed.
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Toolchain output
+build/
+.pio/
+.pioenvs/
+*.elf
+*.bin
+*.hex
+
+# KiCad backups
+*-backups/
+*.kicad_pcb-bak
+*.kicad_sch-bak
+fp-info-cache
