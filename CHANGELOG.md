@@ -6,6 +6,54 @@ and the tags are the source of truth.
 Format after [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); one git tag
 per meaningful milestone, pointing at the commit where it closed.
 
+## [Unreleased] — roadmap of potential features
+
+Adds a **roadmap of potential features to be developed if the v0.1 prototype
+succeeds**, and promotes one item into the v0.1 locked scope. No hardware or
+firmware exists yet for anything below v0.1 — this is planning, recorded so the
+reasoning behind each inclusion and each rejection survives.
+
+### Added
+
+- [`ROADMAP.md`](ROADMAP.md) rewritten as a tiered plan: **v0.1** (prototype
+  base), **v0.2** (firmware only, no new hardware), **v0.3** (new ESP-NOW nodes:
+  GPS + IMU, caliper thermocouple, TPMS), **v0.4** (trackday mode), plus standby
+  and discarded items. Every entry states whether it needs new hardware.
+- A **storage rule** in the roadmap, since several items depend on it:
+  configuration may be persisted to internal flash; telemetry may not, and goes to
+  an SD card on the node that produces it.
+- ADR [0005](docs/decisions/0005-ota-in-maintenance-mode.md): **OTA firmware
+  update in a deliberate maintenance mode.** Wi-Fi and ESP-NOW never run
+  simultaneously — they contend for the channel — so a node is put into
+  maintenance mode from the gauge menu, reboots with a flag held in RTC memory,
+  updates, and returns to normal on the next boot. Includes a timeout, a
+  refusal to enter while the car is moving, a firmware-version report on return,
+  and dual-partition rollback.
+- Two firmware requirements added to v0.1 in
+  [`docs/02-firmware/`](docs/02-firmware/README.md): **OLED burn-in mitigation**
+  and **stale-data indication** (a gauge must never freeze on the last reading
+  when its source stops answering).
+
+### Changed
+
+- **v0.1 locked scope grows from four items to five**: OTA joins it. Node A sits
+  behind the A-pillar trim and v0.1 is the phase with the most firmware
+  iterations, so cable-only reflashing would dominate the effort. It is to be
+  built last within v0.1, after the other four work on the bench.
+- Version numbers now denote **feature releases**. The perfboard-to-PCB migration
+  is documented as a parallel hardware track rather than as "v0.2", which it
+  previously collided with.
+
+### Known consequences
+
+- **ADC2 is no longer usable** once Wi-Fi is in the firmware, so only ADC1
+  channels can be relied on. On Node B that leaves GPIO36 and GPIO39 spare; any
+  further analogue sensing needs an external I²C ADC. This is a design input for
+  the PCB, recorded in ADR 0005.
+- Automatic locking is inactive while Node A is in maintenance mode, and
+  deliberately disabled in trackday mode — in the latter case so that doors stay
+  unlocked for marshal access.
+
 ## [0.1.0] — 2026-08-30
 
 First commit. Project named **Subaru-ESP32-SLOW** — *SSM2 Link Over Wireless*. All documentation derives from the v0.1 design document

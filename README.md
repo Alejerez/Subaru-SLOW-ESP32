@@ -86,9 +86,15 @@ in the car:
 2. Monochrome OLED gauge in the OEM clock position
 3. Integration with the existing OEM buttons
 4. Speed-based automatic central locking
+5. **OTA firmware update over Wi-Fi**, in a deliberate maintenance mode
+   ([ADR 0005](docs/decisions/0005-ota-in-maintenance-mode.md)) — Node A lives
+   behind the A-pillar trim, and v0.1 is the phase with the most firmware
+   iterations
 
-A list of additional features is **being drawn up** and is deliberately not part
-of this revision. See [`ROADMAP.md`](ROADMAP.md).
+Everything beyond that is planned in [`ROADMAP.md`](ROADMAP.md), tiered across
+v0.2 (firmware only), v0.3 (new ESP-NOW nodes) and v0.4 (trackday mode), with the
+items that were considered and rejected recorded alongside the ones that were
+kept.
 
 ## Repository layout
 

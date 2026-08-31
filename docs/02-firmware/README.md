@@ -19,6 +19,28 @@ The reverse direction exists because of
 is local to Node A, so Node B has to be told when the mode changes in order to
 confirm it on the OLED.
 
+## Requirements common to both nodes
+
+These are not features. They are properties the v0.1 firmware has to have, and
+retrofitting any of them later is worse than building them in.
+
+- **Maintenance mode for OTA.** Wi-Fi and ESP-NOW are never up at the same time;
+  the node is put into maintenance mode deliberately, from the gauge menu, and
+  returns to normal on the next boot. Flag in RTC memory (`RTC_NOINIT_ATTR`) with
+  a magic value, so it survives the intentional restart and is cleared by removing
+  power. Dual-partition OTA with rollback. Timeout back to normal, refusal to
+  enter while the car is moving, and a firmware-version report over ESP-NOW on
+  return. Full reasoning and the unresolved parts in
+  [ADR 0005](../decisions/0005-ota-in-maintenance-mode.md).
+- **Burn-in mitigation on the OLED.** The display shows a clock in a fixed
+  position for the life of the car. Pixel shifting and brightness management are
+  v0.1 concerns; a panel damaged over a year of use cannot be fixed in software
+  afterwards.
+- **Stale-data indication.** If SSM2 stops responding or ESP-NOW drops, the
+  affected values must be shown as unavailable, never left frozen at the last
+  reading. This is correctness, not presentation: a gauge that silently displays
+  an old number is worse than one that displays nothing.
+
 ## Node B (gauge) — tasks
 
 - **Init:** UART at 10400 baud for SSM2 through the L9637D; SPI for the SSD1322
@@ -83,3 +105,9 @@ confirm it on the OLED.
       [open checks](../04-integration/README.md#open-checks-on-the-vehicle))
 - [ ] Document the toolchain and flashing procedure for each node (board
       definitions, build, upload) — not documented yet
+- [ ] Define the OTA transport and its authentication — HTTP upload to a SoftAP,
+      a pull from the home network, or signed images. This matters more than in a
+      typical hobby project, given that Node A actuates the door locks
+- [ ] Define the maintenance-mode timeout, and whether Node B may enter it while
+      Node A is already in it
+- [ ] Define the partition table for dual-partition OTA with rollback
