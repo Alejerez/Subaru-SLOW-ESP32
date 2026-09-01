@@ -6,6 +6,51 @@ and the tags are the source of truth.
 Format after [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); one git tag
 per meaningful milestone, pointing at the commit where it closed.
 
+## [Unreleased] — OEM switch circuit documented
+
+The factory wiring diagram for the wiper de-icer circuit resolves what ADR 0003
+had left open about the reused switch, and turns up a component the design had
+not accounted for.
+
+### Added
+
+- [`docs/01-hardware/reference/`](docs/01-hardware/reference/README.md) — factory
+  wiring diagram WD-01 / WI-12551, with an explicit note that Subaru service
+  documents are **not covered by this repository's licences**.
+- A circuit walkthrough in
+  [Node A, Stage 4](docs/01-hardware/node-a-locking.md#the-oem-circuit): what each
+  of the switch's four terminals does, where the project's signal comes from, and
+  why pin 1 must be disconnected from the Body Integrated Unit rather than tapped
+  in parallel with it.
+- **Tell-tale LED.** The indicator already inside the OEM switch (connector i78,
+  pins 8–9) is reused as a status light, driven from Node A on **GPIO33** and
+  **lit while DISABLED** — the exceptional state, on the same convention as a
+  "traction control off" lamp. The OLED announces the change; the LED holds the
+  state after the message has gone.
+
+### Changed
+
+- ADR [0003](docs/decisions/0003-onoff-button-direct-to-node-a.md) amended: the
+  switch has four wires, all present in this car; pins 1–2 are a **momentary**
+  contact (it does not latch, unlike the folding-mirror switch), pins 8–9 the LED.
+  The momentary confirmation matters — a latching switch would have left the
+  button's physical position permanently out of step with a mode that resets at
+  every ignition-on.
+- The SW1 cable run is **no new cable**: the factory OrG wire already goes from
+  the console to the BIU, which is where Node A is installed.
+
+### Resolved
+
+- Open check on the OEM switch's pin count — answered by the wiring diagram plus
+  inspection on the car.
+
+### Still open
+
+- The LED's electrical specification: polarity, whether its series resistor is
+  internal, and whether ~2 mA from a 3.3 V GPIO is bright enough to avoid any
+  driver at all. Replacing the twenty-year-old LED with a modern high-efficiency
+  one is also under consideration.
+
 ## [Unreleased] — roadmap of potential features
 
 Adds a **roadmap of potential features to be developed if the v0.1 prototype

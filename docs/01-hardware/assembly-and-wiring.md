@@ -37,7 +37,8 @@ walks them out.
 | K-line → OBD pin 7 | harness | latching connector at the enclosure wall |
 | BIU p15 / p29 | harness | latching connector + Posi-Tap or solder at the BIU |
 | 12 V (IG) / GND | harness | latching connector at the enclosure wall |
-| SW1 ON/OFF switch → GPIO27 | harness | latching connector at the enclosure wall |
+| SW1 ON/OFF switch → GPIO27 | harness | reuses the factory OrG run to the BIU; latching connector at the enclosure wall |
+| LED1 tell-tale → GPIO33 | harness | same connector as SW1 (i78 pins 8–9) |
 
 ### Connectors (latching, not Dupont)
 
@@ -90,7 +91,7 @@ lines. Every module plugged in, latching connectors at the edge.
 | i59 ↔ module | adapter → gauge ESP32 | 15–20 cm | 22 AWG |
 | LOCK/UNLOCK | Node A → BIU p15/p29 | 15–30 cm | 20 AWG |
 | IG + GND, Node A | fuse box / ground → Node A | 30–50 cm | 20 AWG |
-| SW1 ON/OFF switch | console switch → Node A GPIO27 | to be measured on the car | 22 AWG |
+| SW1 ON/OFF switch | console switch → Node A GPIO27 | existing OrG factory run (console → BIU) | — |
 | Node A ↔ Node B | ESP-NOW (radio) | 0 | — |
 
 No VSS run: removed ([ADR 0002](../decisions/0002-speed-over-ssm2-not-vss.md)).

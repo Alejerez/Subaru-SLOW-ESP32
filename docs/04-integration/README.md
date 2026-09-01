@@ -90,9 +90,18 @@ Two more were added as the design progressed.
 From the ON/OFF button decision
 ([ADR 0003](../decisions/0003-onoff-button-direct-to-node-a.md)):
 
-- **Reused OEM switch (wiper de-icer):** confirm with a multimeter how many pins
-  or ways it has and what each one does — it may carry its own integrated
-  indicator lamp — before wiring it to Node A's GPIO27.
+- ~~**Reused OEM switch (wiper de-icer):** confirm how many pins it has and what
+  each one does.~~ **Resolved** from the factory wiring diagram plus inspection on
+  the car: four wires, all present. Pins 1–2 are a momentary contact (it does not
+  latch), pins 8–9 an indicator LED. Documented in
+  [Node A, Stage 4](../01-hardware/node-a-locking.md#the-oem-circuit).
+- **Indicator LED inside the OEM switch:** establish polarity, whether an internal
+  series resistor exists and its approximate value, and the brightness obtained
+  driving it directly from a 3.3 V GPIO. Use a current-limited bench supply ramped
+  from zero, not an ohmmeter. Decide from that whether it can be GPIO-driven with
+  no components, needs a low-side MOSFET from the 12 V rail, or is better replaced
+  with a modern high-efficiency LED — a twenty-year-old indicator LED is dim by
+  current standards and of unknown remaining life.
 
 From the button-reuse decision ([ADR 0004](../decisions/0004-reuse-oem-contact-pad-buttons.md)):
 

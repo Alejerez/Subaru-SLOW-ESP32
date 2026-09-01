@@ -62,7 +62,8 @@ retrofitting any of them later is worse than building them in.
 ## Node A (locking) — tasks
 
 - **Init:** ESP-NOW as **both** receiver and sender; GPIO25/26 as outputs to the
-  relays (idle = inactive); GPIO34 senses ignition; GPIO27 as an input with
+  relays (idle = inactive); GPIO33 as an output for the tell-tale LED; GPIO34
+  senses ignition; GPIO27 as an input with
   `INPUT_PULLUP` for the ON/OFF button (the reused OEM switch — see
   [`node-a-locking.md`](../01-hardware/node-a-locking.md#stage-4--onoff-button-reused-oem-switch)).
   Initial state = **ARMED**.
@@ -78,6 +79,11 @@ retrofitting any of them later is worse than building them in.
 - **Pulses:** energise the relevant relay for ≈0.4 s and release. Never hold.
 - **User confirmation:** whenever the button changes the mode, send an ESP-NOW
   message to Node B carrying the new state, so it can be shown on the OLED.
+- **Tell-tale LED:** drive GPIO33 to match the mode — **lit while DISABLED, dark
+  while ARMED**. This is the OEM indicator inside the reused switch (i78 pins
+  8–9, see [Node A Stage 4](../01-hardware/node-a-locking.md#stage-4--onoff-button-reused-oem-switch)).
+  Unlike the OLED message it does not time out: it is the persistent indication of
+  the exceptional state.
 - **Per-cycle reset:** state is not persisted; every IG-on starts ARMED.
 
 ## v0.1 parameters
@@ -92,6 +98,7 @@ retrofitting any of them later is worse than building them in.
 | SSM2 baud rate | 10400 | K-line ISO 9141 |
 | Initial state | ARMED | per ignition cycle |
 | ON/OFF button | GPIO27, `INPUT_PULLUP` | software debounce, value to be defined |
+| Tell-tale LED | GPIO33, output | lit while DISABLED · drive method pending the LED's electrical spec |
 | OLED confirmation duration | ≈2 s | after a mode change (Node A → Node B over ESP-NOW) |
 
 ## Open items
@@ -101,7 +108,9 @@ retrofitting any of them later is worse than building them in.
       protocol version): speed (B → A) and mode change (A → B). Currently
       specified only functionally, not at byte level
 - [ ] Define the debounce value for the GPIO27 button
-- [ ] Confirm the pin count of the reused OEM switch before wiring it (see the
+- [ ] Decide how the tell-tale LED is driven, once its electrical specification
+      is known — directly from GPIO33, through a low-side MOSFET, or with the
+      OEM LED replaced (see the
       [open checks](../04-integration/README.md#open-checks-on-the-vehicle))
 - [ ] Document the toolchain and flashing procedure for each node (board
       definitions, build, upload) — not documented yet
