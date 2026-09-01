@@ -2,19 +2,90 @@
 
 ## i59 adapter (1 male + 2 female)
 
-A pass-through adapter: the harness is never cut. The OEM signals pass straight
-through; the K-line comes in from the OBD port and travels on pin 7, which is
-free on the original i59 connector.
+A pass-through adapter: **the harness is never cut.** Every OEM signal passes
+straight through from the car's connector to a second female connector, and the
+module taps what it needs in parallel. The K-line comes in separately from the OBD
+port and travels on a pin the factory circuit does not use.
+
+### What the factory circuit actually puts on this connector
+
+![Factory wiring diagram of the clock circuit](reference/clock-circuit-clk-01.png)
+
+**Figure** — Factory wiring diagram CLK-01. The clock (i59) is the block outlined
+in red; its connector view, a 2 × 5 with pins 1–5 on the top row and 6–10 on the
+bottom, is outlined at the bottom left. See
+[reference material](reference/README.md) for provenance and licensing.
+
+The OEM clock is fed by **four separate supplies**, talks to the combination meter
+over a serial line, and grounds through a joint connector. The four buttons at the
+bottom of the module — **[+], [−], SET, DISP** — all switch to ground, which is the
+same topology [ADR 0004](../decisions/0004-reuse-oem-contact-pad-buttons.md)
+depends on.
+
+| Pin | Wire code | Fed from / goes to | Role in the OEM circuit |
+| --- | --- | --- | --- |
+| **1** | V | F/B fuse 16, tail & illumination relay | ILL — display dimming |
+| **2** | — | — | not used by this circuit |
+| **3** | — | — | not used by this circuit |
+| **4** | — | — | not used by this circuit |
+| **5** | Y | combination meter, connector i10 pin A18 | UART between clock and cluster |
+| **6** | BY | joint ground connector i97 | GND |
+| **7** | — | — | not used by this circuit |
+| **8** | GB (LHD) / OrG (RHD) | F/B fuse 11 | IG — ignition-switched supply |
+| **9** | YR | F/B fuse 24 | ACC |
+| **10** | LR | M/B fuse 8 | B — constant supply, keeps the clock running with the key out |
+
+Wire codes are as printed on the diagram and still need visual confirmation on the
+actual connector — one of the [open checks](../04-integration/README.md#open-checks-on-the-vehicle).
+Note that **pin 8's colour differs between LHD and RHD**; this car is LHD, so IG is
+the GB wire.
+
+### What the adapter does with each pin
 
 | i59 pin | Signal | Female #1 (car) | Male / Female #2 (module) |
 | --- | --- | --- | --- |
-| 8 | IG 12 V | ✔ | ✔ supply + ignition sense |
-| 6 | GND | ✔ | ✔ common ground |
-| 1 | ILL | ✔ | ✔ dimming |
-| 7 | **K-line** (new) | — empty | ✔ from OBD p7 |
-| 2/3 | analogue (new) | — empty | ◦ sensors |
-| 10 | constant B+ | ✔ | ✖ do not connect |
-| 9 / 5 | ACC / OEM UART | ✔ | ◦ optional / future |
+| 8 | IG 12 V | ✔ pass-through | ✔ supply + ignition sense |
+| 6 | GND | ✔ pass-through | ✔ common ground |
+| 1 | ILL | ✔ pass-through | ✔ dimming |
+| 7 | **K-line** (new) | — empty | ✔ from OBD pin 7 |
+| 2 / 3 | analogue (new) | — empty | ◦ sensors |
+| 4 | — | — empty | — spare |
+| 10 | constant B+ | ✔ pass-through | ✖ **deliberately not connected** |
+| 5 | OEM UART | ✔ pass-through | ✖ **not connected, not driven** |
+| 9 | ACC | ✔ pass-through | ◦ optional / future |
+
+### Why this makes the modification reversible
+
+The diagram is what turns "reversible" from a claim into something checkable.
+
+**The four unused pins are genuinely unused.** The clock circuit puts nothing on
+pins 2, 3, 4 or 7. The K-line therefore rides on a terminal that carries no factory
+signal at all — it cannot interfere with anything, because there is nothing there
+to interfere with. It also means the K-line reaches the console **inside the
+adapter**, not as a wire spliced into the car's loom.
+
+**Nothing is cut, spliced or tapped.** Every factory signal is carried from the
+car's connector to the second female connector unbroken. Unplug the adapter,
+reconnect the OEM clock, and the circuit in this diagram is exactly what it was —
+there is no splice left behind, no pierced insulation, no removed terminal.
+
+**The constant supply is declined on purpose.** The OEM clock takes B+ on pin 10
+so it can keep time with the key out. This system does not: it is fed from IG only
+and dies with the ignition, and time is held by the DS3231's own cell. That is the
+[zero parasitic draw](../00-concept/README.md#zero-parasitic-draw) principle made
+concrete — pin 10 is passed through to the OEM connector and simply not taken by
+the module.
+
+> ⚠️ **Pin 5 is a live serial link to the combination meter.** The diagram shows it
+> going to connector i10 pin A18 and into the cluster's own microcontroller. The
+> adapter passes it through and **must not drive it**: putting anything on that line
+> risks disturbing the instrument cluster, which is a considerably worse failure
+> than a gauge that does not work. Treat it as strictly hands-off for v0.1.
+>
+> It is, however, an interesting thing to know exists. Listening to it passively —
+> receive only, never transmit — could be a source of data the ECU does not expose
+> over SSM2. That is a research item, not a plan, and it is not in any roadmap
+> version.
 
 ## Wiring and connections — all serviceable
 

@@ -64,6 +64,11 @@ dash rheostat.
 *Connections: VS→12 V (IG) · VCC→3.3 V · RX→GPIO16 · TX→GPIO17 · K→OBD pin 7 ·
 common GND. An L9637D breakout usually carries R7/C8 on board.*
 
+The K-line reaches the console on **i59 pin 7**, which the factory clock circuit
+does not use at all — see the [i59 adapter](assembly-and-wiring.md#i59-adapter-1-male--2-female),
+where the factory diagram establishes which pins are free and why the installation
+stays reversible.
+
 ### Stage 5 · Display, clock and buttons
 
 | Block | Connection | Component note |

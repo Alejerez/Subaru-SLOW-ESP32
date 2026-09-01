@@ -20,7 +20,9 @@ Vehicle: **Subaru Legacy 3.0R, BL/BP chassis, EDM.**
 8. **Install Node B:** plug the adapter into the i59, mount the OLED in the
    housing, refit the smoked lens.
 9. **Wire SW1** — the reused OEM switch — from the console to Node A's GPIO27,
-   after confirming its pinout (see the open checks below).
+   reusing the factory OrG run to the BIU, and disconnecting it from the BIU at the
+   switch connector. Characterise the indicator LED first if it is to be driven as a
+   tell-tale (see the open checks below).
 10. **Reconnect the battery** and run the [multimeter checklist](#multimeter-checklist).
 11. **Firmware and calibration** (next phase): pair the ESP-NOW peers and set the
     20 km/h threshold against the SSM2 reading.
@@ -33,7 +35,9 @@ Vehicle: **Subaru Legacy 3.0R, BL/BP chassis, EDM.**
 - No ESP32 input exceeds 3.3 V (measure IGN, ILL and the analogue input after
   their dividers).
 - Correct continuity across the three i59 connectors.
-- Pin 10 (constant B+) **not** connected to the supply.
+- Pin 10 (constant B+) **not** connected to the supply — passed through to the OEM
+  connector only.
+- Pin 5 (OEM UART to the combination meter) passed through and **not driven**.
 - BIU pins 15 / 29 confirmed by pulsing the physical button.
 - OBD pin 7 at ≈12 V at rest with the key on.
 - Solid common ground between the nodes, the BIU and the i59.
@@ -66,12 +70,17 @@ Points that depend on the actual wiring of this EDM car and must be confirmed
 before or during installation. **These are not assumptions — they are
 measurements to make.**
 
-Five come from the v0.1 source document and remain open. None has been marked
-resolved anywhere in this repository:
+Five come from the v0.1 source document. Factory wiring diagrams have since
+answered part of the first one; the rest are untouched, and nothing has been
+marked resolved without evidence:
 
-- **i59 connector (85201AG200):** confirm the colours and pin positions of IG,
-  GND and ILL with a multimeter on the actual connector; the pinout may differ
-  from JDM/USDM references.
+- **i59 connector (85201AG200):** the pin *functions* are established from factory
+  diagram CLK-01 — pins 1 ILL, 5 UART, 6 GND, 8 IG, 9 ACC, 10 constant B+, with
+  2, 3, 4 and 7 unused. What still has to be confirmed on the actual connector is
+  the **wire colours** (pin 8 differs between LHD and RHD; this car is LHD, so IG
+  should be GB) and that the **cavities for 2, 3, 4 and 7 are physically empty**
+  before routing the K-line through pin 7. See
+  [i59 adapter](../01-hardware/assembly-and-wiring.md#i59-adapter-1-male--2-female).
 - **BIU pins:** confirm that **pin 15 = lock** and **pin 29 = unlock** by pulsing
   each line to ground with a test lead and watching the actuator, before
   connecting the relays.

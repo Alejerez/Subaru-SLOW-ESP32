@@ -6,6 +6,46 @@ and the tags are the source of truth.
 Format after [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); one git tag
 per meaningful milestone, pointing at the commit where it closed.
 
+## [Unreleased] — clock circuit documented, reversibility evidenced
+
+The factory wiring diagram for the clock circuit independently confirms the i59
+adapter design and turns "the modification is reversible" into something a reader
+can verify rather than take on trust.
+
+### Added
+
+- `docs/01-hardware/reference/clock-circuit-clk-01.png` — factory diagram CLK-01,
+  the clock (i59) circuit.
+- A full pin table for the i59 connector in
+  [i59 adapter](docs/01-hardware/assembly-and-wiring.md#i59-adapter-1-male--2-female),
+  taken from the diagram: pins 1 ILL, 5 UART, 6 GND, 8 IG, 9 ACC, 10 constant B+,
+  and **2, 3, 4 and 7 carrying nothing**. The K-line therefore rides on a terminal
+  the factory circuit does not use at all.
+- A **reversibility section** grounded in that diagram: nothing is cut or spliced,
+  every OEM signal passes through unbroken, and the constant B+ on pin 10 is
+  declined on purpose because the DS3231's own cell replaces the function it served.
+- ⚠️ **Pin 5 is a live serial link between the clock and the combination meter.**
+  The adapter passes it through and must not drive it. Noted as strictly hands-off,
+  with passive listening recorded as a research item that is in no roadmap version.
+
+### Changed
+
+- Root [README](README.md) now carries an explicit **third-party material** notice
+  under Licence, and the notice in
+  [`docs/01-hardware/reference/`](docs/01-hardware/reference/README.md) was
+  strengthened: the factory diagrams are the property of their copyright holder,
+  **neither CERN-OHL-S v2 nor GPL-3.0-or-later extends to that directory**, and
+  anyone redistributing or forking the repository should evaluate it themselves.
+  How to substitute redrawn schematics at no technical cost is documented there.
+- Multimeter checklist gained a check that pin 5 is passed through and not driven.
+
+### Partially resolved
+
+- The i59 open check: pin *functions* are now established from the diagram. What
+  remains is confirming **wire colours** on the real connector — pin 8 differs
+  between LHD and RHD, and this car is LHD — and that the cavities for pins 2, 3, 4
+  and 7 are physically empty.
+
 ## [Unreleased] — OEM switch circuit documented
 
 The factory wiring diagram for the wiper de-icer circuit resolves what ADR 0003

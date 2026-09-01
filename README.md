@@ -208,6 +208,17 @@ Dual-licensed, strong copyleft on both sides:
   full text still has to be inserted from an authoritative source, see
   [`SETUP-GITHUB.md`](SETUP-GITHUB.md) section 5.
 
+### Third-party material — one exception
+
+**[`docs/01-hardware/reference/`](docs/01-hardware/reference/README.md) contains
+Subaru factory wiring diagrams. They are not the author's work and neither licence
+above covers them.** They are included because the OEM circuits are what make the
+design verifiable — which i59 pins are free, how the reused switch is wired
+internally, and why unplugging the adapter really does restore the car. Anyone
+redistributing or forking this repository should read the notice in that directory
+and evaluate it for themselves; it also documents how to substitute redrawn
+schematics if that is preferable, at no technical cost to the project.
+
 ## Status and next steps
 
 - [ ] Complete `LICENSE-SOFTWARE.txt` with the official GPL-3.0 text
