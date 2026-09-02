@@ -14,6 +14,7 @@ PNG, where it does matter.
 | --- | --- |
 | `oem-switch-panel.jpg` | Switch panel to the left of the steering wheel. Outlined in red: the unused windscreen-wiper de-icer switch — a North-American-market option this EDM car does not have — repurposed as the auto-lock ON/OFF control. See [ADR 0003](../../decisions/0003-onoff-button-direct-to-node-a.md). |
 | `clock-unit-front.jpg` | The clock / trip-computer unit out of the dash. Confirms the button layout the firmware assumes: **DISP** at bottom left, **− +** rocker and **SET** at the right. |
+| `coolant-catch-tank.jpg` | The 2 L welded catch tank that replaced the OEM expansion bottle when the larger aluminium radiator was fitted. Radiator hose to the lower spigot, upper side spigot blocked, cap outlet open to atmosphere and the cap's pressure function defeated — so the tank is **not pressurised**. Underpins the coolant level channel in [Node C](../node-c-sensors.md#coolant-level--catch-tank). |
 | `clock-bay-in-dash.jpg` | The bay in the centre console, outlined in red — between the upper storage compartment and the head unit. This is the position the retromod constraint requires the gauge to keep. |
 
 ## Donor unit (teardown)

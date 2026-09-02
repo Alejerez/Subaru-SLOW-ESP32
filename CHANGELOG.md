@@ -6,6 +6,64 @@ and the tags are the source of truth.
 Format after [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); one git tag
 per meaningful milestone, pointing at the commit where it closed.
 
+## [Unreleased] — Node C, an analogue front end
+
+A third node enters the design: the one that makes adding an analogue sensor a
+small job instead of a redesign. Specified, not built — it belongs to v0.3.
+
+### Added
+
+- ADR [0006](docs/decisions/0006-node-c-analogue-front-end.md) and
+  [`docs/01-hardware/node-c-sensors.md`](docs/01-hardware/node-c-sensors.md):
+  **Node C, an analogue front end located in the cabin**, at the firewall
+  pass-through.
+- **Channels are defined by type, not by sensor** — ratiometric 0–5 V, resistive
+  NTC/RTD on three wires, digital in — over ADS1115s on I²C with differential
+  inputs where the run needs them. The sensors fitted first are an instance of
+  that architecture, not a definition of it.
+- A **sealed bulkhead connector at the firewall as the environmental boundary**,
+  with spare pins from the first installation. Sealing is confined to one
+  connector instead of being a property of the whole node.
+- Sensors: coolant level in the catch tank, caliper temperature, radiator ΔT,
+  ambient air, battery voltage. Boost is documented as a **provision** — one free
+  0–5 V channel — for anyone reproducing this on a turbocharged car.
+- Fig. 11, the Node C channel architecture, and a photograph of the catch tank.
+- Three open checks for v0.3: level-sender zero calibration, radiator ΔT sensor
+  mounting, and the bulkhead connector's pin count.
+
+### Changed
+
+- **The ESP-NOW topology becomes a star**, with Node B as the hub. This promotes
+  the packet format from an implementation detail to **a small protocol** — node
+  identity, message type, version — that must be settled *before* Node C is built.
+- **Nodes are optional by default** is now an architectural rule: the gauge must
+  degrade gracefully when a node is absent, showing channels as unavailable rather
+  than breaking.
+- The speed message to Node A **stays at 100–200 ms**. Slowing it to 2 s was
+  considered and rejected: ESP-NOW has ample capacity, and at 20 km/h a 2 s
+  interval is 11 m of travel, which would also have forced the fail-safe watchdog
+  above 2 s for no benefit.
+
+### Design decisions worth recording
+
+- **Cabin over engine bay.** The node gains only shorter wires from living out
+  there, and pays with an IP67 enclosure, a vent membrane, non-standard sealed
+  connectors, an ESP32 near its 85 °C limit with heat soak after shutdown, and a
+  radio path through a steel firewall. The cost of moving in — noise on 2–3 m
+  analogue runs — is answered by differential inputs.
+- **PT1000 RTDs instead of type K thermocouples** for caliper temperature. An RTD
+  needs no alloy-specific extension wire and no cold-junction compensation, and
+  200–250 °C spans the entire useful range: caliper body temperature is a proxy for
+  brake fluid temperature, and DOT4 boils around 230 °C dry.
+- **Coolant level is a top-up indicator, not an expansion gauge.** Thermal
+  expansion of ~600 mL is about 4 cm in this tank and is therefore a *disturbance*;
+  the meaningful reading is the **cold one**, captured after a cold soak. MIN is
+  1 cm above the lower spigot, MAX 1 cm below the upper — and the cold-fill window
+  is MIN to (MAX − expansion), not MIN to MAX.
+- **Battery current dropped.** Its main use, cranking health, is served by voltage
+  alone; parasitic draw is an ignition-off measurement, and a node awake to measure
+  parasitic draw is itself parasitic draw.
+
 ## [Unreleased] — clock circuit documented, reversibility evidenced
 
 The factory wiring diagram for the clock circuit independently confirms the i59

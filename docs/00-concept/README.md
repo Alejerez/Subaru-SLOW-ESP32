@@ -48,6 +48,12 @@ sent to Node A; the lock mode travels back the other way.
 | Sends over ESP-NOW | Lock mode, on button press | Vehicle speed, every 100–200 ms |
 | Detail | [`node-a-locking.md`](../01-hardware/node-a-locking.md) | [`node-b-gauge.md`](../01-hardware/node-b-gauge.md) |
 
+A third node — **Node C, an analogue sensor front end** — is designed but not
+built; it joins the same radio link in v0.3. See
+[ADR 0006](../decisions/0006-node-c-analogue-front-end.md) and
+[`node-c-sensors.md`](../01-hardware/node-c-sensors.md). Nodes are **optional by
+default**: the system has to degrade gracefully when one is not fitted.
+
 ## Structural decisions
 
 - **No VSS tap.** Node A does not tap the speed signal and uses no comparator. It

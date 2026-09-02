@@ -5,6 +5,7 @@ See [`docs/00-concept/`](../00-concept/README.md) for purpose and architecture.
 
 - [`node-b-gauge.md`](node-b-gauge.md) — Node B (gauge): stages and exact values, schematics, physical layout, pin map
 - [`node-a-locking.md`](node-a-locking.md) — Node A (locking): stages and exact values, logic, schematics, physical layout, pin map
+- [`node-c-sensors.md`](node-c-sensors.md) — Node C (analogue front end): channel architecture, sensors, bulkhead connector — **v0.3, not built**
 - [`assembly-and-wiring.md`](assembly-and-wiring.md) — i59 adapter, connectors, the carrier board, cable lengths, consumables and tools
 - [`diagrams/`](diagrams/) — the ten figures (PNG, dark-mode native); regenerate with [`scripts/generate_diagrams.py`](../../scripts/generate_diagrams.py)
 - [`photos/`](photos/) — reference photographs of the vehicle's OEM parts

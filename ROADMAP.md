@@ -19,7 +19,7 @@ Two conventions used throughout:
 | --- | --- | --- | --- |
 | **[v0.1](#v01--prototype-base)** | Prototype base | SSM2 acquisition · OLED gauge · OEM buttons · speed-based locking · **OTA over Wi-Fi** · burn-in mitigation · stale-data indication | None |
 | **[v0.2](#v02--firmware-only)** | Firmware only | DTC read/clear · fuel trims · knock alerts per bank · gear indicator · threshold alarms · web admin · system health page | None |
-| **[v0.3](#v03--new-nodes)** | New nodes | GPS + IMU node · lap timing · time sync · caliper temperature · TPMS | GPS/IMU node · thermocouple node · TPMS node + aftermarket sensors |
+| **[v0.3](#v03--new-nodes)** | New nodes | **Node C analogue front end** (coolant level, caliper temperature, radiator ΔT, ambient, battery voltage, boost provision) · GPS + IMU node · lap timing · time sync · TPMS | Node C · GPS/IMU node · TPMS node + aftermarket sensors |
 | **[v0.4](#v04--trackday-mode)** | Trackday mode | Trackday mode · session logging · peak summary · log download · optional removable display | SD card · removable display (optional) |
 | **[Standby](#standby)** | — | Charging-system monitor · oil and water instrumentation for other cars | To be defined |
 | **[Discarded](#discarded-and-why)** | — | Trip and maintenance records · phone Bluetooth · IR caliper sensor | — |
@@ -111,6 +111,31 @@ No new hardware. Everything here runs on the two nodes as built for v0.1.
 Each of these is a node, not a feature. They join the existing ESP-NOW link,
 which is the entire reason the architecture was split in two.
 
+### Node C — analogue front end
+
+The one that unlocks the others: a node whose channels are defined **by type**, so
+adding an analogue sensor later is a small job rather than a redesign. Full
+specification in [`node-c-sensors.md`](docs/01-hardware/node-c-sensors.md),
+reasoning in [ADR 0006](docs/decisions/0006-node-c-analogue-front-end.md).
+
+- **In the cabin, at the firewall pass-through** — not in the engine bay. The node
+  gains nothing from being out there except shorter wires, and pays with a sealed
+  enclosure, a vent membrane, non-standard connectors, an ESP32 near its
+  temperature limit and a radio path through steel. A **sealed bulkhead connector**
+  at the firewall is the environmental boundary instead, with spare pins from day
+  one.
+- Channels: ratiometric 0–5 V, resistive NTC/RTD on three wires, digital in — all
+  through **ADS1115s on I²C**, using differential inputs where the 3 m run needs
+  the noise rejection.
+- Sensors fitted first: **coolant level** in the catch tank, **caliper temperature**
+  (PT1000 surface RTDs, not thermocouples — no alloy extension wire, no cold-junction
+  compensation), **radiator ΔT**, **ambient air**, **battery voltage**.
+- **Boost is a provision, not a feature**: it is one free 0–5 V channel. This car is
+  naturally aspirated; anyone reproducing the project on a turbocharged car plugs a
+  sensor in.
+- Sends to Node B at ~1 Hz. Every quantity here is slow, and the locking link is
+  untouched.
+
 ### GPS + IMU node
 
 - 10 Hz position fix. 1 Hz consumer GPS is useless for lap timing or for
@@ -133,19 +158,6 @@ which is the entire reason the architecture was split in two.
   keeps a different offset year-round. Syncing only mm:ss corrects the DS3231's
   drift (±2 ppm, about a minute a year), which is the only thing that actually
   needs correcting, and puts no timezone rules in firmware at all.
-
-### Caliper temperature node
-
-- **Type K thermocouple in contact with the caliper body**, through a MAX31855
-  amplifier. Not an infrared sensor: the common IR parts saturate around 380 °C
-  while track rotors go well past that, and their accuracy degrades exactly when
-  the sensor's own body is sitting next to a glowing brake.
-- Be clear about what this measures. Caliper body temperature is neither rotor
-  nor pad temperature — it lags and reads much lower. What it is a good proxy for
-  is **brake fluid temperature**, which is what causes fade and a long pedal. For
-  a street car on track that is the more actionable number.
-- The MAX31855 is SPI, and Node B's SPI bus already carries the OLED. Either give
-  it its own chip select, or put the amplifier on the trackday node instead.
 
 ### TPMS node
 

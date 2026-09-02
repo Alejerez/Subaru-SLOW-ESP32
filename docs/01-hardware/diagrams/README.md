@@ -1,6 +1,6 @@
 # Figures
 
-Ten figures, `01-` to `10-`, numbered in the order they appear in the
+Eleven figures, `01-` to `11-`, numbered in the order they appear in the
 documentation. **PNG only** — the SVG is an intermediate render artefact and is
 not committed.
 
@@ -16,6 +16,7 @@ not committed.
 | 8 | `08-node-a-spatial-layout.png` | [Node A](../node-a-locking.md#spatial-layout) |
 | 9 | `09-node-a-grid-plan.png` | [Node A](../node-a-locking.md#grid-plan) |
 | 10 | `10-carrier-concept.png` | [Assembly and wiring](../assembly-and-wiring.md#the-carrier-board-per-node) |
+| 11 | `11-node-c-channels.png` | [Node C](../node-c-sensors.md) |
 
 ## How they are produced
 

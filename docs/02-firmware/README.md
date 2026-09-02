@@ -13,11 +13,28 @@ on a fixed channel; each node knows the other's MAC:
 | --- | --- | --- |
 | Node B → Node A | current vehicle speed | periodic, every 100–200 ms |
 | Node A → Node B | auto-lock mode change | event, only when the button is pressed |
+| Node B → Node A | maintenance-mode command | event, from the gauge menu ([ADR 0005](../decisions/0005-ota-in-maintenance-mode.md)) |
+| Node A → Node B | firmware version on return from maintenance mode | event |
 
 The reverse direction exists because of
 [ADR 0003](../decisions/0003-onoff-button-direct-to-node-a.md): the ON/OFF button
 is local to Node A, so Node B has to be told when the mode changes in order to
 confirm it on the OLED.
+
+**The topology becomes a star as optional nodes join.** Node B is the hub, since
+it is the node with the display. From v0.3, Node C sends sensor channels to Node B
+at about 1 Hz ([ADR 0006](../decisions/0006-node-c-analogue-front-end.md)); Node A
+neither needs nor receives that traffic, and the speed message stays at 100–200 ms.
+
+Two consequences follow, and both are requirements rather than details:
+
+- **The packet format is a small protocol, not two message types.** With three or
+  more nodes it needs a node identity, a message type and a version field. This
+  must be settled **before Node C is built**, or the format ends up being patched
+  with hardware already installed in the car.
+- **Nodes are optional by default.** The gauge must not break because a node is
+  absent. Channels from a missing node display as unavailable, the same rule as
+  stale data below.
 
 ## Requirements common to both nodes
 
@@ -104,9 +121,10 @@ retrofitting any of them later is worse than building them in.
 ## Open items
 
 - [ ] Implementation in `/firmware` (Node A and Node B) — integration phase
-- [ ] Define the exact ESP-NOW packet format in **both** directions (fields, size,
-      protocol version): speed (B → A) and mode change (A → B). Currently
-      specified only functionally, not at byte level
+- [ ] **Define the ESP-NOW protocol before Node C is built**: node identity,
+      message type and version, for every direction — speed (B → A), mode change
+      (A → B), maintenance-mode command and version report, and the sensor channel
+      set (C → B). Currently specified only functionally, not at byte level
 - [ ] Define the debounce value for the GPIO27 button
 - [ ] Decide how the tell-tale LED is driven, once its electrical specification
       is known — directly from GPIO33, through a low-side MOSFET, or with the

@@ -484,10 +484,84 @@ def fig10_carrier():
     return "10-carrier-concept", s
 
 
+
+# ---------------------------------------------------------------------------
+# Fig. 11 -- Node C channel architecture
+# ---------------------------------------------------------------------------
+def fig11_node_c_channels():
+    s = Svg(1240, 700)
+    s.text(40, 44, "NODE C  ·  ANALOGUE FRONT END", size=15, fill=FG, weight=700)
+    s.text(40, 64, "channels are defined by type, not by sensor — adding a sensor means "
+                   "using a free channel of the matching type", size=12, fill=FG_FAINT)
+
+    # --- the two environments, split by the firewall
+    s.rect(40, 96, 470, 520, fill="none", stroke=WARN, sw=1.5, r=12, dash="7 6")
+    s.text(56, 124, "ENGINE BAY — sealed side", size=12, fill=WARN, weight=700)
+    s.text(56, 144, "sensors, environmental connectors", size=10.5, fill=FG_FAINT)
+
+    s.rect(660, 96, 540, 520, fill="none", stroke=NODE_A, sw=1.5, r=12)
+    s.text(676, 124, "CABIN — standard side", size=12, fill=NODE_A, weight=700)
+    s.text(676, 144, "project-standard connectors, no sealing needed", size=10.5, fill=FG_FAINT)
+
+    # --- bulkhead connector, the boundary
+    s.rect(540, 250, 80, 220, fill=PANEL_2, stroke=SIG, sw=1.8, r=8)
+    for row in range(6):
+        for col in range(2):
+            s.dot(562 + col * 36, 278 + row * 33, 4.4, SIG)
+    s.text(580, 240, "BULKHEAD", size=11, fill=SIG, anchor="middle", weight=700)
+    s.text(580, 492, "sealed, with", size=10.5, fill=FG_FAINT, anchor="middle")
+    s.text(580, 508, "spare pins", size=10.5, fill=FG_FAINT, anchor="middle")
+
+    # --- sensors on the engine-bay side
+    sensors = [
+        ("Coolant level", "float sender · catch tank", V5),
+        ("Caliper temp  ×2", "PT1000 surface, ~3 m", V33),
+        ("Radiator dT", "in / out, surface", SIG),
+        ("Ambient air", "NTC", SIG),
+        ("Battery voltage", "divider at the battery", V12),
+        ("Boost", "provision only — 0-5 V", FG_FAINT),
+    ]
+    for i, (name, note, col) in enumerate(sensors):
+        y = 168 + i * 74
+        s.rect(60, y, 430, 58, fill=PANEL, stroke=col, sw=1.4, r=8)
+        s.text(76, y + 24, name, size=12, fill=FG)
+        s.text(76, y + 44, note, size=10.5, fill=FG_FAINT)
+        s.line(492, y + 29, 534, y + 29, stroke=col, sw=1.6, marker=marker_for(col))
+
+    # --- channel bank
+    s.card(680, 168, 500, "CHANNEL BANK  ·  ADS1115 ×n on I²C",
+           ["0-5 V ratiometric  · single-ended or differential",
+            "resistive NTC / RTD · 3-wire",
+            "digital in         · float switches, states",
+            "16-bit, programmable gain, 4 addresses on one bus"],
+           accent=SIG, title_size=13, line_size=11)
+    s.text(680, 322, "differential rejects the noise a 3 m run picks up", size=10.5, fill=FG_FAINT)
+
+    s.line(1120, 300, 1120, 348, stroke=SIG, sw=1.8, marker="arw_sig")
+    s.text(1108, 330, "I²C", size=11, fill=SIG, anchor="end")
+
+    s.card(680, 356, 500, "ESP32  ·  Node C",
+           ["scales, filters and validates each channel",
+            "flags every reading valid / invalid",
+            "no display, no actuators"], accent=NODE_A, title_size=13, line_size=11)
+
+    s.label_box(930, 500, "ESP-NOW  ->  Node B   ·   ~1 Hz", size=12, fill=PANEL,
+                stroke=RADIO, color=RADIO, anchor="center")
+    s.line(930, 468, 930, 496, stroke=RADIO, sw=1.6, dash="5 5", marker="arw_radio")
+    s.text(930, 560, "temperatures and levels are slow:", size=10.5, fill=FG_FAINT, anchor="middle")
+    s.text(930, 578, "1 Hz is generous, and the locking link is untouched", size=10.5,
+           fill=FG_FAINT, anchor="middle")
+
+    s.caption(s.h - 22, "The node lives in the cabin. Only the bulkhead connector has to survive "
+                        "the engine bay — not the electronics.")
+    return "11-node-c-channels", s
+
+
 # ---------------------------------------------------------------------------
 FIGURES = [fig01_system_architecture, fig02_node_b_power, fig03_node_b_signal,
            fig04_node_b_spatial, fig05_node_b_grid, fig06_node_a_state_machine,
-           fig07_node_a_interface, fig08_node_a_spatial, fig09_node_a_grid, fig10_carrier]
+           fig07_node_a_interface, fig08_node_a_spatial, fig09_node_a_grid, fig10_carrier,
+           fig11_node_c_channels]
 
 
 def main():

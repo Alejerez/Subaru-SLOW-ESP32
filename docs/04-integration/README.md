@@ -70,6 +70,9 @@ Points that depend on the actual wiring of this EDM car and must be confirmed
 before or during installation. **These are not assumptions — they are
 measurements to make.**
 
+Seven of these belong to v0.1 and must be closed before the car is driven with the
+system fitted; three more belong to Node C in v0.3 and are listed at the end.
+
 Five come from the v0.1 source document. Factory wiring diagrams have since
 answered part of the first one; the rest are untouched, and nothing has been
 marked resolved without evidence:
@@ -118,5 +121,21 @@ From the button-reuse decision ([ADR 0004](../decisions/0004-reuse-oem-contact-p
   established on a donor unit in the base clock-only trim, which has one button
   fewer. Confirm them against the car's trip-computer unit before cutting the OEM
   board or laying out the carrier.
+
+From the Node C design ([ADR 0006](../decisions/0006-node-c-analogue-front-end.md)) —
+these apply when that node is built, in v0.3:
+
+- **Zero calibration of the coolant level sender.** The catch tank is an aftermarket
+  part with no factory MIN/MAX marks. With the system properly bled and cold, record
+  the sender value at MIN (1 cm above the lower spigot) and at MAX (1 cm below the
+  upper spigot). Then verify the arithmetic that matters: cold level ≥ MIN, and cold
+  level plus thermal expansion ≤ MAX. See
+  [Node C](../01-hardware/node-c-sensors.md#coolant-level--catch-tank).
+- **Radiator ΔT sensor mounting** — surface on the hoses, or in-line fittings.
+  Surface is non-invasive but reads low and lags; in-line is accurate but means
+  cutting hoses and adding two potential leak points.
+- **Channel count, and therefore the bulkhead connector's pin count.** Settle it
+  before the firewall pass-through is sealed, and include spare pins: this is the
+  hardest part of the loom to change afterwards.
 
 Track them as repository issues (or a PR checklist) so there is a record.
