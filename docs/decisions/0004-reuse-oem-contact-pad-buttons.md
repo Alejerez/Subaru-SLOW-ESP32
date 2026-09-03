@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-08-30
-- **Affects:** Node B (Stage 5, pin map), the v0.2 carrier PCB, the retromod constraint
+- **Affects:** Node B (Stage 5, pin map), the carrier PCB, the retromod constraint
 - **Evidence:** teardown of a donor unit — [`docs/01-hardware/photos/`](../01-hardware/photos/README.md)
 
 ## Context
@@ -60,7 +60,7 @@ lands on it. Which of the two is an open point, below.
 
 **Makes harder / commits us to**
 
-- **The v0.2 PCB is no longer free-form in that area.** If the carrier reproduces
+- **The carrier PCB is no longer free-form in that area.** If the carrier reproduces
   the pads, their geometry, spacing and surface finish have to match what the OEM
   rubber expects — the pads are usually carbon- or gold-finished, and bare tinned
   copper oxidises and goes intermittent.

@@ -1,10 +1,12 @@
 # Node B — Gauge
 
 ESP32 in the centre console, in the OEM clock bay. Reads the ECU over **SSM2** on
-the K-line, drives the OLED, and sends vehicle speed to Node A over ESP-NOW. See
-the [component catalogue](README.md#component-catalogue) and
-[BOM](README.md#bom-with-indicative-prices) for the parts referenced by `Ref`
-below.
+the K-line and drives the OLED. It is the **hub of the ESP-NOW star**: it sends
+speed to Node A, receives the lock mode back, and from v0.3 receives sensor
+channels from Node C ([`docs/02-firmware/`](../02-firmware/README.md#link-topology)).
+
+`Ref` codes below index the [component catalogue](README.md#component-catalogue)
+and [BOM](README.md#bom-with-indicative-prices).
 
 ## Stages and exact values
 
@@ -27,6 +29,13 @@ Two identical dividers bringing 12 V down to a safe level. The ILL one carries a
 larger capacitor to average the signal if the illumination is PWM-dimmed by the
 dash rheostat.
 
+> **Open: the ignition sense has no GPIO.** The pin map below assigns ILL to
+> GPIO35 and the analogue input to GPIO34, but nothing to `node_IGN`. The source
+> document specified the divider without a pin, and the free ADC1 pins are GPIO36
+> and GPIO39 ([ADR 0005](../decisions/0005-ota-in-maintenance-mode.md)). It is not
+> assigned here rather than guessed at; tracked in
+> [`docs/02-firmware/`](../02-firmware/README.md#open-items).
+
 | Ref | Component | Value | Connection | Function |
 | --- | --- | --- | --- | --- |
 | R1 | Resistor | 10 kΩ | IG → node_IGN | upper leg |
@@ -40,6 +49,8 @@ dash rheostat.
 
 ### Stage 3 · Analogue input (0-5 V sensor, optional)
 
+One divided input, kept for a single local sensor.
+
 | Ref | Component | Value | Connection | Function |
 | --- | --- | --- | --- | --- |
 | R5 | Resistor | 10 kΩ | sensor → node_AN | upper |
@@ -47,9 +58,10 @@ dash rheostat.
 | D5 | Schottky clamp | BAT85 | node_AN → 3.3 V | clips |
 | C7 | Ceramic | 100 nF | node_AN → GND | filter → ADC |
 
-> **Thermocouples do not go through a divider** — they output millivolts. For
-> oil or gearbox temperature, use a dedicated **MAX31855** amplifier (type K, SPI
-> output) as a separate module. Deferred to the expansion phase.
+> **This stage does not scale.** Wi-Fi claims ADC2, leaving Node B two usable ADC1
+> channels ([ADR 0005](../decisions/0005-ota-in-maintenance-mode.md)), and there is
+> no room on a 3 × 7 cm board for more. Analogue sensing beyond this one input is
+> [Node C](node-c-sensors.md)'s job, on an external I²C ADC.
 
 ### Stage 4 · K-line transceiver (L9637D to OBD pin 7)
 
@@ -64,10 +76,10 @@ dash rheostat.
 *Connections: VS→12 V (IG) · VCC→3.3 V · RX→GPIO16 · TX→GPIO17 · K→OBD pin 7 ·
 common GND. An L9637D breakout usually carries R7/C8 on board.*
 
-The K-line reaches the console on **i59 pin 7**, which the factory clock circuit
-does not use at all — see the [i59 adapter](assembly-and-wiring.md#i59-adapter-1-male--2-female),
-where the factory diagram establishes which pins are free and why the installation
-stays reversible.
+The K-line runs from OBD pin 7 to this node. **Whether it arrives through the i59
+adapter's spare pin 7 or on its own cable beside it is not settled** — see the
+[i59 adapter](assembly-and-wiring.md#i59-adapter-1-male--2-female), which also
+establishes which pins are free and why the installation stays reversible.
 
 ### Stage 5 · Display, clock and buttons
 
@@ -79,44 +91,31 @@ stays reversible.
 
 #### The buttons are the OEM ones, reused
 
-The four controls are the car's existing buttons — **DISP**, **SET** and the
-**− +** rocker — not new hardware. That is the retromod constraint, and the
-teardown of a donor unit confirmed it is practical.
+The four controls are the car's existing **DISP**, **SET** and **− +** buttons.
+They are not tactile switches: they are interdigitated contact pads on the OEM
+board, closed by a conductive rubber pad. A teardown of a donor unit established
+this — the finding, the alternatives and what it commits the PCB to are in
+[ADR 0004](../decisions/0004-reuse-oem-contact-pad-buttons.md); the photographs
+are indexed in [`photos/`](photos/README.md).
 
 ![The clock unit out of the dash, showing the button layout](photos/clock-unit-front.jpg)
 
-**Photo** — The unit out of the dash. DISP at bottom left, the **− +** rocker and
-**SET** at the right: the four functions the pin map above assumes.
-
-They are not tactile switches. They are **interdigitated contact pads etched on
-the OEM board**, closed by a conductive rubber pad behind the bezel — the same
-construction as a TV remote keypad.
-
 ![The OEM board, with the button contact pads outlined in red](photos/donor-pcb-contact-pads.jpg)
 
-**Photo** — The donor unit's board: VFD display and driver, with the button
-contact pads outlined in red. A **donor unit** was taken apart for this — same
-generation and housing, but the base clock-only trim with one button fewer. It is
-not the unit going into the car.
+**Photos** — The car's unit, with DISP bottom left and the **− +** rocker and SET
+at the right: the four functions the pin map assumes. Below, the donor board with
+the contact pads outlined in red.
 
-Electrically this is the good case: a pad closure is an ordinary dry contact with
-no OEM silicon in the path, so it wires straight to a GPIO with `INPUT_PULLUP`
-and the other side to ground. The internal pull-up is around 45 kΩ, high enough
-that even a conductive-rubber contact of a few kΩ pulls the pin firmly below the
-logic-low threshold — no external conditioning needed.
+Wiring is therefore just `INPUT_PULLUP` on the GPIO and the pad's other side to
+ground — no external conditioning. Mechanically the carrier must either retain the
+OEM board's pad area or reproduce its geometry; that choice is open, and the pad
+layout on the car's own unit is
+[`OC-08`](../04-integration/README.md#open-checks-on-the-vehicle).
 
-Mechanically it constrains the carrier: either the OEM board's pad area is cut out
-and retained, or the carrier reproduces the pad geometry so the original rubber
-lands on it. That choice, and the pad layout on the car's own trim, are open — see
-[ADR 0004](../decisions/0004-reuse-oem-contact-pad-buttons.md).
-
-> **Mode confirmation from Node A.** The auto-lock ON/OFF button lives on **Node
-> A** (a reused OEM switch), not here. Node B does not generate that toggle — it
-> only **receives** the mode change over ESP-NOW when it happens and shows it on
-> the OLED for a couple of seconds as confirmation. This needs no new hardware on
-> Node B, only firmware to handle the inbound message. See
-> [ADR 0003](../decisions/0003-onoff-button-direct-to-node-a.md) and
-> [`docs/02-firmware/`](../02-firmware/README.md).
+> **The ON/OFF control is not here.** The auto-lock toggle is a reused OEM switch
+> on **Node A** ([ADR 0003](../decisions/0003-onoff-button-direct-to-node-a.md)).
+> Node B only receives the mode change over ESP-NOW and confirms it on the OLED.
+> No hardware on this node; firmware only.
 
 ## ESP32 pin map (Node B)
 
@@ -137,8 +136,9 @@ lands on it. That choice, and the pad layout on the car's own trim, are open —
 | Buttons | [−] | 26 | `INPUT_PULLUP` |
 | ILL (dimming) | ADC | 35 | Stage 2 |
 | Analogue sensor | ADC | 34 | Stage 3 |
-| Speed (transmit) | — (radio) | ESP-NOW → Node A |
-| Mode confirmation (receive) | — (radio) | ESP-NOW ← Node A, shown on the OLED |
+| ESP-NOW | speed, transmit | — (radio) | → Node A |
+| ESP-NOW | mode confirmation, receive | — (radio) | ← Node A, shown on the OLED |
+| ESP-NOW | sensor channels, receive | — (radio) | ← Node C, v0.3 |
 
 ## Schematics and physical layout
 
@@ -171,11 +171,9 @@ behaviour as the OEM trip computer.
 
 ![The donor housing at an angle, showing the lens layers and internal depth](photos/donor-housing-lens-layers.jpg)
 
-**Photo** — The donor housing at an angle: outer smoked lens, reddish inner panel
-behind it, and the internal depth the carrier board and the OLED have to fit
-into. The SSD1322 needs roughly 79 × 21 mm of active area and about 6 mm of
-depth; the carrier is 3 × 7 cm. Confirm both against the car's own unit before
-committing to a board outline.
+**Photo** — Internal depth available behind the lens. The SSD1322 needs roughly
+79 × 21 mm of active area and about 6 mm of depth; the carrier is 3 × 7 cm.
+Confirm both against the car's own unit before committing to a board outline.
 
 ### Full spatial layout
 

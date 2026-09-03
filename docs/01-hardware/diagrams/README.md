@@ -11,12 +11,12 @@ not committed.
 | 3 | `03-node-b-signal-interface.png` | [Node B](../node-b-gauge.md#signal-interface-k-line-oled-rtc) |
 | 4 | `04-node-b-spatial-layout.png` | [Node B](../node-b-gauge.md#full-spatial-layout) |
 | 5 | `05-node-b-grid-plan.png` | [Node B](../node-b-gauge.md#exact-plan-on-the-perfboard-grid) |
-| 6 | `06-node-a-state-machine.png` | [Node A](../node-a-locking.md#functional-behaviour) |
+| 6 | `06-node-a-state-machine.png` | [Firmware, Node A](../../02-firmware/README.md#node-a--locking) |
 | 7 | `07-node-a-interface.png` | [Node A](../node-a-locking.md#interface-schematic) |
 | 8 | `08-node-a-spatial-layout.png` | [Node A](../node-a-locking.md#spatial-layout) |
 | 9 | `09-node-a-grid-plan.png` | [Node A](../node-a-locking.md#grid-plan) |
 | 10 | `10-carrier-concept.png` | [Assembly and wiring](../assembly-and-wiring.md#the-carrier-board-per-node) |
-| 11 | `11-node-c-channels.png` | [Node C](../node-c-sensors.md) |
+| 11 | `11-node-c-channels.png` | [Node C](../node-c-sensors.md#channel-architecture) |
 
 ## How they are produced
 
@@ -28,10 +28,6 @@ headless Chromium at 2× device scale. To rebuild every figure:
 ```bash
 python3 scripts/generate_diagrams.py
 ```
-
-The script is the editable artefact: to change a figure, change the code. The
-diff of a figure change is therefore a readable code diff rather than an opaque
-binary one.
 
 ### Why it is built this way
 
@@ -71,3 +67,4 @@ Consistent across every figure, carried over from the source document:
 | Cyan (dashed) | ESP-NOW — radio, no wire |
 | Green | Node A |
 | Purple | Node B |
+| Pink | Node C |

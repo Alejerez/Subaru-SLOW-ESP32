@@ -1,5 +1,9 @@
 # Assembly, wiring and consumables
 
+Owns the **physical build**: the i59 adapter, connector standard, carrier board,
+cable schedule, consumables and tools. Per-stage component values are in each
+node's own page.
+
 ## i59 adapter (1 male + 2 female)
 
 A pass-through adapter: **the harness is never cut.** Every OEM signal passes
@@ -54,15 +58,31 @@ the GB wire.
 | 5 | OEM UART | ✔ pass-through | ✖ **not connected, not driven** |
 | 9 | ACC | ✔ pass-through | ◦ optional / future |
 
+> ⚠️ **Unresolved: does the K-line go through the adapter, or beside it?**
+> The pin table above routes it on i59 pin 7, so it arrives inside the adapter.
+> The layout figures do not: [Fig. 4](node-b-gauge.md#full-spatial-layout) and
+> [Fig. 5](node-b-gauge.md#exact-plan-on-the-perfboard-grid) give the i59 a **3-pin**
+> header (IG · GND · ILL) and the K-line **its own 2-pin header**, fed by a separate
+> cable from the OBD port — which is also what the [cable schedule](#cable-lengths)
+> and [Fig. 1](../00-concept/README.md#architecture) describe.
+>
+> Both are buildable and neither is wrong on its own; the source document contains
+> both. Through the adapter is tidier and puts one fewer cable in the console;
+> beside it is simpler to build and to fault-find. **This is recorded rather than
+> silently reconciled** ([CONTRIBUTING](../../CONTRIBUTING.md#what-must-not-be-silently-fixed)),
+> and has to be settled before the adapter is built — step 4 of the
+> [install sequence](../04-integration/README.md#install-sequence).
+
 ### Why this makes the modification reversible
 
 The diagram is what turns "reversible" from a claim into something checkable.
 
 **The four unused pins are genuinely unused.** The clock circuit puts nothing on
-pins 2, 3, 4 or 7. The K-line therefore rides on a terminal that carries no factory
-signal at all — it cannot interfere with anything, because there is nothing there
-to interfere with. It also means the K-line reaches the console **inside the
-adapter**, not as a wire spliced into the car's loom.
+pins 2, 3, 4 or 7. If the K-line is routed through the adapter it therefore rides
+on a terminal carrying no factory signal at all — it cannot interfere with
+anything, because there is nothing there to interfere with. The argument below
+holds either way: it depends on the adapter passing every factory signal through,
+not on what the spare pins carry.
 
 **Nothing is cut, spliced or tapped.** Every factory signal is carried from the
 car's connector to the second female connector unbroken. Unplug the adapter,
@@ -121,6 +141,10 @@ walks them out.
 | JST-VH | 3.96 | friction | 12 V power |
 | **Molex Micro-Fit 3.0** | 3.0 | ✓ latch | signal + power — **recommended** |
 
+**One exception, from v0.3.** Node C's [bulkhead connector](node-c-sensors.md#the-bulkhead-connector)
+at the firewall is environmentally sealed and therefore not from this table. The
+sealing stops there: everything on the cabin side is Micro-Fit as usual.
+
 ### The carrier board, per node
 
 ![Carrier board concept](diagrams/10-carrier-concept.png)
@@ -137,11 +161,6 @@ lines. Every module plugged in, latching connectors at the edge.
   serviceable.
 - **Compact:** the carrier is flat and small; it eliminates loose wiring and does
   not grow the way screw-terminal shields do.
-
-> **Replaceable display.** The OLED connects to the carrier through a **latching
-> connector (JST) or a socket**, and is **held mechanically by the 3D-printed
-> bezel with screws** — never hanging from its pins. If it fails: pull the bezel,
-> unplug, plug in the new OLED. Five minutes, no soldering iron.
 
 ### Strain relief — matters more than the connector
 
@@ -163,10 +182,24 @@ lines. Every module plugged in, latching connectors at the edge.
 | LOCK/UNLOCK | Node A → BIU p15/p29 | 15–30 cm | 20 AWG |
 | IG + GND, Node A | fuse box / ground → Node A | 30–50 cm | 20 AWG |
 | SW1 ON/OFF switch | console switch → Node A GPIO27 | existing OrG factory run (console → BIU) | — |
-| Node A ↔ Node B | ESP-NOW (radio) | 0 | — |
+| Any node ↔ any node | ESP-NOW (radio) | 0 | — |
 
 No VSS run: removed ([ADR 0002](../decisions/0002-speed-over-ssm2-not-vss.md)).
 Buy about 30 % extra wire and leave service loops.
+
+**Node C, from v0.3** — not part of the first build:
+
+| Run | From → to | Length | Gauge |
+| --- | --- | --- | --- |
+| Caliper RTD ×2 | front caliper → bulkhead | 2.5–3 m | 3-wire, shielded |
+| Coolant level | catch tank → bulkhead | 1.5–2 m | 22 AWG |
+| Radiator ΔT ×2 | inlet / outlet → bulkhead | 1–1.5 m | 3-wire |
+| Ambient air | bumper or engine bay → bulkhead | 1.5–2 m | 3-wire |
+| Battery voltage | battery → bulkhead | 1.5–2 m | 20 AWG, fused at the battery |
+| Bulkhead → Node C | firewall → node | 30–50 cm | 22 AWG |
+
+Confirm the caliper lead length before ordering: an earlier draft assumed 1.5 m,
+from when the node was to live in the engine bay.
 
 ## Consumables and tools
 
@@ -206,7 +239,7 @@ Buy about 30 % extra wire and leave service loops.
 | Temperature-controlled iron + fine tip | soldering fine pins without damaging parts (300–350 °C) | essential |
 | Heat gun | shrinking heatshrink evenly (better than a lighter) | essential |
 | Multimeter | checking voltages, continuity, and confirming pins on the car | essential |
-| Crimp tool | terminals + **Dupont pins** (Dupont needs its specific die) | essential |
+| Crimp tool | JST and Micro-Fit terminals — check the die matches the connector family | essential |
 | Wire strippers | stripping without nicking strands | essential |
 | Side cutters + needle-nose pliers | cutting, forming and placing | essential |
 | Bench supply (or a 12 V battery with a fuse) | testing each node on the bench before the car | essential |
@@ -216,11 +249,10 @@ Buy about 30 % extra wire and leave service loops.
 | Label maker / tape | marking every wire by function (prevents errors) | recommended |
 
 > **Field notes for a non-specialist.**
-> - **Adhesive-lined heatshrink** (not the plain kind): a car vibrates and takes
->   in moisture; the adhesive wall seals the copper.
 > - **63/37 leaded solder** is easier for a beginner than lead-free — it melts
 >   lower and more evenly. Wash your hands afterwards.
-> - **Colour by function:** red = 12 V, black = ground, another colour per signal.
->   Label the ends. That alone prevents 90 % of mistakes.
-> - **No "quick-splice" connectors that pierce the wire:** they fail with
->   vibration. Use Posi-Tap, or solder plus heatshrink.
+> - **Colour by function**, one colour per net, and never reuse one.
+>   Label the ends. That alone prevents most wiring mistakes.
+> - **Use the project's [colour code](README.md#wire-colour-code)** — yellow +12 V,
+>   copper +5 V, red +3.3 V, grey GND, blue signal — not the generic automotive
+>   "red = 12 V". Every figure in this repository assumes it.

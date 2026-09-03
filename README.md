@@ -2,12 +2,12 @@
 
 ### **S**SM2 **L**ink **O**ver **W**ireless
 
-**Retromod instrumentation and speed-based central locking for a Subaru Legacy 3.0R (BL/BP chassis, EDM), built from two ESP32 nodes linked by ESP-NOW.**
+**Retromod instrumentation and speed-based central locking for a Subaru Legacy 3.0R (BL/BP chassis, EDM), built from ESP32 nodes linked by ESP-NOW.**
 
 The car's OEM clock display is replaced by a monochrome OLED that polls the ECU
 over **SSM2** on the K-line; a second, physically separate node next to the BIU
-locks the doors above 20 km/h and unlocks them at a standstill. The two nodes
-share no wiring — only a radio link.
+locks the doors above 20 km/h and unlocks them at a standstill. The nodes share no
+wiring — only a radio link.
 
 This repository is the engineering record: schematic-level design with exact
 component values, pin maps, board layouts, firmware behaviour specification,
@@ -18,8 +18,8 @@ specified but not yet written.
 Start at [`docs/00-concept/README.md`](docs/00-concept/README.md).
 
 *The name is a backronym, and an accurate one: an SSM2 link is exactly what
-travels over the air between the two nodes. That it also describes a 3.0R is
-a coincidence nobody is obliged to accept.*
+travels over the air between the nodes. That it also describes a 3.0R is a
+coincidence nobody is obliged to accept.*
 
 ![System architecture](docs/01-hardware/diagrams/01-system-architecture.png)
 
@@ -49,33 +49,36 @@ console but does nothing. See [ADR 0003](docs/decisions/0003-onoff-button-direct
 
 ![The unused OEM switch, marked in red](docs/01-hardware/photos/oem-switch-panel.jpg)
 
-And the gauge controls are the OEM buttons themselves. A donor unit was taken
-apart to find out how they are built: they turn out to be contact pads on the
-OEM board, closed by a conductive rubber pad — an ordinary dry contact an ESP32
-input can read directly, with no new buttons to design or fit. See
+The gauge controls are the OEM buttons themselves. A donor unit was taken apart to
+find out how they are built: contact pads on the OEM board, closed by a conductive
+rubber pad — an ordinary dry contact an ESP32 input reads directly, with no new
+buttons to design or fit. See
 [ADR 0004](docs/decisions/0004-reuse-oem-contact-pad-buttons.md).
 
 ![The OEM board, with the button contact pads outlined in red](docs/01-hardware/photos/donor-pcb-contact-pads.jpg)
 
-## Why ESP32, and why two nodes
+## Why ESP32, and why separate nodes
 
 The ESP32 was chosen primarily for **ESP-NOW** — a connectionless peer-to-peer
-protocol on the 2.4 GHz PHY that needs no router, no pairing infrastructure and
-no association. That single capability is what makes the architecture modular:
+protocol on the 2.4 GHz PHY needing no router, no pairing infrastructure and no
+association. That single capability is what makes the architecture modular:
 
 - **The gauge and the locking function are electrically unrelated** and live in
   different parts of the car (centre console vs. A-pillar / BIU). Splitting them
-  avoids running a long harness between the two and decouples their failures.
+  avoids a long harness between the two and decouples their failures.
 - **Speed is measured once and shared.** Node B already reads the ECU over SSM2,
   so vehicle speed comes from there and travels to Node A by radio — no VSS tap,
-  no signal conditioning (see [ADR 0002](docs/decisions/0002-speed-over-ssm2-not-vss.md)).
-- **Growth is by adding nodes, not by adding wires.** Any future I/O — extra
-  sensors, another actuator, a second display — becomes another wireless node
-  that joins the same link. Nothing in the existing harness has to change.
+  no signal conditioning ([ADR 0002](docs/decisions/0002-speed-over-ssm2-not-vss.md)).
+- **Growth is by adding nodes, not by adding wires.** The link is a **star** with
+  Node B as the hub, and a third node —
+  [**Node C**](docs/01-hardware/node-c-sensors.md), an analogue sensor front end —
+  is designed for v0.3. Nodes are optional by default: the system degrades
+  gracefully when one is not fitted
+  ([ADR 0006](docs/decisions/0006-node-c-analogue-front-end.md)).
 
-The ESP32 also brings enough on-chip peripherals for both roles (UART for the
-K-line, SPI for the OLED, I²C for the RTC, ADC for the divided analogue inputs)
-on a single 3.3 V part.
+The ESP32 also brings enough on-chip peripherals for every role (UART for the
+K-line, SPI for the OLED, I²C for the RTC and the sensor ADCs) on a single 3.3 V
+part.
 
 ## Scope
 
@@ -103,17 +106,18 @@ kept.
 ├── docs/
 │   ├── 00-concept/        Purpose, architecture, design rationale, status
 │   │   └── source/        Original v0.1 design document (HTML, Spanish), kept verbatim
-│   ├── 01-hardware/       Component catalogue, BOM, both nodes, wiring, figures, photos
-│   ├── 02-firmware/       Behavioural specification for both nodes
+│   ├── 01-hardware/       Component catalogue, BOM, each node, wiring, figures, photos
+│   ├── 02-firmware/       Link topology and behavioural specification
 │   ├── 03-software/       Host-side / tooling notes (empty at v0.1)
 │   ├── 04-integration/    Install sequence, multimeter checklist, open vehicle checks
 │   ├── decisions/         Architecture decision records (why, not just what)
 │   └── references.md      Datasheets, standards, prior art and forum sources
-├── firmware/              Node A and Node B firmware — not yet written
-├── hardware/              KiCad / EasyEDA project — v0.2 (PCB)
+├── CHANGELOG.md           Versioned, dated release notes
+├── firmware/              Node firmware — not yet written
+├── hardware/              KiCad / EasyEDA project — the PCB track
 ├── software/              Supporting host software
 ├── scripts/               Figure generator (source of truth for every diagram)
-├── ROADMAP.md             Locked scope, and the additional-feature list in progress
+├── ROADMAP.md             Locked v0.1 scope, and the tiered plan beyond it
 ├── CONTRIBUTING.md        Branch and review workflow
 └── SETUP-GITHUB.md        How to create the repo and finish the licence, from scratch
 ```
@@ -123,59 +127,30 @@ kept.
 Every figure in `docs/01-hardware/diagrams/` is generated by
 [`scripts/generate_diagrams.py`](scripts/generate_diagrams.py) — that script is
 the editable source, and only the rendered PNGs are committed. They are drawn
-dark-mode native. To rebuild them:
-
-```bash
-python3 scripts/generate_diagrams.py
-```
-
-The renderer refuses to pass silently: it checks every element against the
-viewBox and every label against every other label, and reports overflow or
-collisions instead of emitting a broken image.
+dark-mode native, and the renderer refuses to pass silently: it checks every
+element against the viewBox and every label against every other label. See
+[`docs/01-hardware/diagrams/`](docs/01-hardware/diagrams/README.md).
 
 ## Prior art and credits
 
 This project stands on published work by other people. It is a different design
-— two ESP32 nodes and ESP-NOW rather than a single Arduino — but the SSM2
+— separate ESP32 nodes on ESP-NOW rather than a single Arduino — but the SSM2
 groundwork and the "put a gauge in the clock pod" idea are not original here.
 
-**Repositories**
+**Repositories** — [Obeisance/SubaruSSMClockPodMod](https://github.com/Obeisance/SubaruSSMClockPodMod),
+the closest published analogue and the direct inspiration for the clock-pod
+approach · [matprophet/subduino](https://github.com/matprophet/subduino) ·
+[starlingcrossgte-svg/PROTOCOL](https://github.com/starlingcrossgte-svg/PROTOCOL) ·
+[hrdwrbob/eingauge](https://github.com/hrdwrbob/eingauge) ·
+[rpkish/Subduino-SSM](https://github.com/rpkish/Subduino-SSM).
 
-- **[Obeisance/SubaruSSMClockPodMod](https://github.com/Obeisance/SubaruSSMClockPodMod)** —
-  Arduino code for OBD communication with a GD-chassis Subaru WRX, including
-  routines for the Subaru Select Monitor protocol, driving a clock-pod display.
-  The closest published analogue to what this project does, and the direct
-  inspiration for the clock-pod approach.
-- **[matprophet/subduino](https://github.com/matprophet/subduino)** — Arduino
-  project for Subaru SSM to CAN-bus conversion; polls a WRX/STi ECU over SSM2 on
-  the K-line by addressing specific parameters rather than block reads, using an
-  MC33660 K-line interface. Useful reference for the polling strategy.
-- **[starlingcrossgte-svg/PROTOCOL](https://github.com/starlingcrossgte-svg/PROTOCOL)** —
-  GPLv3 **Android** tool (Java) for Subaru SSM2 diagnostics over K-line and CAN,
-  plus bench ECU/TCM firmware work on SH7058, supporting Tactrix OpenPort,
-  OBDLink, STN and FT232 KKL adapters. Not an Arduino project — a useful
-  cross-check on SSM2 addressing and adapter behaviour. Its author marks it
-  unfinished and experimental.
-- **[hrdwrbob/eingauge](https://github.com/hrdwrbob/eingauge)** — a gauge system
-  written in Python with an Arduino sensor back end. Not Subaru-specific;
-  referenced for gauge presentation and data-acquisition structure. Marked as
-  work in progress by its author.
-- **[rpkish/Subduino-SSM](https://github.com/rpkish/Subduino-SSM)** — cited as an
-  SSM2-on-microcontroller precedent in the original v0.1 design document.
+**Forum work** — *"Clock pod mod with Subarb Select Monitor ECU polling and
+Arduino"* by **Obeisance** on ClubWRX, ten-plus pages of build log behind the
+first repository above; and *"Detailed SSM to Can-bus Convertor DIY"* by
+**Ajzride** on The Factory Five Forum.
 
-**Forum work**
-
-- *"Clock pod mod with Subarb Select Monitor ECU polling and Arduino"* by
-  **Obeisance**, ClubWRX —
-  [thread](https://www.clubwrx.net/threads/clock-pod-mod-with-subarb-select-monitor-ecu-polling-and-arduino.134423369/).
-  Ten-plus pages of build log behind the repository above. (The spelling
-  "Subarb" is the thread's own.)
-- *"Detailed SSM to Can-bus Convertor DIY"* by **Ajzride**, The Factory Five
-  Forum — [thread](https://thefactoryfiveforum.com/thread/119120).
-
-…among others. Everything consulted is listed in
-[`docs/references.md`](docs/references.md), which also flags which sources have
-been verified and which have not.
+What each one is, what language it is in, its licence, and which have been
+verified: [`docs/references.md`](docs/references.md).
 
 ## Use of AI
 
@@ -222,6 +197,7 @@ schematics if that is preferable, at no technical cost to the project.
 ## Status and next steps
 
 - [ ] Complete `LICENSE-SOFTWARE.txt` with the official GPL-3.0 text
-- [ ] Resolve the six [open checks on the vehicle](docs/04-integration/README.md#open-checks-on-the-vehicle) — they are measurements, not assumptions
-- [ ] Write the firmware for both nodes from [`docs/02-firmware/`](docs/02-firmware/README.md)
-- [ ] Fill in the additional-feature list in [`ROADMAP.md`](ROADMAP.md)
+- [ ] Close the seven v0.1 [open checks on the vehicle](docs/04-integration/README.md#open-checks-on-the-vehicle) — they are measurements, not assumptions
+- [ ] Define the ESP-NOW packet format before Node C is built
+- [ ] Write the firmware for Nodes A and B from [`docs/02-firmware/`](docs/02-firmware/README.md)
+

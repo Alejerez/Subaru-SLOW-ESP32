@@ -31,6 +31,7 @@ RADIO = "#56d4dd"
 
 NODE_A = "#7ee787"      # locking node
 NODE_B = "#d2a8ff"      # gauge node
+NODE_C = "#f778ba"      # analogue front end
 WARN = "#f0883e"
 
 MONO = "'DejaVu Sans Mono','Liberation Mono',ui-monospace,Menlo,Consolas,monospace"
@@ -137,6 +138,8 @@ class Svg:
           orient="auto-start-reverse"><path d="M0,1.2 L9.5,5 L0,8.8 z" fill="{GND}"/></marker>
   <marker id="arw_a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7"
           orient="auto-start-reverse"><path d="M0,1.2 L9.5,5 L0,8.8 z" fill="{NODE_A}"/></marker>
+  <marker id="arw_c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7"
+          orient="auto-start-reverse"><path d="M0,1.2 L9.5,5 L0,8.8 z" fill="{NODE_C}"/></marker>
 </defs>"""
         body = "\n".join(self.parts)
         return (
@@ -148,7 +151,8 @@ class Svg:
 
 
 MARKER = {V12: "arw_v12", V5: "arw_v5", SIG: "arw_sig", GND: "arw_gnd",
-          RADIO: "arw_radio", NODE_A: "arw_a", FG_DIM: "arw", EDGE: "arw"}
+          RADIO: "arw_radio", NODE_A: "arw_a", NODE_C: "arw_c",
+          FG_DIM: "arw", EDGE: "arw"}
 
 
 def marker_for(color):

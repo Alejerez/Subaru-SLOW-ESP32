@@ -55,8 +55,9 @@ confirmation on the OLED for ≈2 s (e.g. `AUTO-LOCK: ARMED` /
 
 - Node A gains a new input: GPIO27, `INPUT_PULLUP`, switch to ground. Documented
   as [Stage 4](../01-hardware/node-a-locking.md#stage-4--onoff-button-reused-oem-switch).
-- A new cable run: console switch → Node A GPIO27, on a latching connector like
-  every other enclosure output.
+- ~~A new cable run: console switch → Node A GPIO27.~~ **Closed by the amendment
+  below:** the factory OrG wire already runs console → BIU, where Node A sits, so
+  no new cable is pulled.
 - No change to the BOM: the switch already exists in the car and the pull-up is
   internal to the ESP32.
 
@@ -81,18 +82,16 @@ confirmation on the OLED for ≈2 s (e.g. `AUTO-LOCK: ARMED` /
 
 **Left unresolved**
 
-- **The indicator LED's electrical specification.** Whether it can be driven
-  directly from a 3.3 V GPIO through its presumed internal resistor, needs a
-  low-side MOSFET from the 12 V rail, or is better replaced outright with a modern
-  high-efficiency LED. Tracked as an
-  [open check on the vehicle](../04-integration/README.md#open-checks-on-the-vehicle).
+- **The indicator LED's electrical specification** — direct from a 3.3 V GPIO,
+  a low-side MOSFET from the 12 V rail, or a replacement LED. Tracked as
+  [`OC-07`](../04-integration/README.md#open-checks-on-the-vehicle).
 - The debounce value for GPIO27 is not specified; it is an implementation choice.
   Tracked in [`docs/02-firmware/`](../02-firmware/README.md#open-items).
 - The mode-change packet format is specified functionally, not at byte level.
   Tracked in the same place.
-- Whether the switch's indicator lamp (if present) should be driven to show the
-  armed state is **not decided** — it depends on the pin count above, and would
-  need a driven output rather than just an input.
+- ~~Whether the switch's indicator lamp should be driven to show the armed state.~~
+  **Decided in the amendment below**, once the pin count was closed as `OC-06`:
+  driven from GPIO33, lit while DISABLED.
 
 ## Amendments
 

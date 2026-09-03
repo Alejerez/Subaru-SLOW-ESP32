@@ -65,14 +65,11 @@ display integration and the locking logic against real vehicle wiring.
    behind the A-pillar trim where cable reflashing means dismantling interior.
    Build it **last** in v0.1, once the other four work on the bench.
 
-Two firmware requirements that are not features but belong in v0.1 anyway:
-
-- **Burn-in mitigation.** A mono OLED showing a clock in a fixed position for the
-  entire life of the car will burn in. Pixel shifting and brightness management
-  are v0.1 problems, not something to retrofit after a year of damage.
-- **Stale-data indication.** If SSM2 stops answering or the ESP-NOW link drops,
-  the display must say so rather than freeze on the last value. A gauge that lies
-  is worse than a gauge that is blank.
+Two firmware requirements that are not features but belong in v0.1 anyway —
+**burn-in mitigation** on the OLED, and **stale-data indication** when a source
+stops answering. Both are specified in
+[`docs/02-firmware/`](docs/02-firmware/README.md#requirements-for-every-node);
+neither can be usefully retrofitted.
 
 Completion criteria are the install sequence and multimeter checklist in
 [`docs/04-integration/`](docs/04-integration/README.md), plus the seven open
@@ -80,7 +77,7 @@ vehicle checks listed there.
 
 ## v0.2 — firmware only
 
-No new hardware. Everything here runs on the two nodes as built for v0.1.
+No new hardware. Everything here runs on Nodes A and B as built for v0.1.
 
 - **DTC read.** Trouble codes on the gauge, no laptop and no Tactrix.
 - **DTC clear** — user-initiated only, with a deliberate second confirmation.
@@ -118,23 +115,15 @@ adding an analogue sensor later is a small job rather than a redesign. Full
 specification in [`node-c-sensors.md`](docs/01-hardware/node-c-sensors.md),
 reasoning in [ADR 0006](docs/decisions/0006-node-c-analogue-front-end.md).
 
-- **In the cabin, at the firewall pass-through** — not in the engine bay. The node
-  gains nothing from being out there except shorter wires, and pays with a sealed
-  enclosure, a vent membrane, non-standard connectors, an ESP32 near its
-  temperature limit and a radio path through steel. A **sealed bulkhead connector**
-  at the firewall is the environmental boundary instead, with spare pins from day
-  one.
-- Channels: ratiometric 0–5 V, resistive NTC/RTD on three wires, digital in — all
-  through **ADS1115s on I²C**, using differential inputs where the 3 m run needs
-  the noise rejection.
-- Sensors fitted first: **coolant level** in the catch tank, **caliper temperature**
-  (PT1000 surface RTDs, not thermocouples — no alloy extension wire, no cold-junction
-  compensation), **radiator ΔT**, **ambient air**, **battery voltage**.
-- **Boost is a provision, not a feature**: it is one free 0–5 V channel. This car is
-  naturally aspirated; anyone reproducing the project on a turbocharged car plugs a
-  sensor in.
-- Sends to Node B at ~1 Hz. Every quantity here is slow, and the locking link is
-  untouched.
+- **In the cabin, at the firewall pass-through** — not in the engine bay. A
+  **sealed bulkhead connector** at the firewall is the environmental boundary, with
+  spare pins from day one.
+- Channels are typed, not sensor-specific: ratiometric 0–5 V, resistive NTC/RTD on
+  three wires, digital in — all through **ADS1115s on I²C**.
+- Sensors fitted first: coolant level, caliper temperature (PT1000 RTDs), radiator
+  ΔT, ambient air, battery voltage. **Boost is a provision, not a feature** — one
+  free 0–5 V channel for anyone reproducing this on a turbocharged car.
+- Sends to Node B at ~1 Hz. The locking link is untouched.
 
 ### GPS + IMU node
 
@@ -233,8 +222,8 @@ Recorded so they are not re-proposed without new information.
 - **Phone Bluetooth: Spotify/Tidal metadata and incoming caller ID.** A phone
   holds A2DP with one device at a time, and that link belongs to the head unit.
   Dropping the phone link removes both features together, which is consistent.
-- **Infrared caliper temperature sensing.** Superseded by the contact thermocouple
-  above, for the reasons given there.
+- **Infrared caliper temperature sensing.** Superseded by the contact PT1000 RTDs
+  in the Node C section above, for the reasons given there.
 - **Extended logging on a Raspberry Pi with a Tactrix OpenPort**, proposed in the
   v0.1 source document. Superseded by trackday logging on an SD card. Note that
   any Tactrix session on the same K-line is also the one documented case where
@@ -258,7 +247,7 @@ Independent of the feature releases above. Once v0.1 is validated in the car:
   board outline — the retromod constraint does not relax.
 
 Practically this lands around v0.3, when several new nodes are being built at
-once and hand-populating four perfboards stops being reasonable.
+once and hand-populating five perfboards stops being reasonable.
 
 ## Documentation and tooling
 
@@ -268,5 +257,5 @@ once and hand-populating four perfboards stops being reasonable.
       changes — the generator and its overflow/collision checks already run
       headless, so this is mostly workflow plumbing. Not added yet because it has
       never been executed in a real pipeline.
-- [ ] Document the toolchain and flashing procedure for both nodes once the
+- [ ] Document the toolchain and flashing procedure for each node once the
       firmware exists.

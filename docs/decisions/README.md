@@ -13,7 +13,7 @@ Write an ADR when a choice:
 
 - rules out an alternative that a reasonable person would have picked;
 - has consequences that outlive the commit that introduced it;
-- changes an interface between the two nodes;
+- changes an interface between nodes;
 - resolves something the source document left open.
 
 Do **not** write one for a component swap with no design consequence, or for a

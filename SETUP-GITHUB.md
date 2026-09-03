@@ -59,7 +59,7 @@ You should see exactly one commit.
 1. Sign in at [github.com](https://github.com/).
 2. Top right, click **+** → **New repository**.
 3. **Repository name:** `Subaru-ESP32-SLOW`.
-4. **Description:** optional, e.g. "Retromod SSM2 gauge + speed-based central locking for a Subaru Legacy 3.0R, on two ESP32 nodes".
+4. **Description:** optional, e.g. "Retromod SSM2 gauge + speed-based central locking for a Subaru Legacy 3.0R, on ESP32 nodes linked by ESP-NOW".
 5. **Visibility:** **Private** for now (it can be made public later without losing history).
 6. **Important:** leave all three "Initialize this repository with" boxes
    **unchecked** (README, .gitignore, License). They already exist in the local

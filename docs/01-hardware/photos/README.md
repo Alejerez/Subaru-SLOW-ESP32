@@ -2,38 +2,33 @@
 
 Reference photographs taken by the project author. Working shots from the
 development phase — good enough to establish fact, not presentation quality.
-They will be retaken properly once the parts are final.
 
-Stored as JPEG: these are photographs, and PNG costs roughly ten times the size
-for no visible gain. The generated figures in [`../diagrams/`](../diagrams/) stay
-PNG, where it does matter.
+JPEG, because these are photographs; PNG would cost roughly ten times the size for
+no visible gain. The generated figures in [`../diagrams/`](../diagrams/) stay PNG,
+where it does matter.
+
+This page is an **index**: what each file shows and which document relies on it.
+The findings themselves live in those documents.
 
 ## The car's own unit
 
-| File | Subject |
-| --- | --- |
-| `oem-switch-panel.jpg` | Switch panel to the left of the steering wheel. Outlined in red: the unused windscreen-wiper de-icer switch — a North-American-market option this EDM car does not have — repurposed as the auto-lock ON/OFF control. See [ADR 0003](../../decisions/0003-onoff-button-direct-to-node-a.md). |
-| `clock-unit-front.jpg` | The clock / trip-computer unit out of the dash. Confirms the button layout the firmware assumes: **DISP** at bottom left, **− +** rocker and **SET** at the right. |
-| `coolant-catch-tank.jpg` | The 2 L welded catch tank that replaced the OEM expansion bottle when the larger aluminium radiator was fitted. Radiator hose to the lower spigot, upper side spigot blocked, cap outlet open to atmosphere and the cap's pressure function defeated — so the tank is **not pressurised**. Underpins the coolant level channel in [Node C](../node-c-sensors.md#coolant-level--catch-tank). |
-| `clock-bay-in-dash.jpg` | The bay in the centre console, outlined in red — between the upper storage compartment and the head unit. This is the position the retromod constraint requires the gauge to keep. |
+| File | Subject | Used by |
+| --- | --- | --- |
+| `oem-switch-panel.jpg` | Switch panel left of the steering wheel. Outlined in red: the unused wiper de-icer switch, repurposed as the auto-lock ON/OFF control | [ADR 0003](../../decisions/0003-onoff-button-direct-to-node-a.md) |
+| `clock-unit-front.jpg` | The clock / trip-computer unit out of the dash. DISP bottom left, **− +** rocker and SET at the right | [Node B, Stage 5](../node-b-gauge.md#stage-5--display-clock-and-buttons) |
+| `clock-bay-in-dash.jpg` | The bay in the centre console, outlined in red — the position the retromod constraint requires the gauge to keep | [Node B](../node-b-gauge.md#where-it-goes-in-the-car) |
+| `coolant-catch-tank.jpg` | The 2 L welded catch tank that replaced the OEM expansion bottle. Cap outlet open to atmosphere, pressure function defeated — the tank is **not pressurised** | [Node C](../node-c-sensors.md#coolant-level--catch-tank) |
 
 ## Donor unit (teardown)
 
 A **second unit of the same generation and housing, in the base clock-only trim**
-(one button fewer), was taken apart purely for investigation. It is *not* the unit
-going into the car — the car keeps its trip-computer variant. Anything measured on
-the donor has to be re-confirmed on the real unit before it is treated as final.
+(one button fewer), taken apart for investigation. It is *not* the unit going into
+the car. Anything measured on it must be re-confirmed on the real unit —
+[`OC-05`](../../04-integration/README.md#open-checks-on-the-vehicle) and
+[`OC-08`](../../04-integration/README.md#open-checks-on-the-vehicle).
 
-| File | Subject |
-| --- | --- |
-| `donor-pcb-contact-pads.jpg` | The OEM board: VFD display, its driver, and — outlined in red — the **interdigitated contact pads** the buttons work against. This is the finding that makes button reuse practical; see [ADR 0004](../../decisions/0004-reuse-oem-contact-pad-buttons.md). |
-| `donor-lens-backlit.jpg` | The lens held against a white screen, in transmission. Shows a **red / burgundy filter band** across the display window, with smoked grey around it. |
-| `donor-housing-lens-layers.jpg` | The housing at an angle: outer smoked lens, and the reddish inner panel behind it. Shows the internal depth available for the carrier board and the OLED. |
-
-> **Open point on the display filter.** The two lens photographs read clearly red
-> in transmission, while the unit installed in the car reads white when lit. Those
-> two observations have not been reconciled — the donor is a different trim, so its
-> lens may not be the same part. This decides whether the OLED should be amber (as
-> the BOM currently specifies) or white, so it is tracked as an
-> [open check](../../04-integration/README.md#open-checks-on-the-vehicle) rather
-> than assumed either way.
+| File | Subject | Used by |
+| --- | --- | --- |
+| `donor-pcb-contact-pads.jpg` | The OEM board: VFD display, its driver, and — outlined in red — the **interdigitated contact pads** the buttons work against | [ADR 0004](../../decisions/0004-reuse-oem-contact-pad-buttons.md) |
+| `donor-lens-backlit.jpg` | The lens against a white screen, in transmission: a **red / burgundy filter band** across the display window, smoked grey around it | [display colour](../README.md#display-colour-amber-or-white-still-open) |
+| `donor-housing-lens-layers.jpg` | The housing at an angle: outer smoked lens, reddish inner panel, and the internal depth available for the carrier and the OLED | [Node B](../node-b-gauge.md#where-it-goes-in-the-car) |

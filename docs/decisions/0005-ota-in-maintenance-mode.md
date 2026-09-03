@@ -89,7 +89,7 @@ A-pillar is worse than no OTA at all.
   input and 35 is ILL — which leaves **GPIO36 and GPIO39, and nothing else**. Any
   further analogue sensing needs an external I²C ADC (an ADS1115 on the RTC's
   existing bus is the natural choice, and gives better linearity than the ESP32's
-  own ADC besides). This constrains the v0.2 PCB, so it is a design input now, not
+  own ADC besides). This constrains the carrier PCB, so it is a design input now, not
   a discovery later.
 - Wi-Fi and ESP-NOW are **mutually exclusive by design**. Any future feature that
   wants both at once is not a small change — it is a revisit of this record.

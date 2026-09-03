@@ -20,6 +20,8 @@ hardware documentation.
 12. Robert Bosch GmbH, *Automotive Handbook*, 10th ed. Karlsruhe, Germany: Bosch, 2018.
 13. RomRaider Project, *Subaru Select Monitor (SSM2) — logging protocol and definitions*, open-source documentation. [Online]. Available: https://www.romraider.com
 14. Molex LLC, *Micro-Fit 3.0 Connector System — Product Specification PS-43045*. [Online]. Available: https://www.molex.com
+15. Texas Instruments, *ADS1113/ADS1114/ADS1115 — Ultra-Small, Low-Power, 16-Bit ADC with Internal Reference, Oscillator and Programmable Comparator*, datasheet SBAS444. [Online]. Available: https://www.ti.com/lit/ds/symlink/ads1115.pdf
+16. International Electrotechnical Commission, *IEC 60751 — Industrial platinum resistance thermometers and platinum temperature sensors*. Geneva: IEC. *(Defines the Pt100/Pt1000 resistance–temperature relationship used by the caliper sensors.)*
 
 ## Prior art
 

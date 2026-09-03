@@ -17,7 +17,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from diagram_lib import (  # noqa: E402
     Svg, tw, marker_for,
     BG, PANEL, PANEL_2, EDGE, GRID, FG, FG_DIM, FG_FAINT,
-    V12, V5, V33, GND, SIG, RADIO, NODE_A, NODE_B, WARN,
+    V12, V5, V33, GND, SIG, RADIO, NODE_A, NODE_B, NODE_C, WARN,
 )
 
 OUT = pathlib.Path(__file__).resolve().parent.parent / "docs" / "01-hardware" / "diagrams"
@@ -28,44 +28,71 @@ SCALE = 2  # device pixel ratio for the PNG render
 # Fig. 1 -- system architecture
 # ---------------------------------------------------------------------------
 def fig01_system_architecture():
-    s = Svg(1140, 400)
+    s = Svg(1240, 580)
     s.text(40, 44, "SYSTEM ARCHITECTURE", size=15, fill=FG, weight=700)
-    s.text(40, 64, "two independent ESP32 nodes, linked only by radio", size=12, fill=FG_FAINT)
+    s.text(40, 64, "a star: Node B is the hub. The nodes share no wiring at all.",
+           size=12, fill=FG_FAINT)
+    s.text(40, 100, "ESP-NOW  ·  2.4 GHz  ·  fixed channel", size=12, fill=RADIO, weight=700)
 
-    ax, bx, w = 40, 710, 390
-    _, ay, _, ah = s.card(ax, 96, w, "NODE A  ·  CENTRAL LOCKING",
+    ax, bx, cx, w = 40, 440, 840, 360
+    acx, bcx, ccx = ax + w / 2, bx + w / 2, cx + w / 2
+
+    # --- radio links, one per row so no two share a line
+    s.text(430, 124, "speed  ·  every 100-200 ms", size=11, fill=FG_DIM, anchor="middle")
+    s.line(bcx, 138, acx, 138, stroke=RADIO, sw=1.6, dash="5 5", marker="arw_radio")
+
+    s.text(430, 160, "lock mode  ·  on button press", size=11, fill=FG_DIM, anchor="middle")
+    s.line(acx, 174, bcx, 174, stroke=RADIO, sw=1.6, dash="5 5", marker="arw_radio")
+
+    s.text(830, 196, "sensor channels  ·  about 1 Hz  ·  v0.3", size=11, fill=FG_DIM,
+           anchor="middle")
+    s.line(ccx, 210, bcx, 210, stroke=NODE_C, sw=1.6, dash="4 6", marker="arw_c")
+
+    s.line(acx, 174, acx, 234, stroke=RADIO, sw=1.4, dash="5 5")
+    s.line(bcx, 210, bcx, 234, stroke=RADIO, sw=1.4, dash="5 5")
+    s.line(ccx, 210, ccx, 234, stroke=NODE_C, sw=1.4, dash="4 6")
+
+    # --- the nodes
+    _, ny, _, nh = s.card(ax, 240, w, "NODE A  ·  CENTRAL LOCKING",
                           ["ESP32 · next to the BIU (A-pillar)",
-                           "acts on the lock/unlock lines"], accent=NODE_A)
-    s.card(bx, 96, w, "NODE B  ·  GAUGE",
-           ["ESP32 · centre console (clock bay)",
-            "reads the ECU over SSM2"], accent=NODE_B)
+                           "pulses the lock and unlock lines",
+                           "v0.1 · in the first build"], accent=NODE_A)
+    s.card(bx, 240, w, "NODE B  ·  GAUGE  ·  HUB",
+           ["ESP32 · centre console, clock bay",
+            "reads the ECU over SSM2, drives the OLED",
+            "v0.1 · in the first build"], accent=NODE_B)
+    s.card(cx, 240, w, "NODE C  ·  ANALOGUE FRONT END",
+           ["ESP32 · cabin, at the firewall",
+            "reads sensor channels, sends them to B",
+            "v0.3 · designed, NOT built"], accent=NODE_C)
 
-    # radio link, both directions
-    mid = (ax + w + bx) / 2
-    s.text(mid, 118, "ESP-NOW · 2.4 GHz", size=12, fill=RADIO, anchor="middle", weight=700)
-    s.line(bx - 10, 140, ax + w + 10, 140, stroke=RADIO, sw=1.6, dash="5 5", marker="arw_radio")
-    s.text(mid, 158, "speed · every 100-200 ms", size=10.5, fill=FG_FAINT, anchor="middle")
-    s.line(ax + w + 10, 176, bx - 10, 176, stroke=RADIO, sw=1.6, dash="5 5", marker="arw_radio")
-    s.text(mid, 194, "lock mode · on button press", size=10.5, fill=FG_FAINT, anchor="middle")
+    # --- wired interfaces
+    y2 = ny + nh + 40
+    for cxx in (acx, bcx, ccx):
+        s.line(cxx, ny + nh, cxx, y2 - 6, stroke=EDGE, marker="arw")
 
-    y2 = ay + ah + 34
-    s.line(ax + w / 2, ay + ah, ax + w / 2, y2 - 6, stroke=EDGE, marker="arw")
-    s.line(bx + w / 2, ay + ah, bx + w / 2, y2 - 6, stroke=EDGE, marker="arw")
     s.card(ax, y2, w, "WIRED INTERFACE",
            ["OUT  relay CH1 -> BIU pin 15  (lock)",
             "OUT  relay CH2 -> BIU pin 29  (unlock)",
             "IN   IG 12 V  (supply + ign. sense)",
-            "IN   OEM ON/OFF switch -> GPIO27"], accent=EDGE, title_size=12,
+            "IN   OEM ON/OFF switch -> GPIO27",
+            "OUT  OEM tell-tale LED -> GPIO33"], accent=EDGE, title_size=12,
            title_color=FG_DIM)
     s.card(bx, y2, w, "WIRED INTERFACE",
            ["i59 connector: IG · GND · ILL",
             "K-line -> OBD pin 7  (SSM2, 10400 bd)",
             "OLED SSD1322 SPI · RTC DS3231 I2C",
-            "4 OEM buttons -> GPIO 32/33/25/26"], accent=EDGE, title_size=12,
-           title_color=FG_DIM)
+            "4 OEM buttons -> GPIO 32/33/25/26",
+            ""], accent=EDGE, title_size=12, title_color=FG_DIM)
+    s.card(cx, y2, w, "WIRED INTERFACE",
+           ["sealed bulkhead connector at the firewall",
+            "ADS1115 channel bank on I2C",
+            "0-5 V ratiometric · NTC/RTD · digital in",
+            "engine-bay sensors on 2.5-3 m runs",
+            ""], accent=EDGE, title_size=12, title_color=FG_DIM)
 
-    s.caption(s.h - 18, "No cable runs between the two nodes. Speed is measured by Node B and "
-                        "sent over the air; the lock mode travels back the same way.")
+    s.caption(s.h - 18, "No cable runs between the nodes. Speed is measured by Node B and sent "
+                        "to Node A; the lock mode travels back; Node C reports to Node B only.")
     return "01-system-architecture", s
 
 
@@ -312,7 +339,7 @@ def fig09_node_a_grid():
          (17, 21, "free", "spare area for later nodes / sensors", EDGE),
          (22, 24, "buck R-78 · 470 µF ×2 · SS34 · TVS", None, V5),
          (25, 25, "vertical headers: relay 5p (IN1·IN2·VCC·JD·GND)", None, EDGE),
-         (27, 27, "90° headers: IG · GND · SW1 ON/OFF", None, EDGE)],
+         (27, 27, "90° headers: IG · GND · SW1 · LED1", None, EDGE)],
         "09-node-a-grid-plan", NODE_A)
 
 
@@ -333,7 +360,7 @@ def fig06_node_a_state_machine():
 
     s.line(220, ay + ah + 8, 220, dy - 8, stroke=FG_DIM, sw=1.6, marker="arw")
     s.line(252, dy - 8, 252, ay + ah + 8, stroke=FG_DIM, sw=1.6, marker="arw")
-    s.text(276, ay + ah + 26, "SW1 · OEM button on GPIO27", size=11.5, fill=FG)
+    s.text(276, ay + ah + 26, "SW1 GPIO27 · LED1 GPIO33 (i78)", size=11.5, fill=FG)
     s.text(276, ay + ah + 44, "toggles on every press", size=10.5, fill=FG_FAINT)
 
     for i, (title, lines, yy) in enumerate((
@@ -376,11 +403,14 @@ def fig07_node_a_interface():
     s.line(360, 190, ex - 6, 190, stroke=SIG, sw=1.8, marker="arw_sig")
     s.text(372, 180, "IG 12 V  ->  GPIO34", size=11, fill=SIG)
 
-    s.card(40, 292, 320, "SW1 · OEM switch",
-           ["unused wiper de-icer button", "switch to GND · INPUT_PULLUP"],
+    s.card(40, 292, 320, "OEM switch  ·  i78",
+           ["SW1 pins 1-2 · to GND · INPUT_PULLUP",
+            "LED1 pins 8-9 · lit while DISABLED"],
            accent=WARN, title_size=13, line_size=11)
-    s.line(360, 332, ex - 6, 332, stroke=WARN, sw=1.8, marker="arw")
-    s.text(372, 322, "GPIO27", size=11, fill=WARN)
+    s.line(360, 326, ex - 6, 326, stroke=WARN, sw=1.8, marker="arw")
+    s.text(366, 316, "SW1 -> 27", size=10.5, fill=WARN)
+    s.line(ex - 6, 352, 360, 352, stroke=WARN, sw=1.8, marker="arw")
+    s.text(366, 370, "LED1 <- 33", size=10.5, fill=WARN)
 
     s.card(790, 130, 310, "K1 · 2-ch relay module",
            ["external, screw terminals",
@@ -423,7 +453,7 @@ def fig08_node_a_spatial():
     _zone(s, zx, by + 170, zw, 40, "ignition divider  10 kΩ / 3.3 kΩ", color=SIG)
     _zone(s, zx, by + 220, zw, 40, "buck R-78E5.0-1.0 · 470 µF ×2 · SS34 · TVS", color=V5)
     _zone(s, zx, by + 270, zw, 34, "free — room for later I/O", color=EDGE, size=11)
-    _zone(s, zx, by + 312, zw, 50, "connector edge: relay 5p · IG · GND · SW1 ON/OFF",
+    _zone(s, zx, by + 312, zw, 50, "connector edge: relay 5p · IG · GND · SW1 · LED1",
           color=EDGE, size=11)
 
     px, py, pw, ph = 640, 200, 440, 190
@@ -438,7 +468,7 @@ def fig08_node_a_spatial():
            stroke=EDGE, sw=1.4, dash="4 4", marker="arw")
 
     for i, (lbl, col) in enumerate((("<-  IG 12 V, taken at the A-pillar", V12),
-                                    ("<-  SW1, OEM ON/OFF switch -> GPIO27", WARN))):
+                                    ("<-  SW1 -> GPIO27 · LED1 <- GPIO33", WARN))):
         yy = 448 + i * 40
         s.line(px + 40, yy, px, yy, stroke=col, sw=1.8, marker=marker_for(col))
         s.text(px + 50, yy + 4, lbl, size=12, fill=col)
@@ -499,8 +529,8 @@ def fig11_node_c_channels():
     s.text(56, 124, "ENGINE BAY — sealed side", size=12, fill=WARN, weight=700)
     s.text(56, 144, "sensors, environmental connectors", size=10.5, fill=FG_FAINT)
 
-    s.rect(660, 96, 540, 520, fill="none", stroke=NODE_A, sw=1.5, r=12)
-    s.text(676, 124, "CABIN — standard side", size=12, fill=NODE_A, weight=700)
+    s.rect(660, 96, 540, 520, fill="none", stroke=NODE_C, sw=1.5, r=12)
+    s.text(676, 124, "CABIN — standard side", size=12, fill=NODE_C, weight=700)
     s.text(676, 144, "project-standard connectors, no sealing needed", size=10.5, fill=FG_FAINT)
 
     # --- bulkhead connector, the boundary
@@ -543,7 +573,7 @@ def fig11_node_c_channels():
     s.card(680, 356, 500, "ESP32  ·  Node C",
            ["scales, filters and validates each channel",
             "flags every reading valid / invalid",
-            "no display, no actuators"], accent=NODE_A, title_size=13, line_size=11)
+            "no display, no actuators"], accent=NODE_C, title_size=13, line_size=11)
 
     s.label_box(930, 500, "ESP-NOW  ->  Node B   ·   ~1 Hz", size=12, fill=PANEL,
                 stroke=RADIO, color=RADIO, anchor="center")

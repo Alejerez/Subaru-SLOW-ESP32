@@ -83,8 +83,8 @@ change afterwards — changing it means re-sealing the firewall pass-through.
   engine. There are tens of millivolts between engine and chassis ground, more
   during cranking, and that difference otherwise lands inside the measurement.
 - The caliper temperature sensors were specified with 1.5 m leads on the
-  assumption of an engine-bay node. From the cabin they need **2.5–3 m** — to be
-  confirmed before ordering.
+  assumption of an engine-bay node. From the cabin they are longer — see the
+  [cable schedule](../01-hardware/assembly-and-wiring.md#cable-lengths).
 
 **A property worth naming**
 
@@ -97,7 +97,7 @@ benefit of the wireless architecture that had not been written down.
 
 Node C is the first genuinely optional node. The gauge must not break because it
 is absent: unavailable channels display as unavailable, exactly as
-[stale data](../02-firmware/README.md#requirements-common-to-both-nodes) already
+[stale data](../02-firmware/README.md#requirements-for-every-node) already
 requires. **Nodes are optional by default and the system degrades gracefully.**
 
 **Left unresolved**

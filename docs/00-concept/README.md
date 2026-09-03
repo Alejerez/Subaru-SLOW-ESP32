@@ -13,61 +13,45 @@ Vehicle: **Subaru Legacy 3.0R, BL/BP chassis, EDM (European/Export Domestic Mark
 Two functions are added to the car without irreversibly altering its factory
 electronics:
 
-1. A **multi-function gauge** that replaces the OEM clock display, reading the
-   ECU over SSM2.
+1. A **multi-function gauge** replacing the OEM clock display, reading the ECU
+   over SSM2.
 2. **Speed-based central locking**, with automatic unlock at a standstill.
 
-Both are implemented as independent ESP32 nodes communicating over ESP-NOW. The
-governing constraint is that the result must read as a **retromod** — no colour
-or IPS/TFT screens, OEM buttons, OEM frame, OEM clock position, OEM trip-computer
-bay. See the [README](../../README.md#the-constraint-that-drives-everything-this-is-a-retromod)
-for how that constraint propagates into the hardware.
+Each is an independent ESP32 node on an ESP-NOW link. The governing constraint is
+that the result must read as a **retromod** — no colour or IPS/TFT screens, OEM
+buttons, OEM frame, OEM clock position, OEM trip-computer bay. The
+[README](../../README.md#the-constraint-that-drives-everything-this-is-a-retromod)
+sets out how that constraint decides the hardware.
 
 ## Prototype status (v0.1)
 
 | Area | State |
 | --- | --- |
 | High-level design | Closed — architecture, functional split, interfaces |
-| Detailed design | Closed at component level: per-stage values, physical layout on perfboard, wiring for both nodes |
+| Detailed design | Closed at component level for Nodes A and B: per-stage values, perfboard layout, wiring |
 | Materials | Specified (see [BOM](../01-hardware/README.md#bom-with-indicative-prices)); being sourced |
 | Firmware | Behaviour specified (see [`docs/02-firmware/`](../02-firmware/README.md)); **not implemented** |
-| Vehicle validation | **Seven open checks** — measurements to make, not assumptions. See [`docs/04-integration/`](../04-integration/README.md#open-checks-on-the-vehicle) |
+| Vehicle validation | **Seven open checks** (`OC-01`–`OC-05`, `OC-07`, `OC-08`) — measurements, not assumptions. See [`docs/04-integration/`](../04-integration/README.md#open-checks-on-the-vehicle) |
 
 ## Architecture
 
 ![System architecture](../01-hardware/diagrams/01-system-architecture.png)
 
-**Fig. 1** — Two nodes, no wire between them. Speed is measured by Node B and
-sent to Node A; the lock mode travels back the other way.
+**Fig. 1** — A star. Node B is the hub; no cable runs between any two nodes.
 
-| | Node A — central locking | Node B — gauge |
-| --- | --- | --- |
-| Location | Next to the BIU, A-pillar | Centre console, clock bay |
-| Reads | IG 12 V (ignition sense), SW1 ON/OFF switch | SSM2 over K-line, ILL, 4 OEM buttons, optional analogue input |
-| Drives | 2 relay channels → BIU pins 15 / 29 | OLED SSD1322 over SPI |
-| Sends over ESP-NOW | Lock mode, on button press | Vehicle speed, every 100–200 ms |
-| Detail | [`node-a-locking.md`](../01-hardware/node-a-locking.md) | [`node-b-gauge.md`](../01-hardware/node-b-gauge.md) |
+| | Node A — locking | Node B — gauge (hub) | Node C — sensors |
+| --- | --- | --- | --- |
+| Version | v0.1 | v0.1 | **v0.3, not built** |
+| Location | Next to the BIU, A-pillar | Centre console, clock bay | Cabin, at the firewall |
+| Reads | IG 12 V, the ON/OFF switch | SSM2 over K-line, ILL, 4 OEM buttons | analogue and digital sensor channels |
+| Drives | 2 relay channels → BIU pins 15 / 29, the tell-tale LED | OLED SSD1322 over SPI | nothing |
+| Sends | lock mode, on button press | speed, every 100–200 ms | channel set, ≈1 Hz |
+| Detail | [`node-a-locking.md`](../01-hardware/node-a-locking.md) | [`node-b-gauge.md`](../01-hardware/node-b-gauge.md) | [`node-c-sensors.md`](../01-hardware/node-c-sensors.md) |
 
-A third node — **Node C, an analogue sensor front end** — is designed but not
-built; it joins the same radio link in v0.3. See
-[ADR 0006](../decisions/0006-node-c-analogue-front-end.md) and
-[`node-c-sensors.md`](../01-hardware/node-c-sensors.md). Nodes are **optional by
-default**: the system has to degrade gracefully when one is not fitted.
-
-## Structural decisions
-
-- **No VSS tap.** Node A does not tap the speed signal and uses no comparator. It
-  receives speed from Node B over ESP-NOW; Node B gets it from the ECU over SSM2.
-  Rationale below and in [ADR 0002](../decisions/0002-speed-over-ssm2-not-vss.md).
-- **Fully serviceable.** No expensive module is permanently soldered; everything
-  is socketed or on a latching connector.
-- **Zero parasitic draw.** Everything is fed from IG. With the key out, both
-  nodes are dead. The clock is held by the RTC's own cell.
-- **ON/OFF control is an unused OEM switch, wired straight to Node A.** The
-  windscreen-wiper de-icer button — a North-American-market feature this car does
-  not have — becomes the auto-lock toggle on GPIO27. This makes ESP-NOW
-  bidirectional: Node A tells Node B to confirm the mode on the OLED.
-  See [ADR 0003](../decisions/0003-onoff-button-direct-to-node-a.md).
+**Nodes are optional by default.** The system degrades gracefully when one is not
+fitted: its values show as unavailable rather than breaking the gauge. Message
+directions and cadences are in
+[`docs/02-firmware/`](../02-firmware/README.md#link-topology).
 
 ## Design rationale
 
@@ -75,18 +59,21 @@ Each choice below has a functional argument (what problem it solves) and a
 technical one (why this solution and not another). Bracketed numbers refer to
 [`docs/references.md`](../references.md).
 
-### Two independent nodes linked by radio
+### Independent nodes linked by radio
 
-**Functional:** the gauge and the locking function have no electrical
-relationship and live in different physical zones of the car (centre console vs.
-A-pillar / BIU).
+**Functional:** the gauge and the locking function have no electrical relationship
+and live in different physical zones of the car (centre console vs. A-pillar/BIU).
 
-**Technical:** separating them avoids running a long harness between the two and
-decouples failures — if one node reboots, the other keeps working. The link uses
-**ESP-NOW**, a low-latency peer-to-peer protocol on the ESP32's 2.4 GHz PHY that
-needs neither a router nor infrastructure pairing [3]. The ESP32 provides dual
-cores, Wi-Fi/BT and enough peripherals (UART, I²C, SPI, ADC) for both roles [4].
-It also makes the system extensible by adding nodes rather than wires.
+**Technical:** separating them avoids a long harness between the two and decouples
+failures — if one node reboots, the other keeps working. **ESP-NOW** is a
+low-latency peer-to-peer protocol on the ESP32's 2.4 GHz PHY needing neither a
+router nor pairing infrastructure [3]. The ESP32 provides dual cores, Wi-Fi/BT and
+enough peripherals (UART, I²C, SPI, ADC) for every role [4]. The system then grows
+by adding nodes rather than wires — which is what Node C is.
+
+A consequence not obvious at the outset: the radio link **breaks the ground loop**
+between the engine bay and the cabin —
+[ADR 0006](../decisions/0006-node-c-analogue-front-end.md#consequences).
 
 ### Speed over SSM2, not from the VSS
 
@@ -122,8 +109,13 @@ inside a closed housing.
 
 **Technical:** a linear regulator (7805) would dissipate P = (Vin − 5) · I, on the
 order of several watts — unworkable in the clock housing. The **Recom
-R-78E5.0-1.0** is an encapsulated switcher, pin-compatible with the 78xx, 7–28 V
-in, 5 V / 1 A out, ≈91 % efficient with no heatsink [5]. The 470 µF on the 5 V
+R-78E5.0-1.0** is an encapsulated switcher, pin-compatible with the 78xx, **8–28 V**
+in, 5 V / 1 A out, 85–93 % efficient with no heatsink [5].
+
+**Its 8 V minimum is worth noting.** Battery voltage dips during cranking, and
+below 8 V the regulator drops out — both nodes reset. That is acceptable here,
+since neither does anything useful while the starter is turning, but it is a real
+limit rather than a margin. The 470 µF on the 5 V
 rail absorbs the current spikes of the ESP32's radio bursts — local charge
 reserve, per [11].
 
@@ -166,12 +158,12 @@ joint from flexing — consistent with automotive E/E robustness validation [10]
 **Functional:** do not flatten the battery with the car off.
 
 **Technical:** the whole system is fed from **IG** (ignition-switched), never from
-constant B+. With the key out both nodes are unpowered and draw nothing; time is
+constant B+. With the key out every node is unpowered and draws nothing; time is
 kept by the DS3231's cell [7].
 
 ## See also
 
-- [`docs/01-hardware/`](../01-hardware/README.md) — component catalogue, BOM, both nodes, wiring
+- [`docs/01-hardware/`](../01-hardware/README.md) — component catalogue, BOM, each node, wiring
 - [`docs/02-firmware/`](../02-firmware/README.md) — behavioural specification
 - [`docs/04-integration/`](../04-integration/README.md) — install sequence, checklist, open vehicle checks
 - [`docs/decisions/`](../decisions/README.md) — architecture decision records
