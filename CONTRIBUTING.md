@@ -69,6 +69,7 @@ v0.1.5.
 | Component identity, quantity, price | [`docs/01-hardware/README.md`](docs/01-hardware/README.md) | link |
 | Per-stage values, pin maps, layout | that node's own page | link |
 | Physical build: adapter, connectors, carrier, cable schedule, tools | [`assembly-and-wiring.md`](docs/01-hardware/assembly-and-wiring.md) | link |
+| Hole-by-hole placement, jumpers and soldering order for a node | that node's `*-build.md` | link |
 | Behaviour, state machines, timing, the ESP-NOW protocol | [`docs/02-firmware/`](docs/02-firmware/README.md) | link |
 | What must be measured on the car | [`docs/04-integration/`](docs/04-integration/README.md#open-checks-on-the-vehicle), as `OC-nn` | cite the id |
 | What is planned and what was rejected | [`ROADMAP.md`](ROADMAP.md) | link |

@@ -9,9 +9,10 @@ the BOM** — what each part is and how many. Why a part was chosen is in the
 
 - [`node-b-gauge.md`](node-b-gauge.md) — Node B (gauge, hub): stages, values, schematics, layout, pin map
 - [`node-a-locking.md`](node-a-locking.md) — Node A (locking): stages, values, schematics, layout, pin map
+- [`node-a-build.md`](node-a-build.md) — Node A **bench build**: hole-by-hole placement, the 18 solder-side jumpers, soldering order and test points
 - [`node-c-sensors.md`](node-c-sensors.md) — Node C (analogue front end): channel architecture, sensors, bulkhead connector — **v0.3, not built**
 - [`assembly-and-wiring.md`](assembly-and-wiring.md) — i59 adapter, connectors, carrier board, cable schedule, consumables and tools
-- [`diagrams/`](diagrams/) — the eleven figures (PNG, dark-mode native); regenerate with [`scripts/generate_diagrams.py`](../../scripts/generate_diagrams.py)
+- [`diagrams/`](diagrams/) — the fourteen figures (PNG, dark-mode native); regenerate with [`scripts/generate_diagrams.py`](../../scripts/generate_diagrams.py)
 - [`reference/`](reference/) — factory wiring diagrams, **outside this repository's licences**
 - [`photos/`](photos/) — reference photographs of the vehicle's OEM parts
 
@@ -34,7 +35,7 @@ each node's stage tables give the per-node detail.
 - **Resistors** — 10k ×6, 3.3k ×3, 20k ×2, 510 Ω ×2. The pairs scale 12 V and 5 V into the ESP32's 3.3 V range.
 - **BAT85 clamp diodes ×6** — *the safety ceiling* on every divided input.
 - **iWire i59 connectors (1 male + 2 female)** — build the gauge's reversible adapter. **Posi-Tap** as needed for reversible joints to car wires.
-- **2 A fuse + holder ×2** — on every 12 V feed, no exceptions.
+- **2 A fuse + holder ×2** — on every 12 V feed, no exceptions. **Slow-blow (T)**: the 940 µF of bulk capacitance draws a brief inrush at key-on that a fast fuse can nuisance-trip.
 
 ### Node C parts — v0.3, not for the first build
 
@@ -65,7 +66,7 @@ with exact values.
 | Ceramics | 100 nF ×10, 1 nF ×2, 1 µF ×2 | set | $2k | CL retail |
 | Resistors | 10k ×6, 3.3k ×3, 20k ×2, 510 Ω ×2 | set | $2k | CL retail |
 | Clamp diodes | BAT85 ×6 (or 5.1 V zener) | set | $2k | CL retail / Ali |
-| Fuses + holders | 2 A inline | 2 | $2k | auto parts |
+| Fuses + holders | 2 A inline, **slow-blow (T)** | 2 | $2k | auto parts |
 | i59 connectors | 1 male + 2 female | 3 | US$5–12 ea | iWire |
 | **Double-sided perfboard** (carrier) | FR4 2.54 mm, 5-size kit + M/F headers — **use 3 × 7 cm (11 × 27 holes) for both** | 1 kit | US$10–15 | [Amazon kit](https://www.amazon.com/Soldering-Electronic-Compatible-Ar-duino-Connector/dp/B0948VC6P4) / Ali / ML |
 | Wire, heatshrink, Posi-Tap, enclosure, grommets | assembly | — | $15k CLP | local |

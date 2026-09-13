@@ -10,7 +10,9 @@ and the auto-lock ON/OFF switch is physically on **this** node
 ([ADR 0003](../decisions/0003-onoff-button-direct-to-node-a.md)).
 
 **Behaviour is specified in [`docs/02-firmware/`](../02-firmware/README.md#node-a--locking).**
-This page is the hardware only: stages, values, pin map and layout.
+**The bench build — hole-by-hole placement, jumpers and soldering order — is in
+[`node-a-build.md`](node-a-build.md).** This page is the stages, values, pin map
+and layout.
 
 ## Stages and exact values
 
@@ -29,9 +31,13 @@ Identical to [Node B's power stage](node-b-gauge.md#stage-1--power-ig-to-5-v).
 
 ### Stage 2 · Ignition sensing
 
+Fed from **VBAT, after D1**, so the divider sits behind the reverse-polarity
+diode. The 0.4 V the diode costs lands on a signal that is only compared against a
+firmware threshold. See the [build page](node-a-build.md#4--ignition-divider).
+
 | Ref | Component | Value | Connection |
 | --- | --- | --- | --- |
-| R1 | Resistor | 10 kΩ | IG → node_IGN |
+| R1 | Resistor | 10 kΩ | VBAT → node_IGN |
 | R2 | Resistor | 3.3 kΩ | node_IGN → GND |
 | D3 | Schottky clamp | BAT85 | node_IGN → 3.3 V |
 | C5 | Ceramic | 100 nF | node_IGN → GND · node_IGN feeds GPIO34 |
@@ -170,7 +176,7 @@ the board with its terminals facing the BIU. IG is taken at the A-pillar.
 
 ![Node A grid plan](diagrams/09-node-a-grid-plan.png)
 
-**Fig. 9** — Node A grid plan. Far emptier than Node B: only the ESP32, the power
-stage, one divider and the connectors — the relay module is external. The free
-area is deliberate headroom for later I/O. Same 3 × 7 cm board as Node B — see
+**Fig. 9** — Node A grid plan, by zone. The relay module is external, so the free
+area is deliberate headroom for later I/O. The exact hole-by-hole layout is
+[Fig. 12](node-a-build.md#component-side); same 3 × 7 cm board as Node B, see
 [perfboard size](README.md#perfboard-size-correction-to-the-source-document).

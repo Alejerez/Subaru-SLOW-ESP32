@@ -21,7 +21,11 @@ hardware documentation.
 13. RomRaider Project, *Subaru Select Monitor (SSM2) — logging protocol and definitions*, open-source documentation. [Online]. Available: https://www.romraider.com
 14. Molex LLC, *Micro-Fit 3.0 Connector System — Product Specification PS-43045*. [Online]. Available: https://www.molex.com
 15. Texas Instruments, *ADS1113/ADS1114/ADS1115 — Ultra-Small, Low-Power, 16-Bit ADC with Internal Reference, Oscillator and Programmable Comparator*, datasheet SBAS444. [Online]. Available: https://www.ti.com/lit/ds/symlink/ads1115.pdf
-16. International Electrotechnical Commission, *IEC 60751 — Industrial platinum resistance thermometers and platinum temperature sensors*. Geneva: IEC. *(Defines the Pt100/Pt1000 resistance–temperature relationship used by the caliper sensors.)*
+16. RECOM Power GmbH, *R-78E-1.0 Series — Innoline DC/DC switching regulator*, datasheet, rev. 9/2024. [Online]. Available: https://recom-power.com/pdf/Innoline/R-78E-1.0.pdf *(SIP3 pinout, 2.54 mm pitch, 8–28 V input for the 5.0 V/1 A part.)*
+17. CIRCUITSTATE Electronics, *DOIT ESP32 DevKit V1 — pinout diagram and reference*, r0.1, Dec. 2022. [Online]. Available: https://www.circuitstate.com/pinouts/doit-esp32-devkit-v1-wifi-development-board-pinout-diagram-and-reference/ *(Physical pin order of the 30-pin board, used for the Node A layout.)*
+18. Fritzing community, *DOIT ESP32 DevKit V1 part submission — measured board outline*. [Online]. Available: https://forum.fritzing.org/t/doit-esp32-devkit-v1/6158 *(Header row spacing measured at 25.4 mm — ten 0.1 in pitches — which is what makes the module exactly fill an 11-hole board.)*
+19. Espressif Systems, *Analog to Digital Converter (ADC) — ESP32*, ESP-IDF Programming Guide. [Online]. Available: https://docs.espressif.com/projects/esp-idf/en/v4.4/esp32/api-reference/peripherals/adc.html *(ADC_ATTEN_DB_11 suggested input range 150–2450 mV, which bounds the ignition divider.)*
+20. International Electrotechnical Commission, *IEC 60751 — Industrial platinum resistance thermometers and platinum temperature sensors*. Geneva: IEC. *(Defines the Pt100/Pt1000 resistance–temperature relationship used by the caliper sensors.)*
 
 ## Prior art
 

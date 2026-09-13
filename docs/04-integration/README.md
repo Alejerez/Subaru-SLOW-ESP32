@@ -15,8 +15,10 @@ Node C is not part of this sequence — it is v0.3 and has not been built.
    and that the ESP32 powers up.
 2. **Build and verify Node B stage by stage** (power, dividers, K-line, OLED, RTC,
    buttons). Measure 3.3 V where it belongs; **no ESP32 input may exceed 3.3 V**.
-3. **Build and verify Node A** (power, ignition sensing, relays, ON/OFF switch
-   input). Listen for the relays clicking.
+3. **Build and verify Node A** stage by stage, following
+   [`node-a-build.md`](../01-hardware/node-a-build.md#order-of-work). Its stage 5
+   test — that neither relay clicks at power-up — must pass before the module is
+   ever connected to the BIU.
 4. **Build the i59 adapter** from the three iWire pieces and check continuity pin
    by pin before it goes anywhere near the car. Settle first whether the K-line
    runs through the adapter or beside it —

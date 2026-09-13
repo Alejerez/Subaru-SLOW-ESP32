@@ -20,6 +20,10 @@ from diagram_lib import (  # noqa: E402
     V12, V5, V33, GND, SIG, RADIO, NODE_A, NODE_B, NODE_C, WARN,
 )
 
+from node_a_build import (  # noqa: E402
+    fig12_node_a_placement, fig13_node_a_solder_side, fig14_node_a_technique,
+)
+
 OUT = pathlib.Path(__file__).resolve().parent.parent / "docs" / "01-hardware" / "diagrams"
 SCALE = 2  # device pixel ratio for the PNG render
 
@@ -333,13 +337,13 @@ def fig05_node_b_grid():
 def fig09_node_a_grid():
     return _grid_plan(
         "NODE A  ·  PERFBOARD GRID PLAN",
-        "same 11 × 27 board, far emptier — the relay module lives off the board",
-        [(1, 14, "ESP32 DevKit V1 — socketed", "pins in col 1 and col 11", NODE_A),
-         (15, 16, "ignition divider 10k / 3.3k", None, SIG),
-         (17, 21, "free", "spare area for later nodes / sensors", EDGE),
-         (22, 24, "buck R-78 · 470 µF ×2 · SS34 · TVS", None, V5),
-         (25, 25, "vertical headers: relay 5p (IN1·IN2·VCC·JD·GND)", None, EDGE),
-         (27, 27, "90° headers: IG · GND · SW1 · LED1", None, EDGE)],
+        "zones only — the hole-by-hole layout is Fig. 12",
+        [(1, 15, "ESP32 DevKit V1 — socketed", "pins in col A and col L", NODE_A),
+         (16, 18, "empty — module body and antenna overhang", None, EDGE),
+         (19, 21, "buck R-78E5.0 · 470 µF / 16 V", None, V5),
+         (22, 23, "ignition divider 10k / 3.3k · BAT85 · 100 nF", None, SIG),
+         (23, 26, "470 µF / 35 V · TVS · SS34", None, V12),
+         (27, 27, "90° headers: IG 2p · relay 5p · switch 2p", None, EDGE)],
         "09-node-a-grid-plan", NODE_A)
 
 
@@ -591,7 +595,8 @@ def fig11_node_c_channels():
 FIGURES = [fig01_system_architecture, fig02_node_b_power, fig03_node_b_signal,
            fig04_node_b_spatial, fig05_node_b_grid, fig06_node_a_state_machine,
            fig07_node_a_interface, fig08_node_a_spatial, fig09_node_a_grid, fig10_carrier,
-           fig11_node_c_channels]
+           fig11_node_c_channels, fig12_node_a_placement,
+           fig13_node_a_solder_side, fig14_node_a_technique]
 
 
 def main():

@@ -21,13 +21,70 @@ unchanged figure gets none.
 Tagging a release:
 
 ```bash
-git tag -a v0.1.5 -m "docs: integrate Node C and remove duplicated content"
+git tag -a v0.1.6 -m "docs: Node A bench build"
 git push --tags
 ```
 
 ## [Unreleased]
 
 Nothing yet.
+
+## [0.1.6] — 2026-09-13
+
+Tag `v0.1.6`
+
+The parts arrived, so Node A gets a bench build: not a schematic, but which hole
+every lead goes in and every jumper on the solder side.
+
+### Added
+
+- [`docs/01-hardware/node-a-build.md`](docs/01-hardware/node-a-build.md) — the
+  hole-by-hole build. Placement table, an **18-jumper cut list** (790 mm of wire)
+  with the hole sequence and cut length for each, a six-colour wire convention
+  matched to what is in the box, and seven build stages each ending in a
+  measurement that has to pass before the next one starts.
+- **Fig. 12** component side, **Fig. 13** solder side (mirrored, as the board
+  actually is when flipped), **Fig. 14** mounting and soldering technique.
+- Three verified facts the layout rests on, now recorded rather than assumed: the
+  DevKit V1's pin rows are **25.4 mm apart, exactly 10 pitches** [1], so the module
+  fills the board's width and rows 16–18 stay empty under its antenna; the physical
+  pin order of the 30-pin board [2]; and the Recom SIP3 pinout and 2.54 mm pitch [3].
+- Two bench tests promoted to conditions of the build: **neither relay may click at
+  power-up** (these modules are usually active-LOW, and an active-HIGH one would
+  lock the doors on every boot), and the relay must be confirmed to switch with
+  **VCC at 3.3 V** — with the note that raising VCC to 5 V is *not* the fallback,
+  since a push-pull GPIO at 3.3 V still leaves 1.7 V across the opto and may never
+  let the relay release.
+- ESP-IDF's ADC attenuation table in [`docs/references.md`](docs/references.md) [19].
+
+### Changed
+
+- **The ignition divider is fed from VBAT, after D1**, rather than from the raw IG
+  line. It costs 0.4 V on a signal only ever compared against a firmware threshold,
+  and puts the divider behind the reverse-polarity diode like everything else.
+  [Stage 2](docs/01-hardware/node-a-locking.md#stage-2--ignition-sensing) updated so
+  the two pages do not disagree.
+- **Fig. 9's zone plan corrected.** It had the ESP32 on 14 rows instead of 15 and
+  put the divider and the connectors in rows that the real layout uses for
+  something else. It is now a zone summary of Fig. 12 and says so.
+- The BOM's **2 A fuse is specified slow-blow (T)** — 940 µF of bulk capacitance
+  draws an inrush at key-on that a fast fuse can nuisance-trip.
+
+### Unresolved
+
+- **What the ignition-sense inputs are for.** Both nodes are powered from IG, so
+  being awake already proves the ignition is on. If the answer is supply
+  monitoring, Node A's 10 k / 3.3 k divider is the wrong ratio — it leaves ADC1's
+  suggested 150–2450 mV band above about 10.3 V at the connector and pins at full
+  scale near 12.9 V, so with the engine running GPIO34 reads 4095 and nothing
+  else. The clamp diode does not rescue this: at 14.4 V the node sits at 3.47 V,
+  below the BAT85's conduction point, so the divider alone sets the voltage,
+  0.13 V under the ESP32's absolute maximum. Recorded, not silently re-specified —
+  the fix is one resistor, but the question of purpose comes first. Tracked in
+  [`docs/02-firmware/`](docs/02-firmware/README.md#open-items).
+- **W2 (the tell-tale LED run) is fitted but left unconnected at the switch end**
+  until [`OC-07`](docs/04-integration/README.md#open-checks-on-the-vehicle) is
+  measured.
 
 ## [0.1.5] — 2026-09-03
 
@@ -262,7 +319,8 @@ All documentation derives from the v0.1 design document, kept verbatim in
 
 <!--
 Compare links, once the remote exists. Replace OWNER:
-[Unreleased]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.2...v0.1.3
