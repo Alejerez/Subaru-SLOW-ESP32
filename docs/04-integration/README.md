@@ -16,7 +16,7 @@ Node C is not part of this sequence — it is v0.3 and has not been built.
 2. **Build and verify Node B stage by stage** (power, dividers, K-line, OLED, RTC,
    buttons). Measure 3.3 V where it belongs; **no ESP32 input may exceed 3.3 V**.
 3. **Build and verify Node A** stage by stage, following
-   [`node-a-build.md`](../01-hardware/node-a-build.md#order-of-work). Its stage 5
+   [`node-a-build.md`](../01-hardware/node-a-build.md#order-of-work). Its stage 4
    test — that neither relay clicks at power-up — must pass before the module is
    ever connected to the BIU.
 4. **Build the i59 adapter** from the three iWire pieces and check continuity pin
@@ -41,8 +41,13 @@ Node C is not part of this sequence — it is v0.3 and has not been built.
 - 2 A fuse on every 12 V feed.
 - Buck output = 5.0 V ±0.1 V, both nodes.
 - 3.3 V at VCC of the ESP32, OLED, RTC and L9637D.
-- No ESP32 input exceeds 3.3 V — measure IGN, ILL and the analogue input after
-  their dividers.
+- No ESP32 input exceeds 3.3 V — on Node B, measure ILL and the analogue input
+  after their dividers. Node A has no divided input.
+- **Node A feed and ground, measured as resistance with the node unplugged** and the
+  meter's lead resistance subtracted: fuse output → J1 +12 V pin, and J1 GND pin →
+  the chassis stud. **Each well under 1 Ω.** The node draws only tens of milliamps,
+  so a bad joint never shows as a voltage drop — see
+  [stage 6](../01-hardware/node-a-build.md#6--feed-and-ground-resistance-before-the-trim-goes-back).
 - Correct continuity across the three i59 connectors.
 - i59 pin 10 (constant B+) **not** connected to the module.
 - i59 pin 5 (UART to the combination meter) passed through and **not driven**.
@@ -83,8 +88,8 @@ system fitted. **Three belong to Node C in v0.3.** One is resolved.
 | id | Check | Status | Detail |
 | --- | --- | --- | --- |
 | **OC-01** | i59 connector: **wire colours** on the real connector (pin 8 differs LHD/RHD — this car is LHD, so IG should be GB), and that the **cavities for pins 2, 3, 4 and 7 are physically empty** before routing the K-line through pin 7 | Partially resolved — pin *functions* established from CLK-01 in v0.1.3 | [i59 adapter](../01-hardware/assembly-and-wiring.md#i59-adapter-1-male--2-female) |
-| **OC-02** | BIU **pin 15 = lock, pin 29 = unlock**. Pulse each line to ground with a test lead and watch the actuator, before connecting the relays | Open · v0.1 | [Node A, Stage 3](../01-hardware/node-a-locking.md#stage-3--relays-to-the-biu) |
-| **OC-03** | **IG source at the A-pillar**: 12 V only with the ignition on, 0 V with the key out | Open · v0.1 | [Node A, Stage 2](../01-hardware/node-a-locking.md#stage-2--ignition-sensing) |
+| **OC-02** | BIU **pin 15 = lock, pin 29 = unlock**. Pulse each line to ground with a test lead and watch the actuator, before connecting the relays | Open · v0.1 | [Node A, Stage 2](../01-hardware/node-a-locking.md#stage-2--relays-to-the-biu) |
+| **OC-03** | **IG source at the A-pillar**: 12 V only with the ignition on, 0 V with the key out | Open · v0.1 | [Node A, Stage 1](../01-hardware/node-a-locking.md#stage-1--power-ig-to-5-v) |
 | **OC-04** | **SSM2 speed** reads correctly from this car's ECU; establish its unit and scale | Open · v0.1 | [ADR 0002](../decisions/0002-speed-over-ssm2-not-vss.md) |
 | **OC-05** | **Display filter and OLED colour.** The donor lens reads red in transmission; the installed unit reads white when lit. Confirm by eye, day and night, and settle amber or white | Open · v0.1 | [display colour](../01-hardware/README.md#display-colour-amber-or-white-still-open) |
 | **OC-06** | OEM switch pin count and function | **Resolved** in v0.1.2 — four wires, all present; pins 1–2 a momentary contact, pins 8–9 an LED | [the OEM circuit](../01-hardware/node-a-locking.md#the-oem-circuit) |

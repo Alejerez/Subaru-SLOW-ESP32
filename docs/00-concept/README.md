@@ -134,7 +134,7 @@ before the buck). An 18 V standoff unidirectional TVS passes the normal range
 
 **Functional:** protect the ESP32 inputs.
 
-**Technical:** 12 V signals (ignition, illumination, 0–5 V sensors) are scaled by
+**Technical:** 12 V signals (illumination, 0–5 V sensors) are scaled by
 resistive dividers to below 3.3 V and clamped with a signal Schottky (BAT85) to
 the 3.3 V rail, with a filter capacitor. Divider design, input reference and local
 decoupling follow [11]. The RTC bus is I²C with pull-ups on the module [8]; the

@@ -41,8 +41,10 @@ VSS run is removed from the cable schedule.
 
 **Makes easier**
 
-- Node A collapses to: power stage + ignition sensing + relays + one button. Its
-  grid plan is mostly empty as a result (Fig. 9).
+- Node A collapses to: power stage + ~~ignition sensing +~~ relays + one button.
+  Its grid plan is mostly empty as a result (Fig. 9). *(Ignition sensing was
+  removed entirely in v0.1.7 — it had no job the rest of the system was not
+  already doing.)*
 - No probing of undocumented loom wiring to find a signal.
 - Speed arrives as a value, not as a frequency to be converted and calibrated.
 

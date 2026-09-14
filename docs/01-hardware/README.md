@@ -31,9 +31,9 @@ each node's stage tables give the per-node detail.
 - **2-channel relay module ×1** — *pulses the BIU lines.* Opto-isolated, 5 V coil, 10 A contacts. One channel locks, the other unlocks.
 - **Schottky SS34 ×2** — *reverse-polarity protection,* in series with +12 V.
 - **TVS SMAJ18A ×2** — *transient absorber,* 12 V rail to ground.
-- **Capacitors** — 4× 470 µF (2× 35 V + 2× 16 V) reserve and Wi-Fi spikes, ~10× 100 nF HF filtering, 2× 1 nF, 2× 1 µF.
-- **Resistors** — 10k ×6, 3.3k ×3, 20k ×2, 510 Ω ×2. The pairs scale 12 V and 5 V into the ESP32's 3.3 V range.
-- **BAT85 clamp diodes ×6** — *the safety ceiling* on every divided input.
+- **Capacitors** — 4× 470 µF (2× 35 V + 2× 16 V) reserve and Wi-Fi spikes, ~10× 100 nF HF filtering, 2× 1 nF, 2× 1 µF. Bought as an assortment; the build uses a subset.
+- **Resistors** — 10k ×6, 3.3k ×3, 20k ×2, 510 Ω ×2, as an assortment. The v0.1 build uses **two 10 kΩ and one 3.3 kΩ** (Node B's ILL divider and analogue input) plus the 510 Ω K-line pull-up and one 20 kΩ. The rest are spares — the ignition dividers on both nodes were removed in v0.1.7.
+- **BAT85 clamp diodes ×6** — *the safety ceiling* on every divided input. The v0.1 build uses **two**, both on Node B (ILL and the analogue input); the rest are spares.
 - **iWire i59 connectors (1 male + 2 female)** — build the gauge's reversible adapter. **Posi-Tap** as needed for reversible joints to car wires.
 - **2 A fuse + holder ×2** — on every 12 V feed, no exceptions. **Slow-blow (T)**: the 940 µF of bulk capacitance draws a brief inrush at key-on that a fast fuse can nuisance-trip.
 

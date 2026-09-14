@@ -248,8 +248,8 @@ def fig04_node_b_spatial():
     zx, zw = bx + 16, bw - 32
     _zone(s, zx, by + 64, zw, 118, "ESP32 DevKit V1 — socketed",
           "header pins in col 1 and col 11 · passives sit UNDERNEATH", color=NODE_B)
-    _zone(s, zx, by + 192, zw, 40, "ignition divider  10 kΩ / 3.3 kΩ", color=SIG)
-    _zone(s, zx, by + 240, zw, 40, "ILL divider  10 kΩ / 3.3 kΩ + 1 µF", color=SIG)
+    _zone(s, zx, by + 192, zw, 40, "ILL divider  10 kΩ / 3.3 kΩ + 1 µF", color=SIG)
+    _zone(s, zx, by + 240, zw, 40, "free — headroom", color=EDGE, size=11)
     _zone(s, zx, by + 288, zw, 40, "analog divider  10 kΩ / 20 kΩ", color=SIG)
     _zone(s, zx, by + 336, zw, 34, "100 nF decoupling", color=SIG)
     _zone(s, zx, by + 378, zw, 40, "buck R-78E5.0-1.0 · 470 µF ×2 · SS34 · TVS", color=V5)
@@ -323,8 +323,8 @@ def fig05_node_b_grid():
         "NODE B  ·  PERFBOARD GRID PLAN",
         "11 × 27 holes ≈ 3 × 7 cm at 2.54 mm pitch",
         [(1, 14, "ESP32 DevKit V1 — socketed", "pins in col 1 and col 11; passives underneath", NODE_B),
-         (15, 16, "ignition divider 10k / 3.3k", None, SIG),
-         (17, 18, "ILL divider 10k / 3.3k + 1 µF", None, SIG),
+         (15, 16, "ILL divider 10k / 3.3k + 1 µF", None, SIG),
+         (17, 18, "free", "headroom", EDGE),
          (19, 20, "analog divider 10k / 20k", None, SIG),
          (21, 21, "100 nF decoupling", None, SIG),
          (22, 23, "buck R-78 · 470 µF ×2 · SS34 · TVS", None, V5),
@@ -341,7 +341,7 @@ def fig09_node_a_grid():
         [(1, 15, "ESP32 DevKit V1 — socketed", "pins in col A and col L", NODE_A),
          (16, 18, "empty — module body and antenna overhang", None, EDGE),
          (19, 21, "buck R-78E5.0 · 470 µF / 16 V", None, V5),
-         (22, 23, "ignition divider 10k / 3.3k · BAT85 · 100 nF", None, SIG),
+         (22, 22, "free", "rows 19-26 keep 77 holes free in total", EDGE),
          (23, 26, "470 µF / 35 V · TVS · SS34", None, V12),
          (27, 27, "90° headers: IG 2p · relay 5p · switch 2p", None, EDGE)],
         "09-node-a-grid-plan", NODE_A)
@@ -401,12 +401,6 @@ def fig07_node_a_interface():
     s.text(600, 156, "speed  in    (B -> A)", size=11, fill=RADIO)
     s.text(600, 180, "mode   out   (A -> B)", size=11, fill=RADIO)
 
-    s.card(40, 150, 320, "Ignition divider",
-           ["R1 10 kΩ / R2 3.3 kΩ", "D3 BAT85 clamp · C5 100 nF"],
-           accent=SIG, title_size=13, line_size=11)
-    s.line(360, 190, ex - 6, 190, stroke=SIG, sw=1.8, marker="arw_sig")
-    s.text(372, 180, "IG 12 V  ->  GPIO34", size=11, fill=SIG)
-
     s.card(40, 292, 320, "OEM switch  ·  i78",
            ["SW1 pins 1-2 · to GND · INPUT_PULLUP",
             "LED1 pins 8-9 · lit while DISABLED"],
@@ -454,9 +448,9 @@ def fig08_node_a_spatial():
     zx, zw = bx + 16, bw - 32
     _zone(s, zx, by + 64, zw, 96, "ESP32 DevKit V1 — socketed",
           "header pins in col 1 and col 11", color=NODE_A)
-    _zone(s, zx, by + 170, zw, 40, "ignition divider  10 kΩ / 3.3 kΩ", color=SIG)
-    _zone(s, zx, by + 220, zw, 40, "buck R-78E5.0-1.0 · 470 µF ×2 · SS34 · TVS", color=V5)
-    _zone(s, zx, by + 270, zw, 34, "free — room for later I/O", color=EDGE, size=11)
+    _zone(s, zx, by + 170, zw, 40, "buck R-78E5.0-1.0 · 470 µF ×2 · SS34 · TVS", color=V5)
+    _zone(s, zx, by + 220, zw, 84, "free — 77 holes of headroom for later I/O",
+          color=EDGE, size=11)
     _zone(s, zx, by + 312, zw, 50, "connector edge: relay 5p · IG · GND · SW1 · LED1",
           color=EDGE, size=11)
 

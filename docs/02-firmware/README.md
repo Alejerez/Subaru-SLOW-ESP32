@@ -76,8 +76,9 @@ than building them in.
 starts ARMED.
 
 - **Init:** ESP-NOW as receiver and sender; GPIO25/26 outputs to the relays, idle
-  inactive; GPIO33 output for the tell-tale LED; GPIO34 senses ignition; GPIO27
-  `INPUT_PULLUP` for the ON/OFF button. Initial state **ARMED**.
+  inactive; GPIO33 output for the tell-tale LED; GPIO27 `INPUT_PULLUP` for the
+  ON/OFF button. Initial state **ARMED**. The node is fed from IG, so it does not
+  sense the ignition — running is proof enough.
 - **Receive:** update speed on each packet from Node B. If none arrive for the
   watchdog interval, **do not actuate** — never lock blind.
 - **Button:** read GPIO27 with software debounce. Each press toggles ARMED ⇄
@@ -119,14 +120,6 @@ set to Node B at about 1 Hz. Specification in
 - [ ] **Define the ESP-NOW protocol before Node C is built**: node identity,
       message type and version, for every direction in the table above. Currently
       specified functionally, not at byte level.
-- [ ] **Decide what the ignition-sense inputs are for — on both nodes.** Each node
-      is powered from IG, so being awake already proves the ignition is on, and the
-      input tells the firmware nothing new. If the answer is *supply monitoring*,
-      Node A's 10 k / 3.3 k divider is the wrong ratio: it leaves ADC1's suggested
-      150–2450 mV band above about 10.3 V at the connector and pins at full scale
-      around 12.9 V ([node-a-build](../01-hardware/node-a-build.md#4--ignition-divider)).
-      Node B has the same divider and **no GPIO assigned to it at all**; GPIO36 and
-      GPIO39 are its free ADC1 pins.
 - [ ] Debounce value for the GPIO27 button — shared with the OEM contact pads
       ([ADR 0004](../decisions/0004-reuse-oem-contact-pad-buttons.md)).
 - [ ] How the tell-tale LED is driven, once

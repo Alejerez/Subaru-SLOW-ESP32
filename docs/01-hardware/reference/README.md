@@ -11,7 +11,7 @@ drawings, and JPEG compression rings badly on sharp black-on-white edges.
 | File | Circuit | What it establishes for this project |
 | --- | --- | --- |
 | `clock-circuit-clk-01.png` | **CLK-01** — clock (i59) | Which of the ten i59 pins the factory circuit uses and which are free, the existence of a serial link between the clock and the combination meter, and the four buttons switching to ground. Underpins the [i59 adapter](../assembly-and-wiring.md#i59-adapter-1-male--2-female) and the reversibility argument. |
-| `wiper-deicer-circuit-wd-01.png` | **WD-01 / WI-12551** — wiper de-icer | The internal wiring of the push switch this project reuses: pins 1–2 a momentary contact, pins 8–9 an indicator LED. Underpins [Node A, Stage 4](../node-a-locking.md#stage-4--onoff-button-reused-oem-switch) and [ADR 0003](../../decisions/0003-onoff-button-direct-to-node-a.md). |
+| `wiper-deicer-circuit-wd-01.png` | **WD-01 / WI-12551** — wiper de-icer | The internal wiring of the push switch this project reuses: pins 1–2 a momentary contact, pins 8–9 an indicator LED. Underpins [Node A, Stage 3](../node-a-locking.md#stage-3--onoff-button-reused-oem-switch) and [ADR 0003](../../decisions/0003-onoff-button-direct-to-node-a.md). |
 
 ---
 

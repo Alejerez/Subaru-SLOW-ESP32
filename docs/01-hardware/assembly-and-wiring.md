@@ -48,7 +48,7 @@ the GB wire.
 
 | i59 pin | Signal | Female #1 (car) | Male / Female #2 (module) |
 | --- | --- | --- | --- |
-| 8 | IG 12 V | ✔ pass-through | ✔ supply + ignition sense |
+| 8 | IG 12 V | ✔ pass-through | ✔ supply |
 | 6 | GND | ✔ pass-through | ✔ common ground |
 | 1 | ILL | ✔ pass-through | ✔ dimming |
 | 7 | **K-line** (new) | — empty | ✔ from OBD pin 7 |

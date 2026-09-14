@@ -23,29 +23,27 @@ and [BOM](README.md#bom-with-indicative-prices).
 | C3 | Electrolytic | 470 µF / 16 V | 5 V → GND | Wi-Fi spikes |
 | C4 | Ceramic | 100 nF | 5 V → GND | HF filter |
 
-### Stage 2 · Ignition and illumination (ILL) sensing
+### Stage 2 · Illumination (ILL) sensing
 
-Two identical dividers bringing 12 V down to a safe level. The ILL one carries a
-larger capacitor to average the signal if the illumination is PWM-dimmed by the
-dash rheostat.
-
-> **Open: the ignition sense has no GPIO.** The pin map below assigns ILL to
-> GPIO35 and the analogue input to GPIO34, but nothing to `node_IGN`. The source
-> document specified the divider without a pin, and the free ADC1 pins are GPIO36
-> and GPIO39 ([ADR 0005](../decisions/0005-ota-in-maintenance-mode.md)). It is not
-> assigned here rather than guessed at; tracked in
-> [`docs/02-firmware/`](../02-firmware/README.md#open-items).
+One divider bringing the dash rheostat's 12 V line down to a safe level, with a
+large capacitor to average it if the illumination is PWM-dimmed.
 
 | Ref | Component | Value | Connection | Function |
 | --- | --- | --- | --- | --- |
-| R1 | Resistor | 10 kΩ | IG → node_IGN | upper leg |
-| R2 | Resistor | 3.3 kΩ | node_IGN → GND | lower leg (≈3.0 V @ 12 V) |
-| D3 | Schottky clamp | BAT85 | node_IGN → 3.3 V | clips above 3.3 V |
-| C5 | Ceramic | 100 nF | node_IGN → GND | filter → GPIO |
 | R3 | Resistor | 10 kΩ | ILL → node_ILL | upper leg |
 | R4 | Resistor | 3.3 kΩ | node_ILL → GND | lower leg |
 | D4 | Schottky clamp | BAT85 | node_ILL → 3.3 V | clips |
 | C6 | Ceramic | 1 µF | node_ILL → GND | averages PWM → ADC |
+
+> **The ignition divider that used to sit here was removed in v0.1.7.** It had no
+> GPIO assigned in any revision, and the node is fed from IG anyway — running is
+> proof the ignition is on. Battery voltage comes from SSM2, which this node already
+> polls. Reference designators R1, R2, D3 and C5 are retired rather than reused, so
+> older revisions of this table stay readable.
+>
+> **ILL is different and stays.** Following the dash rheostat is a real function
+> with no other source, and its divider is only read for relative brightness, so the
+> ADC range question that killed the ignition one does not apply.
 
 ### Stage 3 · Analogue input (0-5 V sensor, optional)
 

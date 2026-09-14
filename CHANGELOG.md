@@ -21,13 +21,78 @@ unchanged figure gets none.
 Tagging a release:
 
 ```bash
-git tag -a v0.1.6 -m "docs: Node A bench build"
+git tag -a v0.1.7 -m "docs: remove the ignition divider from both nodes"
 git push --tags
 ```
 
 ## [Unreleased]
 
 Nothing yet.
+
+## [0.1.7] — 2026-09-13
+
+Tag `v0.1.7`
+
+**The ignition divider is removed from both nodes.** It was specified in the v0.1
+source document, carried through four revisions of this repository, and documented
+as protected by a clamp that does not conduct. None of that was caught until the
+board layout forced a real number onto a real pin.
+
+### Removed
+
+- **Node A: R1, R2, D3, C5**, and with them five jumper runs: `Y3` (VBAT to the
+  divider), `N5` (its ground return), the old `B1` (the divider node) and old `B2`
+  (node_IGN to GPIO34), plus `R2w`, which disappeared when the 3.3 V feed stopped
+  needing to reach the clamp and became a single run straight to the relay's VCC.
+  The old `B3`/`B4` are renumbered `B1`/`B2` and are unchanged electrically.
+  **18 runs become 13, and 790 mm of wire becomes 646 mm.** GPIO34 is freed, and
+  rows 19–26 go from 69 free holes to **77**.
+- **Node B: R1, R2, D3, C5** — the ignition half of Stage 2. It never had a GPIO
+  assigned in any revision, so it was four parts soldered to nothing. **The ILL
+  divider stays**: following the dash rheostat is a real function with no other
+  source. Those four designators are retired, not reused.
+
+### Fixed
+
+- The documentation claimed **D3 protected the ignition input**. It did not. A BAT85
+  to the 3.3 V rail conducts above about 3.6 V; with 10 k / 3.3 k fed from VBAT the
+  node reaches only **3.47 V** at a 14.4 V charging voltage. The divider alone set
+  the pin voltage, 0.13 V under the ESP32's absolute maximum, with nothing in
+  reserve. That claim was this repository's, not the source document's.
+- The input could not be read either. ADC1 at 11 dB has a suggested range of
+  **150–2450 mV** [19]; the node passed 2.45 V at about 10.3 V at the connector and
+  pinned at full scale near 12.9 V. With the engine running it returned 4095 and
+  nothing else.
+- Node A's stages renumbered 1–3 and every anchor repointed: `OC-02`, `OC-03`,
+  ADR 0003, the reference index and the build page.
+- The solder-side figure's run count, total wire length and shared-colour note are
+  now **computed from the layout data** instead of typed into the drawing, which is
+  how they went stale in the first place.
+
+### Added
+
+- **A feed-and-ground resistance check** in the
+  [multimeter checklist](docs/04-integration/README.md#multimeter-checklist) and as
+  stage 6 of the build: with the node unplugged, measure fuse output → J1's +12 V pin
+  and J1's GND pin → the chassis stud, each well under 1 Ω.
+
+  The first draft of this check asked for a *voltage droop* while pulsing a relay,
+  which does not work: the coil runs off the 5 V rail, so the step at the 12 V input
+  is only ~34 mA, and a properly bad 1 Ω joint produces 34 mV. It would have taken
+  about 12 Ω — a broken wire — to trip the stated 0.5 V threshold. Measuring the
+  joint's resistance directly is the test that actually finds the fault.
+
+### Why removed rather than re-ratioed
+
+Changing R2 would have made the input readable. It would not have given it a job.
+The node is **fed from IG**, so being powered already proves the ignition is on;
+battery voltage is polled by Node B over SSM2 and planned properly on Node C with a
+16-bit ADC at the battery. No use case survived that something else was not already
+doing better, and a component without a job is debt on a hand-soldered board.
+
+Cost of the error: none of these parts appears as its own BOM line — all four come
+from assortments bought for Node B regardless, so the removal produces spares, not
+waste.
 
 ## [0.1.6] — 2026-09-13
 
@@ -62,8 +127,8 @@ every lead goes in and every jumper on the solder side.
 - **The ignition divider is fed from VBAT, after D1**, rather than from the raw IG
   line. It costs 0.4 V on a signal only ever compared against a firmware threshold,
   and puts the divider behind the reverse-polarity diode like everything else.
-  [Stage 2](docs/01-hardware/node-a-locking.md#stage-2--ignition-sensing) updated so
-  the two pages do not disagree.
+  Node A's Stage 2 updated so the two pages do not disagree. *(The divider itself was
+  removed in 0.1.7; that stage no longer exists.)*
 - **Fig. 9's zone plan corrected.** It had the ESP32 on 14 rows instead of 15 and
   put the divider and the connectors in rows that the real layout uses for
   something else. It is now a zone summary of Fig. 12 and says so.
@@ -319,7 +384,8 @@ All documentation derives from the v0.1 design document, kept verbatim in
 
 <!--
 Compare links, once the remote exists. Replace OWNER:
-[Unreleased]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.7...HEAD
+[0.1.7]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.3...v0.1.4

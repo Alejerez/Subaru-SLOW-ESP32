@@ -2,7 +2,7 @@
 
 - **Status:** Accepted
 - **Date:** 2026-08-30
-- **Affects:** Node A (Stage 4, pin map, firmware), Node B (firmware), ESP-NOW link topology, Fig. 1 and Fig. 7
+- **Affects:** Node A (Stage 3, pin map, firmware), Node B (firmware), ESP-NOW link topology, Fig. 1 and Fig. 7
 
 ## Context
 
@@ -54,7 +54,7 @@ confirmation on the OLED for ≈2 s (e.g. `AUTO-LOCK: ARMED` /
 **Hardware**
 
 - Node A gains a new input: GPIO27, `INPUT_PULLUP`, switch to ground. Documented
-  as [Stage 4](../01-hardware/node-a-locking.md#stage-4--onoff-button-reused-oem-switch).
+  as [Stage 3](../01-hardware/node-a-locking.md#stage-3--onoff-button-reused-oem-switch).
 - ~~A new cable run: console switch → Node A GPIO27.~~ **Closed by the amendment
   below:** the factory OrG wire already runs console → BIU, where Node A sits, so
   no new cable is pulled.

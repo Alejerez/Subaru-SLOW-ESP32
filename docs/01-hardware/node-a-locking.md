@@ -4,7 +4,7 @@ ESP32 next to the BIU (Body Integrated Unit), A-pillar. A **leaf of the ESP-NOW
 star**: it receives speed from Node B, sends back the mode when the button is
 pressed, and exchanges nothing with Node C.
 
-Deliberately simple — power, ignition sensing, relays, one button, one LED. There
+Deliberately simple — power, relays, one button, one LED. There
 is no VSS hardware at all ([ADR 0002](../decisions/0002-speed-over-ssm2-not-vss.md)),
 and the auto-lock ON/OFF switch is physically on **this** node
 ([ADR 0003](../decisions/0003-onoff-button-direct-to-node-a.md)).
@@ -29,20 +29,7 @@ Identical to [Node B's power stage](node-b-gauge.md#stage-1--power-ig-to-5-v).
 | U1 | Switching regulator | Recom R-78E5.0-1.0 | VBAT → 5 V | fixed 12 V→5 V (7805 drop-in) |
 | C3 | Electrolytic | 470 µF / 16 V | 5 V → GND | Wi-Fi spikes |
 
-### Stage 2 · Ignition sensing
-
-Fed from **VBAT, after D1**, so the divider sits behind the reverse-polarity
-diode. The 0.4 V the diode costs lands on a signal that is only compared against a
-firmware threshold. See the [build page](node-a-build.md#4--ignition-divider).
-
-| Ref | Component | Value | Connection |
-| --- | --- | --- | --- |
-| R1 | Resistor | 10 kΩ | VBAT → node_IGN |
-| R2 | Resistor | 3.3 kΩ | node_IGN → GND |
-| D3 | Schottky clamp | BAT85 | node_IGN → 3.3 V |
-| C5 | Ceramic | 100 nF | node_IGN → GND · node_IGN feeds GPIO34 |
-
-### Stage 3 · Relays to the BIU
+### Stage 2 · Relays to the BIU
 
 | Ref | Component | Control connection | Contacts |
 | --- | --- | --- | --- |
@@ -54,7 +41,7 @@ firmware threshold. See the [build page](node-a-build.md#4--ignition-divider).
 > relay momentarily grounds that wire — a negative pulse. It is never held; the
 > [pulse duration](../02-firmware/README.md#v01-parameters) is a firmware parameter.
 
-### Stage 4 · ON/OFF button (reused OEM switch)
+### Stage 3 · ON/OFF button (reused OEM switch)
 
 An unused OEM switch — the **windscreen-wiper de-icer**, a North-American-market
 option this EDM car does not have — wired **directly to Node A**. It does not go
@@ -143,13 +130,18 @@ replacing the twenty-year-old LED outright. Measure before designing either:
 
 | Function | GPIO | Note |
 | --- | --- | --- |
-| Ignition sensing | 34 | ADC · Stage 2 |
 | LOCK relay (IN1) | 25 | → BIU p15 |
 | UNLOCK relay (IN2) | 26 | → BIU p29 |
-| ON/OFF button | 27 | `INPUT_PULLUP` · reused OEM switch contact (i78 pins 1–2), see Stage 4 |
+| ON/OFF button | 27 | `INPUT_PULLUP` · reused OEM switch contact (i78 pins 1–2), see Stage 3 |
 | Status tell-tale | 33 | output · OEM indicator LED (i78 pins 8–9), lit while DISABLED |
 | Speed (receive) | — (radio) | ESP-NOW ← Node B |
 | Mode confirmation (transmit) | — (radio) | ESP-NOW → Node B, to show on the OLED |
+
+**Spare:** five ADC1 inputs are free — GPIO32, and the input-only GPIO34, 35, 36 and
+39 — and rows 19–26 of the board keep 77 empty holes. The ignition divider that used to occupy GPIO34 was removed in
+v0.1.7 — the node is fed from IG, so being powered already proves the ignition is
+on, and battery voltage is measured better by [Node B over SSM2](../02-firmware/README.md#node-b--gauge)
+and by [Node C](node-c-sensors.md#ambient-air-and-battery-voltage).
 
 ## Schematics and layout
 
@@ -169,7 +161,7 @@ pull-up; the ESP-NOW link carries speed inbound and the mode change outbound.
 ![Node A spatial layout](diagrams/08-node-a-spatial-layout.png)
 
 **Fig. 8** — Node A spatial layout. Speed arrives over ESP-NOW with no cable; the
-ON/OFF switch is wired directly to the node (Stage 4). The relay module sits off
+ON/OFF switch is wired directly to the node (Stage 3). The relay module sits off
 the board with its terminals facing the BIU. IG is taken at the A-pillar.
 
 ### Grid plan

@@ -82,7 +82,13 @@ class Svg:
     def dot(self, x, y, r=3.4, fill=None):
         return self.add(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{r}" fill="{fill}"/>')
 
+    ANCHOR = {"left": "start", "start": "start", "middle": "middle",
+              "centre": "middle", "center": "middle", "right": "end", "end": "end"}
+
     def text(self, x, y, s, size=13, fill=FG, anchor="start", weight=400, opacity=1.0):
+        # SVG only knows start/middle/end; anything else is silently ignored by the
+        # renderer, so normalise here rather than let a typo left-align a label.
+        anchor = self.ANCHOR[anchor]
         esc = (s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
         return self.add(
             f'<text x="{x:.1f}" y="{y:.1f}" font-family="{MONO}" font-size="{size}" '
