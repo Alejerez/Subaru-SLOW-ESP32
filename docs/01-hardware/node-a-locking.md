@@ -18,16 +18,52 @@ and layout.
 
 ### Stage 1 · Power (IG to 5 V)
 
-Identical to [Node B's power stage](node-b-gauge.md#stage-1--power-ig-to-5-v).
+The same chain as [Node B's supply](node-b-gauge.md#stage-1--power-ig-to-33-v--on-b-pwr),
+with one difference that matters: Node A's buck is the **5 V** part, because the
+relay module's coil needs 5 V.
 
 | Ref | Component | Value | Connection | Function |
 | --- | --- | --- | --- | --- |
-| F1 | Fuse | 2 A | series +12 V (IG) | protection |
-| D1 | Schottky | SS34 | +12 V → VBAT | reverse polarity |
-| D2 | TVS | SMAJ18A | VBAT → GND | transients |
-| C1 | Electrolytic | 470 µF / 35 V | VBAT → GND | reserve |
-| U1 | Switching regulator | Recom R-78E5.0-1.0 | VBAT → 5 V | fixed 12 V→5 V (7805 drop-in) |
-| C3 | Electrolytic | 470 µF / 16 V | 5 V → GND | Wi-Fi spikes |
+| F1 | Fuse + holder | **1 A slow-blow** | inline in +12 V (IG), before J1 | opens on a short |
+| D1 | Schottky | **SB1100** (1 A, 100 V, DO-41) | +12 V → VBAT | reverse polarity, and 100 V of reverse rating against negative transients |
+| D2 | Unidirectional TVS | **P6KE20A** (DO-15) | VBAT → GND | transients; V<sub>RWM</sub> 17.1 V, clamps at ~27.7 V |
+| C1 | Electrolytic | **100 µF / 35 V, 105 °C** | VBAT → GND | input reserve |
+| C2 | Ceramic | 100 nF **X7R, 50 V** | VBAT → GND | HF filter at the buck input |
+| U1 | Switching regulator | Recom R-78E5.0-1.0 | VBAT → 5 V | **input 8–28 V**, 5 V / 1 A |
+| C3 | Electrolytic | **100 µF / 16 V, 105 °C** | 5 V → GND | radio bursts |
+| C4 | Ceramic | 100 nF X7R | 5 V → GND | HF filter at the buck output |
+| C11 | Ceramic | 100 nF X7R | 5 V → GND, at the DevKit's VIN/GND pins | input cap for the module's own regulator |
+
+> **Five of these changed in v0.1.8, and three are corrections rather than
+> refinements.**
+>
+> **C3 was 470 µF, and the Recom's maximum capacitive load is 220 µF.** C3 sits on
+> its output, so the old value was twice the limit: the module current-limits into
+> the capacitor at start-up and hiccups instead of coming up, worst at the low
+> input voltage of a cold crank. 100 µF is inside the limit with C4 and C11
+> counted, and it cuts the inrush enough to drop the fuse from 2 A to 1 A.
+>
+> **SS34 and SMAJ18A are surface-mount parts, and the axial substitutes this
+> repository named could not be fitted.** A 1N5822 is DO-201AD: 1.2–1.3 mm leads
+> against 1 mm perfboard holes. A P6KE18A is DO-15: a 6.6 mm body against a
+> 5.08 mm hole span. SB1100 (DO-41, 0.8 mm leads) and P6KE20A on a 3-pitch
+> footprint both fit. P6KE20A also clamps at 27.7 V rather than the SMAJ18A's
+> 29.2 V, which is the first time this design's TVS has actually been below the
+> buck's 28 V input maximum.
+>
+> **C2, C4 and C11 did not exist.** The page used to say the stage was identical
+> to Node B's, which carried all three; Node A carried none, and its only 5 V
+> decoupling was an electrolytic 70 mm of wire from the module's VIN pin.
+>
+> **The node still resets while cranking**, and that is accepted: the Recom needs
+> 8 V, D1 costs 0.4 V, and 100 µF holds about 2 ms. State is not persisted, so
+> every ignition cycle starts ARMED.
+>
+> **D2 sits behind D1 and therefore cannot protect it.** A negative transient on
+> the IG feed is blocked by D1 and never reaches the TVS, so it appears across
+> D1's reverse rating — which is why D1 is now a 100 V part. This is an
+> IG-switched cabin feed downstream of the fuse box, not a raw battery line, so
+> the exposure is modest; it is recorded rather than designed around.
 
 ### Stage 2 · Relays to the BIU
 
@@ -111,20 +147,47 @@ It signals **DISABLED, not ARMED** — the reasoning is in
 
 | Ref | Component | Value | Connection | Function |
 | --- | --- | --- | --- | --- |
-| SW1 | OEM switch contact (i78 pins 1–2) | — | GPIO27 ↔ switch ↔ GND | momentary; toggles ARMED ⇄ DISABLED |
-| LED1 | OEM indicator LED (i78 pins 8–9) | — | GPIO33 → pin 8 · pin 9 to GND | lit while DISABLED |
+| SW1 | OEM switch contact (i78 pins 1–2) | — | GPIO27 ← R9 ← switch ↔ GND | momentary; toggles ARMED ⇄ DISABLED |
+| R9 | Resistor | 1 kΩ | switch → node_SW1 | series limit on a wire that leaves the cabin |
+| C12 | Ceramic | 100 nF X7R | node_SW1 → GND | filter and ESD path, at the pin |
+| LED1 | OEM indicator (i78 pins 8–9) | — | GPIO33 → R8 → pin 8 · pin 9 to GND | lit while DISABLED |
+| R8 | Resistor | **0 Ω link until `OC-07`** | GPIO33 → pin 8 | the footprint that lets a value be fitted later |
 
-*No additional components on the switch contact: it uses the ESP32's internal
-pull-up on GPIO27 (`INPUT_PULLUP`), the same approach the source document
-specified for this option.*
+> **SW1 gets 1 kΩ and 100 nF, which it did not have before.** The input relies on
+> the ESP32's ~45 kΩ internal pull-up, and it is the only input that leaves the
+> enclosure — it reuses the factory OrG run, metres of unshielded wire through the
+> dash. A 45 kΩ node on the end of that is an antenna with no series resistance
+> and no ESD path. Two parts fix it; the [ADR 0004](../decisions/0004-reuse-oem-contact-pad-buttons.md)
+> argument that the internal pull-up suffices was written for Node B's 100 mm
+> button pads, not for this run.
+>
+> Note also that the switch's pin 2 returns to the **console** ground while the
+> board references the **A-pillar** stud. Any offset between the two appears
+> directly on the input; with a 0.8 V threshold there is room for it, but it is
+> worth knowing.
 
-How it is driven is **`OC-07`**, still open. The factory diagram shows no discrete
-series resistor in the 8–9 path, so the limiting resistor is almost certainly
-inside the switch body and sized for 12 V. If so, a 3.3 V GPIO yields roughly
-2 mA — dim, but visible in a dark cabin, and needing **no components at all**. The
-fallbacks are a low-side MOSFET fed from Node A's protected 12 V rail, or
-replacing the twenty-year-old LED outright. Measure before designing either:
+**How the tell-tale is driven is `OC-07`, and it is more open than this page used
+to admit.** The factory diagram draws it as an LED, but a lamp and an LED are
+drawn alike, and a 2006 switch tell-tale may well be an incandescent bulb — which
+on a GPIO would destroy the pin. Even granting an LED, the claim that its series
+resistor sits inside the switch body is an inference from the absence of a
+discrete part on a wiring diagram, and the "roughly 2 mA" that followed was a
+guess resting on that inference.
+
+So the board now carries **R8 as a footprint with a 0 Ω link in it**, and `W5`
+stays disconnected at the switch end until the load is measured with a
+current-limited supply ramped from zero. Measuring first also settles whether the
+fallbacks — a low-side MOSFET from the protected 12 V rail, or replacing the
+twenty-year-old indicator — are needed at all:
 [`OC-07`](../04-integration/README.md#open-checks-on-the-vehicle).
+
+**Whether pin 8's wire even reaches the node is not established.** ADR 0003 rules
+out a new cable run on the grounds that the OrG wire already runs console → BIU;
+that argument covers pin 1. Pin 8 is the RY wire, which the factory diagram routes
+to the de-icer relay's contact output — a relay this car does not have, at a
+location this repository has never identified. The [cable
+schedule](assembly-and-wiring.md#cable-lengths) has a row for SW1 and none for
+LED1 for exactly that reason.
 
 ## ESP32 pin map (Node A)
 

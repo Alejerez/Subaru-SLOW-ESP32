@@ -52,7 +52,7 @@ the GB wire.
 | 6 | GND | ✔ pass-through | ✔ common ground |
 | 1 | ILL | ✔ pass-through | ✔ dimming |
 | 7 | **K-line** (new) | — empty | ✔ from OBD pin 7 |
-| 2 / 3 | analogue (new) | — empty | ◦ sensors |
+| 2 / 3 | — | — empty | — spare. *(These were once earmarked for analogue sensors. After the v0.1.8 split the i59 reaches B-PWR, whose J6 carries only IG, GND and ILL, while the sensor input is J5 on B-GAUGE in the clock bay — there is no path from these pins to an ADC.)* |
 | 4 | — | — empty | — spare |
 | 10 | constant B+ | ✔ pass-through | ✖ **deliberately not connected** |
 | 5 | OEM UART | ✔ pass-through | ✖ **not connected, not driven** |
@@ -60,17 +60,18 @@ the GB wire.
 
 > ⚠️ **Unresolved: does the K-line go through the adapter, or beside it?**
 > The pin table above routes it on i59 pin 7, so it arrives inside the adapter.
-> The layout figures do not: [Fig. 4](node-b-gauge.md#full-spatial-layout) and
-> [Fig. 5](node-b-gauge.md#exact-plan-on-the-perfboard-grid) give the i59 a **3-pin**
-> header (IG · GND · ILL) and the K-line **its own 2-pin header**, fed by a separate
-> cable from the OBD port — which is also what the [cable schedule](#cable-lengths)
-> and [Fig. 1](../00-concept/README.md#architecture) describe.
+> The [cable schedule](#cable-lengths) and [Fig. 1](../00-concept/README.md#architecture)
+> route it on its own cable from the OBD port instead. Both are buildable and
+> neither is wrong on its own; the source document contains both.
 >
-> Both are buildable and neither is wrong on its own; the source document contains
-> both. Through the adapter is tidier and puts one fewer cable in the console;
-> beside it is simpler to build and to fault-find. **This is recorded rather than
-> silently reconciled** ([CONTRIBUTING](../../CONTRIBUTING.md#what-must-not-be-silently-fixed)),
-> and has to be settled before the adapter is built — step 4 of the
+> **Moving the transceiver to B-PWR narrowed this but did not close it.** Since
+> v0.1.8 the K wire terminates at B-PWR's J7 either way, and B-PWR sits at the
+> i59 — so the layout no longer disagrees with the pin table, and the choice is now
+> only about how the wire gets there. Through the adapter is tidier and puts one
+> fewer cable in the console; beside it is simpler to fault-find and leaves the
+> adapter a pure pass-through. **Recorded rather than silently reconciled**
+> ([CONTRIBUTING](../../CONTRIBUTING.md#what-must-not-be-silently-fixed)), and to be
+> settled before the adapter is built — step 4 of the
 > [install sequence](../04-integration/README.md#install-sequence).
 
 ### Why this makes the modification reversible
@@ -121,11 +122,14 @@ walks them out.
 | --- | --- | --- |
 | ESP32 ↔ carrier | module | socket (female headers) + removable retainer |
 | **OLED ↔ carrier** | module (expensive) | latching connector or socket; **retained by the 3D-printed bezel with screws**, not by the header |
-| RTC · L9637D · buck · relay ↔ carrier | module | socket + removable retainer |
+| buck · relay ↔ carrier | module | socket + removable retainer |
+| **RTC ↔ B-GAUGE** | off-board module | four wires on J4 to a 3D-printed case of its own; it is not on the board |
+| **L9637D ↔ B-PWR** | SO-8 on a SOIC-8→DIP-8 adapter | **machined-pin, gold-plated 8-way DIP socket** — three separable interfaces stack here, on the one part whose intermittent contact jams the car's diagnostic line |
+| **B-PWR ↔ B-GAUGE** | the five-wire umbilical | latching connector at each end, 15–20 cm |
 | OEM buttons ↔ carrier | bezel | latching connector (JST) so the bezel can be separated |
 | Passives (dividers, K-line R/C) | discrete | soldered to the carrier (the carrier is the repairable unit) |
 | i59 (to the car) | harness | pass-through adapter (already solved) |
-| K-line → OBD pin 7 | harness | latching connector at the enclosure wall |
+| K-line → OBD pin 7 | harness | latching connector at B-PWR's enclosure wall |
 | BIU p15 / p29 | harness | latching connector + Posi-Tap or solder at the BIU |
 | 12 V (IG) / GND | harness | latching connector at the enclosure wall |
 | SW1 ON/OFF switch → GPIO27 | harness | reuses the factory OrG run to the BIU; latching connector at the enclosure wall |
@@ -139,18 +143,29 @@ walks them out.
 | JST-XH | 2.5 | friction | signal to board |
 | JST-SM | 2.5 | ✓ clip | wire-to-wire (harness disconnect) |
 | JST-VH | 3.96 | friction | 12 V power |
-| **Molex Micro-Fit 3.0** | 3.0 | ✓ latch | signal + power — **recommended** |
+| **Molex Micro-Fit 3.0** | 3.0 | ✓ latch | wire-to-wire at the enclosure wall — **but not on a board** |
+| **Molex KK 254** | 2.54 | ✓ latch | **board headers — recommended** |
+
+> **Micro-Fit 3.0 cannot be used for J1–J8.** Its pitch is **3.00 mm**, in both
+> axes; every board here is a 2.54 mm grid. Use **Molex KK 254** (2.54 mm exactly,
+> positive latch, 4 A per circuit) for board headers, or **JST-XH** — its 2.5 mm
+> pitch accumulates 0.04 mm per position, which hole clearance absorbs up to about
+> eight pins, so J2's seven are the practical limit. Micro-Fit stays the right
+> choice **wire-to-wire at the enclosure wall**, which is where this table's
+> original recommendation belonged. Nothing in either node is near any of these
+> families' current limits: the largest load is 250 mA.
 
 **One exception, from v0.3.** Node C's [bulkhead connector](node-c-sensors.md#the-bulkhead-connector)
 at the firewall is environmentally sealed and therefore not from this table. The
 sealing stops there: everything on the cabin side is Micro-Fit as usual.
 
-### The carrier board, per node
+### The carrier boards
 
 ![Carrier board concept](diagrams/10-carrier-concept.png)
 
-**Fig. 10** — Layout, not a schematic: boxes that do not touch, no crossing
-lines. Every module plugged in, latching connectors at the edge.
+**Fig. 10** — Layout, not a schematic. Three boards, all the same 3 × 7 cm
+part: every module plugged into a socket, every wire out of the board on a
+latching connector.
 
 - **Socketing:** solder **female** headers to the carrier; the ESP32 and each
   module (with their male pins) plug in and can be pulled out.
@@ -161,6 +176,9 @@ lines. Every module plugged in, latching connectors at the edge.
   serviceable.
 - **Compact:** the carrier is flat and small; it eliminates loose wiring and does
   not grow the way screw-terminal shields do.
+- **Three boards, not two.** Node A has one; Node B has two —
+  [B-GAUGE and B-PWR](node-b-gauge.md#node-b-is-built-as-two-boards) — and all three are the
+  same 3 × 7 cm part, so one printed tray design fits all of them.
 
 ### Strain relief — matters more than the connector
 
@@ -177,8 +195,11 @@ lines. Every module plugged in, latching connectors at the edge.
 
 | Run | From → to | Length | Gauge |
 | --- | --- | --- | --- |
-| K-line | OBD pin 7 → gauge module | 1.2–1.5 m | 22 AWG |
-| i59 ↔ module | adapter → gauge ESP32 | 15–20 cm | 22 AWG |
+| K-line | OBD pin 7 → B-PWR | 1.2–1.5 m | 22 AWG |
+| i59 ↔ B-PWR | adapter → B-PWR (IG, GND, ILL) | 15–20 cm | 22 AWG |
+| **Umbilical** | B-PWR → B-GAUGE, five wires | 15–20 cm | 22 AWG |
+| **RTC** | B-GAUGE J4 → DS3231 in its printed case | ≤20 cm | 26 AWG |
+| LED1 tell-tale | i78 pin 8 → Node A GPIO33 | **route not established — see [`OC-07`](../04-integration/README.md#open-checks-on-the-vehicle)** | — |
 | LOCK/UNLOCK | Node A → BIU p15/p29 | 15–30 cm | 20 AWG |
 | IG + GND, Node A | fuse box / ground → Node A | 30–50 cm | 20 AWG |
 | SW1 ON/OFF switch | console switch → Node A GPIO27 | existing OrG factory run (console → BIU) | — |
@@ -251,7 +272,7 @@ from when the node was to live in the engine bay.
 > **Field notes for a non-specialist.**
 > - **63/37 leaded solder** is easier for a beginner than lead-free — it melts
 >   lower and more evenly. Wash your hands afterwards.
-> - **Colour by function**, one colour per net, and never reuse one.
+> - **Colour by function.** One colour per *function*, not per net: with six reels and three boards, several colours necessarily carry more than one net, and the cut lists are what disambiguate them.
 >   Label the ends. That alone prevents most wiring mistakes.
 > - **Use the project's [colour code](README.md#wire-colour-code)** — yellow +12 V,
 >   copper +5 V, red +3.3 V, grey GND, blue signal — not the generic automotive

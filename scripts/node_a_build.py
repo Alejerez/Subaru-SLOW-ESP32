@@ -12,7 +12,9 @@ from diagram_lib import (  # noqa: E402
     V12, V5, V33, GND, SIG, RADIO, NODE_A, NODE_B, NODE_C, WARN,
 )
 
-COLS = "ABCDEFGHJKL"          # 11 columns, I omitted on purpose
+import board_lib as BL                                              # noqa: E402
+from board_lib import COLS, ci, ri, ESP_L, ESP_R, body_box, check_bodies  # noqa: E402
+
 NROW = 27
 PAD = "#7a5334"               # copper ring
 PAD_IN = "#1c1008"
@@ -26,92 +28,117 @@ NETS = {
     "V33":  ("+3.3 V",            "ROJO",     V33),
     "IN1":  ("IN1 -> relay CH1",  "AZUL",     SIG),
     "IN2":  ("IN2 -> relay CH2",  "AZUL",     SIG),
-    "SW1":  ("SW1 (OEM switch)",  "BLANCO",   FG),
-    "LED1": ("LED1 (tell-tale)",  "BLANCO",   FG),
+    "SW1":  ("SW1, raw from i78", "BLANCO",   FG),
+    "SW1D": ("SW1 at GPIO27",     "BLANCO",   FG),
+    "LED1": ("LED1, out to i78",  "BLANCO",   FG),
+    "LED1D": ("LED1 at GPIO33",   "BLANCO",   FG),
 }
 
-# --- ESP32 header, physical order, row 1 = USB end ----------------------------
-ESP_L = ["VIN", "GND", "D13", "D12", "D14", "D27", "D26", "D25", "D33", "D32",
-         "D35", "D34", "VN", "VP", "EN"]
-ESP_R = ["D23", "D22", "TX0", "RX0", "D21", "D19", "D18", "D5", "TX2", "RX2",
-         "D4", "D2", "D15", "GND", "3V3"]
-ESP_USED = {"A1": "V5", "A2": "GND", "A6": "SW1", "A7": "IN2", "A8": "IN1",
-            "A9": "LED1", "L15": "V33"}
+ESP_USED = {"A1": "V5", "A2": "GND", "A6": "SW1D", "A7": "IN2", "A8": "IN1",
+            "A9": "LED1D", "L1": "V33"}
 
 # --- discrete components: ref, part, shape, [(hole, pin, net)] ----------------
 COMPONENTS = [
-    ("J1", "IG in · 2p",      "hdr",  [("A27", "1 +12V", "V12"), ("B27", "2 GND", "GND")]),
-    ("J2", "relay · 5p",      "hdr",  [("D27", "JD-VCC", "V5"), ("E27", "GND", "GND"),
-                                       ("F27", "IN1", "IN1"), ("G27", "IN2", "IN2"),
-                                       ("H27", "VCC", "V33")]),
-    ("J3", "OEM switch · 2p", "hdr",  [("K27", "SW1", "SW1"), ("L27", "LED1", "LED1")]),
-    ("D1", "SS34",            "vert", [("A26", "A", "V12"), ("A25", "K", "VBAT")]),
-    ("D2", "SMAJ18A",         "ax2",  [("A24", "K", "VBAT"), ("C24", "A", "GND")]),
-    ("C1", "470u 35V",        "rad",  [("A23", "+", "VBAT"), ("C23", "-", "GND")]),
-    ("U1", "R-78E5.0-1.0",    "sip3", [("B21", "1 +Vin", "VBAT"), ("C21", "2 GND", "GND"),
-                                       ("D21", "3 +Vout", "V5")]),
-    ("C3", "470u 16V",        "rad",  [("B19", "-", "GND"), ("D19", "+", "V5")]),
+    ("J1", "IG in · 2p",      "hdr90", [("A27", "1 +12V", "V12"), ("B27", "2 GND", "GND")]),
+    ("J2", "relay · 5p",      "hdr90", [("D27", "JD-VCC", "V5"), ("E27", "GND", "GND"),
+                                        ("F27", "IN1", "IN1"), ("G27", "IN2", "IN2"),
+                                        ("H27", "VCC", "V33")]),
+    ("J3", "OEM switch · 2p", "hdr90", [("K27", "SW1", "SW1"), ("L27", "LED1", "LED1")]),
+    ("D1", "SB1100",      "ax2f", [("A21", "A", "V12"), ("C21", "K", "VBAT")]),
+    ("D2", "P6KE20A",     "ax3f", [("A23", "K", "VBAT"), ("D23", "A", "GND")]),
+    ("U1", "R-78E5.0-1.0", "sip3", [("G21", "1 +Vin", "VBAT"), ("H21", "2 GND", "GND"),
+                                    ("J21", "3 +Vout", "V5")]),
+    ("C2", "100n X7R 50V", "ax2f", [("A19", "a", "VBAT"), ("C19", "b", "GND")]),
+    ("C1", "100u 35V 105C", "rad", [("F25", "+", "VBAT"), ("H25", "-", "GND")]),
+    ("C3", "100u 16V 105C", "rad", [("J25", "+", "V5"), ("L25", "-", "GND")]),
+    ("C4", "100n X7R", "ax2f", [("A25", "a", "V5"), ("C25", "b", "GND")]),
+    ("C11", "100n X7R", "ax2f", [("B1", "a", "V5"), ("B3", "b", "GND")]),
+    ("R9", "1k", "ax2f", [("C6", "in", "SW1"), ("E6", "out", "SW1D")]),
+    ("C12", "100n X7R", "ax2f", [("E8", "a", "SW1D"), ("G8", "b", "GND")]),
+    ("R8", "0R link", "ax2f", [("C10", "GPIO side", "LED1D"), ("E10", "out", "LED1")]),
 ]
 
-# --- bare pads used only as junctions (no component lead) ---------------------
+# body heights in mm, for the parts that sit under the socketed module
+HEIGHTS = {"C11": 3.2, "R9": 3.2, "C12": 3.2, "R8": 3.2, "C2": 3.2,
+           "D1": 2.6, "D2": 3.6, "C4": 3.2, "C1": 11.0, "C3": 11.0, "U1": 10.4}
+BODY_OVERRIDE = {"C1": (6.3, 6.3, "round"), "C3": (6.3, 6.3, "round")}
+
 TIE_POINTS = {"C27": "GND"}   # ground spine junction, keeps three leads off D2's pad
 
-# --- solder-side runs: (id, net, [holes in soldering order], note) ------------
 RUNS = [
-    ("Y1", "V12",  ["A27", "A26"],                       "J1 -> D1 anode"),
-    ("Y2", "VBAT", ["A25", "A24", "A23", "B21"],         "D1 K -> D2 -> C1+ -> U1 +Vin"),
-    ("N1", "GND",  ["E27", "C27", "C24", "C23", "C21"],  "relay GND -> spine -> D2, C1-, U1"),
-    ("N2", "GND",  ["B27", "C27"],                       "J1 GND -> spine"),
-    ("N3", "GND",  ["C21", "B19"],                       "spine -> C3 -"),
-    ("N4", "GND",  ["C21", "A2"],                        "spine -> ESP32 GND"),
-    ("G1", "V5",   ["D19", "D21", "D27"],                "C3+ -> U1 out -> relay JD-VCC"),
-    ("G2", "V5",   ["D21", "A1"],                        "U1 out -> ESP32 VIN"),
-    ("R1w", "V33", ["L15", "H27"],                       "ESP32 3V3 -> relay VCC"),
-    ("B1", "IN1",  ["A8", "F27"],                        "GPIO25 -> relay IN1"),
-    ("B2", "IN2",  ["A7", "G27"],                        "GPIO26 -> relay IN2"),
-    ("W1", "SW1",  ["A6", "K27"],                        "GPIO27 -> SW1"),
-    ("W2", "LED1", ["A9", "L27"],                        "GPIO33 -> LED1"),
+    ("Y1", "V12",  ["A27", "A21"],                 "J1 -> D1 anode"),
+    ("Y2", "VBAT", ["C21", "A23", "A19"],          "D1 K -> D2 K -> C2"),
+    ("Y3", "VBAT", ["A23", "G21", "F25"],          "-> U1 +Vin -> C1 +"),
+    ("N1", "GND",  ["B27", "C27", "D23", "C19"],   "J1 GND -> spine -> D2 A -> C2"),
+    ("N2", "GND",  ["C27", "E27"],                 "spine -> relay GND"),
+    ("N3", "GND",  ["C19", "H21"],                 "-> U1 GND"),
+    ("N4", "GND",  ["H21", "H25", "L25"],          "-> C1 -, C3 -"),
+    ("N5", "GND",  ["H21", "C25"],                 "-> C4"),
+    ("N6", "GND",  ["H21", "A2", "B3"],            "-> ESP32 GND, C11"),
+    ("N7", "GND",  ["A2", "G8"],                   "-> C12"),
+    ("G1", "V5",   ["J21", "J25"],                 "U1 out -> C3 +"),
+    ("G2", "V5",   ["J21", "A25"],                 "-> C4"),
+    ("G3", "V5",   ["J21", "D27"],                 "-> relay JD-VCC"),
+    ("G4", "V5",   ["J21", "B1", "A1"],            "-> C11 -> ESP32 VIN"),
+    ("R1w", "V33", ["L1", "H27"],                  "ESP32 3V3 -> relay VCC"),
+    ("BL1", "IN1", ["A8", "F27"],                  "GPIO25 -> relay IN1"),
+    ("BL2", "IN2", ["A7", "G27"],                  "GPIO26 -> relay IN2"),
+    ("W1", "SW1",  ["K27", "C6"],                  "i78 pin 1 -> R9"),
+    ("W2", "SW1D", ["E6", "E8"],                   "R9 -> C12"),
+    ("W3", "SW1D", ["E8", "A6"],                   "-> GPIO27"),
+    ("W4", "LED1D", ["A9", "C10"],                 "GPIO33 -> R8"),
+    ("W5", "LED1", ["E10", "L27"],                "R8 -> i78 pin 8"),
 ]
 
 
 # --- helpers ------------------------------------------------------------------
-def ci(hole):
-    return COLS.index(hole[0])
+BOARD = {"key": "node-a", "esp": True, "nrow": NROW}
+LOW_PROFILE = {"ax1f", "ax2f", "ax3f"}
+MOUNT = {"hdr90": "90° header, edge", "vert": "standing, 1 pitch",
+         "ax2f": "axial, flat, 2 pitches", "ax3f": "axial, flat, 3 pitches",
+         "rad": "radial, 2 pitches", "sip3": "SIP3, three in a row"}
 
 
-def ri(hole):
-    return int(hole[1:])
+def bodies():
+    return {ref: body_box(ref, sh, pins, BODY_OVERRIDE.get(ref))
+            for ref, _p, sh, pins in COMPONENTS}
 
 
 def check():
     """Fail loudly on a placement that cannot be built."""
     used = {}
-    for ref, _p, _s, pins in COMPONENTS:
-        for h, pin, net in pins:
+    for ref, _p, shape, pins in COMPONENTS:
+        for h, _pin, net in pins:
             assert h[0] in COLS and 1 <= ri(h) <= NROW, f"{ref}: hole {h} off the board"
             assert h not in used, f"{ref} and {used[h]} both claim hole {h}"
+            assert net in NETS, f"{ref}: unknown net {net}"
             used[h] = ref
-    for h in list(ESP_USED) + [f"A{r}" for r in range(1, 16)] + [f"L{r}" for r in range(1, 16)]:
+        if any(ri(h) <= 18 for h, *_ in pins):
+            assert shape in LOW_PROFILE, (
+                f"{ref} sits under the ESP32 (rows 1-18) but is {shape}, not flat")
+        for h, *_ in pins:
+            assert not (16 <= ri(h) <= 18), f"{ref}: {h} is in the antenna rows 16-18"
+    for h in [f"A{r}" for r in range(1, 16)] + [f"L{r}" for r in range(1, 16)]:
         if h in used:
             raise AssertionError(f"{used[h]} sits on ESP32 header hole {h}")
-    # every run hole must be a real pad of something, and share the run's net
     netof = {h: n for _r, _p, _s, pins in COMPONENTS for h, _pin, n in pins}
     netof.update(ESP_USED)
     netof.update(TIE_POINTS)
     for rid, net, holes, _note in RUNS:
         for h in holes:
             assert h in netof, f"run {rid}: {h} is not a component pad"
-            a, b = netof[h], net
-            ok = a == b or {a, b} <= {"V12", "VBAT"}
-            assert ok, f"run {rid} ({net}) lands on {h} which is net {netof[h]}"
-    # every component pad must be reachable
+            # No V12/VBAT exemption: a run that bridges D1 would defeat the
+            # reverse-polarity protection silently, and used to pass.
+            assert netof[h] == net, (
+                f"run {rid} ({net}) lands on {h}, which is net {netof[h]}")
     reached = {h for _i, _n, hs, _x in RUNS for h in hs}
     for h, n in netof.items():
-        if h.startswith(("A", "L")) and ri(h) <= 15 and h not in ESP_USED:
+        if h[0] in "AL" and ri(h) <= 15 and h not in ESP_USED:
             continue
         if h in TIE_POINTS:
             continue
         assert h in reached, f"pad {h} ({n}) is not connected by any run"
+    check_bodies(BOARD, bodies(), HEIGHTS)
     return used
 
 
@@ -206,8 +233,7 @@ def _board(s, x0, y0, mirror, title, num_off=30):
     return w, h
 
 
-LABEL_POS = {"J1": "N", "J2": "N", "J3": "N", "D1": "E", "D2": "E", "C1": "E",
-             "U1": "E", "C3": "E"}
+MM = P / 2.54          # px per mm
 
 
 def fig12_node_a_placement():
@@ -243,32 +269,31 @@ def fig12_node_a_placement():
                    weight=700 if net else 400)
 
     for ref, part, shape, pins in COMPONENTS:
-        xs = [_xy(x0, y0, hh)[0] for hh, _p, _n in pins]
-        ys = [_xy(x0, y0, hh)[1] for hh, _p, _n in pins]
-        pad = 11
-        bx, by = min(xs) - pad, min(ys) - pad
-        bw, bh = max(xs) - min(xs) + 2 * pad, max(ys) - min(ys) + 2 * pad
-        col = V12 if ref in ("D1", "D2", "C1", "U1", "C3") else (
-            FG_DIM if shape == "hdr" else SIG)
-        s.rect(bx, by, bw, bh, fill=PANEL_2, stroke=col, sw=1.7, r=5)
-        for hh, pl, nn in pins:
-            s.dot(*_xy(x0, y0, hh), PR - 2.2, NETS[nn][2])
-        pos = LABEL_POS[ref]
-        if pos == "E":
-            s.text(bx + bw + 7, by + bh / 2 + 4, ref, size=11, fill=col, weight=700)
-        elif pos == "W":
-            s.text(bx - 7, by + bh / 2 + 4, ref, size=11, fill=col, weight=700,
-                   anchor="right")
+        cx, cy, bw, bh, kind = body_box(ref, shape, pins, BODY_OVERRIDE.get(ref))
+        px_, py_ = x0 + cx * MM, y0 + cy * MM
+        col = V12 if ref in ("D1", "D2", "C1", "C2", "U1") else (
+            NODE_A if ref in ("C3", "C4", "C11") else
+            FG_DIM if shape.startswith("hdr") else SIG)
+        if kind == "round":
+            s.add(f'<circle cx="{px_:.1f}" cy="{py_:.1f}" r="{bw * MM / 2:.1f}" '
+                  f'fill="{PANEL_2}" stroke="{col}" stroke-width="1.7"/>')
         else:
-            s.text(bx + bw / 2, by - 7, ref, size=11, fill=col, weight=700, anchor="middle")
+            s.rect(px_ - bw * MM / 2, py_ - bh * MM / 2, bw * MM, bh * MM,
+                   fill=PANEL_2, stroke=col, sw=1.7, r=4)
+        for hh, _pl, nn in pins:
+            s.dot(*_xy(x0, y0, hh), PR - 2.2, NETS[nn][2])
+        if bw >= bh or shape.startswith("hdr") or shape in ("sip3", "rad"):
+            s.text(px_, py_ - bh * MM / 2 - 8, ref, size=11, fill=col,
+                   weight=700, anchor="middle")
+        else:
+            s.text(px_ + bw * MM / 2 + 7, py_ + 4, ref, size=11, fill=col, weight=700)
 
     # right-hand panel: the parts list
     px = 700
     s.text(px, 210, "WHAT GOES WHERE", size=13, fill=FG, weight=700)
     s.text(px, 232, "hole = column letter + row number, e.g. A27", size=10.5, fill=FG_FAINT)
     rows = [("ref", "part", "holes", "mounting")]
-    mount = {"hdr": "90° header", "vert": "standing", "ax2": "axial, 2 pitches",
-             "ax1": "axial, 1 pitch", "rad": "radial, 2 pitches", "sip3": "SIP3, in a row"}
+    mount = MOUNT
     for ref, part, shape, pins in COMPONENTS:
         rows.append((ref, part, " ".join(f"{h}={p}" for h, p, _n in pins), mount[shape]))
     colx = [px, px + 58, px + 200, px + 590]
@@ -286,17 +311,17 @@ def fig12_node_a_placement():
             "The DevKit V1's two pin rows are 25.4 mm apart — exactly 10 pitches —",
             "so they land in column A and column L and nothing else fits beside them.",
             "Rows 1-15 are the pins; the module body reaches about 3 rows further,",
-            "which is why rows 16-18 carry no parts. All 9 holes between the rows",
-            "stay free, and that is where the solder-side wiring runs."]):
+            "which is why rows 16-18 carry no parts. Columns B-K underneath keep",
+            "8.5 mm of clearance, which is where the flat parts and the wiring go."]):
         s.text(px, yy + 26 + i * 20, ln, size=11.5, fill=FG_DIM)
 
     yy += 26 + 5 * 20 + 26
     s.text(px, yy, "BEFORE YOU SOLDER ANYTHING", size=13, fill=WARN, weight=700)
     for i, ln in enumerate([
-            "Check your module's silkscreen against the pin names drawn here.",
-            "DevKit V1 clones exist with a different order. The seven that",
-            "matter are VIN, GND, D33, D25, D26, D27 and 3V3 — find each",
-            "one on your own board and confirm it sits in the row shown."]):
+            "Check BOTH pin rows against the names drawn here. 3V3 sits beside",
+            "VIN at the USB end, not at the antenna end: reading a pinout image",
+            "from the wrong end reverses the right-hand column and nothing else,",
+            "which is how this repository had it wrong from v0.1.0 to v0.1.7."]):
         s.text(px, yy + 26 + i * 20, ln, size=11.5, fill=FG_DIM)
 
     s.caption(s.h - 20, "Parts on this side, wires on the other. Nothing is soldered to the "
@@ -305,7 +330,7 @@ def fig12_node_a_placement():
 
 
 def fig13_node_a_solder_side():
-    s = Svg(1560, 1070)
+    s = Svg(1760, 1120)
     n_runs = len(RUNS)
     total_mm = sum(run_length(h) for _i, _n, h, _x in RUNS)
     s.text(40, 44, f"NODE A  ·  SOLDER SIDE  —  the {n_runs} jumpers, and where each one runs",
@@ -358,39 +383,42 @@ def fig13_node_a_solder_side():
     for rid, net, _h, _x in RUNS:
         by_colour.setdefault(NETS[net][1], {}).setdefault(net, []).append(rid)
     dup = {c: nets for c, nets in by_colour.items() if len(nets) > 1}
-    s.text(px, yy, "Some colours carry more than one net. They are never joined:",
+    s.text(px, yy, "Several colours carry more than one net,",
            size=10.5, fill=WARN)
-    s.text(px, yy + 18,
-           "  ·  ".join(f"{c.lower()} " + " ≠ ".join("/".join(ids)
-                                                     for ids in nets.values())
-                        for c, nets in dup.items()),
-           size=10.5, fill=FG_DIM)
+    s.text(px, yy + 18, "and they are never joined. Go by the cut list.",
+           size=10.5, fill=WARN)
+    for i, (c, nets) in enumerate(dup.items()):
+        s.text(px, yy + 40 + i * 17,
+               f"{c.lower()}: " + "  ≠  ".join("/".join(ids)
+                                               for ids in nets.values()),
+               size=10, fill=FG_DIM)
+    yy += len(dup) * 17 + 22
     yy += 44
     s.dot(px + 22, yy, 5.2, FG_DIM)
     s.text(px + 56, yy + 4, "dot", size=11, fill=FG, weight=700)
-    s.text(px + 150, yy + 4, "solder here — the wire is joined to this pad",
+    s.text(px + 150, yy + 4, "the wire is soldered to this pad",
            size=11, fill=FG_DIM)
     yy += 26
     s.line(px, yy, px + 44, yy, stroke=FG_DIM, sw=3.0, cap="round")
     s.text(px + 56, yy + 4, "line", size=11, fill=FG, weight=700)
-    s.text(px + 150, yy + 4, "insulated wire lying on the board — crossings are fine",
+    s.text(px + 150, yy + 4, "insulated wire; crossings are fine",
            size=11, fill=FG_DIM)
 
-    yy += 42
+    px, yy = 1250, 184
     s.text(px, yy, f"CUT LIST  ·  {n_runs} jumpers, {total_mm:.0f} mm of wire",
            size=13, fill=FG, weight=700)
     yy += 26
-    hdr = ("id", "colour", "solder at", "cut")
-    colx = [px, px + 52, px + 152, px + 566]
+    hdr = ("id", "net", "colour", "solder at", "cut")
+    colx = [px, px + 44, px + 100, px + 178, px + 412]
     for cx, cell in zip(colx, hdr):
         s.text(cx, yy, cell, size=10.5, fill=FG_DIM, weight=700)
-    s.line(px, yy + 7, px + 640, yy + 7, stroke=EDGE, sw=1.2)
+    s.line(px, yy + 7, px + 470, yy + 7, stroke=EDGE, sw=1.2)
     for i, (rid, net, holes, _note) in enumerate(RUNS):
-        ry = yy + 24 + i * 22
+        ry = yy + 24 + i * 21
         colr = NETS[net][2]
-        for cx, cell in zip(colx, (rid, NETS[net][1], "  ".join(holes),
-                                   f"{run_length(holes):.0f} mm")):
-            s.text(cx, ry, cell, size=11, fill=colr if cx == colx[1] else FG)
+        for cx, cell in zip(colx, (rid, net, NETS[net][1].lower(),
+                                   "  ".join(holes), f"{run_length(holes):.0f} mm")):
+            s.text(cx, ry, cell, size=10.5, fill=colr if cx in colx[1:3] else FG)
 
     s.caption(s.h - 20, "Strip 3 mm, tin both ends, lay the wire flat and solder it to every "
                         "pad the cut list names for it. Longest first, shortest last.")
@@ -411,6 +439,28 @@ def _pads(s, x, y, n, pitch=26, r=7.5):
         s.dot(x + i * pitch, y, 2.8, PAD_IN)
 
 
+
+def polarity_rows():
+    """The polarity panel is derived from COMPONENTS, never typed by hand.
+
+    Every part with a cathode pin or a marked negative pin appears here with the
+    hole the layout actually puts it in, so the drawing cannot drift from the
+    board the way it did between v0.1.5 and v0.1.8.
+    """
+    rows = []
+    for ref, part, _shape, pins in COMPONENTS:
+        holes = {lbl: h for h, lbl, _ in pins}
+        if "K" in holes:
+            tail = (" (VBAT), NOT ground" if holes["K"] == "A23"
+                    else ", toward the buck")
+            rows.append((f"{ref} {part}", f"band = cathode -> {holes['K']}{tail}"))
+        elif "-" in holes:
+            value = "/".join(part.split()[:2])
+            rows.append((f"{ref} {value}", f"stripe = minus -> {holes['-']}"))
+    assert rows, "no polarised part found — the layout data changed shape"
+    return rows
+
+
 def fig14_node_a_technique():
     s = Svg(1520, 840)
     s.text(40, 44, "NODE A  ·  HOW TO MOUNT AND SOLDER IT", size=15, fill=FG, weight=700)
@@ -420,44 +470,43 @@ def fig14_node_a_technique():
     W, H, GX, GY = 460, 330, 20, 20
     X0, Y0 = 40, 100
 
-    # 1 -- standing axial
-    px, py = _panel(s, X0, Y0, W, H, "1 · STANDING AXIAL  —  D1", [
-        "Used where a part must fit one pitch. On this board, only D1.",
-        "Bend one lead 180° down the side of the body.",
-        "Both leads end up 2.54 mm apart — two touching holes."], SIG)
-    _pads(s, px + 60, py + 170, 4)
-    s.line(px + 60, py + 170, px + 60, py + 60, stroke=FG_DIM, sw=2)
-    s.rect(px + 46, py + 40, 28, 62, fill=PANEL_2, stroke=SIG, sw=1.6, r=4)
-    s.line(px + 86, py + 170, px + 86, py + 50, stroke=FG_DIM, sw=2)
-    s.line(px + 60, py + 46, px + 86, py + 46, stroke=FG_DIM, sw=2)
-    s.text(px + 112, py + 96, "body stands up", size=10.5, fill=FG_FAINT)
-    s.text(px + 112, py + 114, "one lead folded over", size=10.5, fill=FG_FAINT)
-    s.text(px + 52, py + 196, "1 pitch", size=10, fill=SIG)
-
-    # 2 -- flat axial
-    px, py = _panel(s, X0 + W + GX, Y0, W, H, "2 · FLAT AXIAL  —  D2", [
-        "D2 spans 2 pitches, A24 to C24.",
+    # 1 -- flat axial, 2 pitches
+    px, py = _panel(s, X0, Y0, W, H, "1 · FLAT AXIAL, 2 PITCHES  —  D1 and the small parts", [
+        "D1 (DO-41, body 4.1 mm) and every ceramic and resistor here.",
         "Bend both leads square, close to the body, and lay it down.",
-        "Flat parts are easier to inspect and harder to short."], SIG)
+        "Nothing on this board stands up: flat parts are easier to inspect."], SIG)
     _pads(s, px + 60, py + 120, 4)
     s.line(px + 60, py + 120, px + 60, py + 92, stroke=FG_DIM, sw=2)
     s.line(px + 112, py + 120, px + 112, py + 92, stroke=FG_DIM, sw=2)
     s.line(px + 60, py + 92, px + 112, py + 92, stroke=FG_DIM, sw=2)
-    s.rect(px + 66, py + 80, 40, 24, fill=PANEL_2, stroke=SIG, sw=1.6, r=4)
-    s.rect(px + 66, py + 80, 8, 24, fill=SIG, stroke=SIG, sw=1)
+    s.rect(px + 70, py + 80, 32, 24, fill=PANEL_2, stroke=SIG, sw=1.6, r=4)
+    s.rect(px + 94, py + 80, 8, 24, fill=SIG, stroke=SIG, sw=1)
     s.text(px + 132, py + 90, "band = cathode (K)", size=10.5, fill=FG_FAINT)
-    s.text(px + 132, py + 108, "D2: band to the A column", size=10.5, fill=WARN)
-    s.text(px + 62, py + 146, "2 pitches", size=10, fill=SIG)
+    s.text(px + 132, py + 108, "D1: band to C21, toward the buck", size=10.5, fill=WARN)
+    s.text(px + 62, py + 146, "2 pitches · A21 to C21", size=10, fill=SIG)
+
+    # 2 -- flat axial, 3 pitches
+    px, py = _panel(s, X0 + W + GX, Y0, W, H, "2 · FLAT AXIAL, 3 PITCHES  —  D2", [
+        "D2 is a P6KE20A in DO-15: the body is 6.6 mm, wider than one pitch,",
+        "so it spans three holes, A23 to D23, and not two.",
+        "A ¼ W resistor (6.3 mm body) needs the same three-hole span."], SIG)
+    _pads(s, px + 60, py + 120, 4)
+    s.line(px + 60, py + 120, px + 60, py + 92, stroke=FG_DIM, sw=2)
+    s.line(px + 138, py + 120, px + 138, py + 92, stroke=FG_DIM, sw=2)
+    s.line(px + 60, py + 92, px + 138, py + 92, stroke=FG_DIM, sw=2)
+    s.rect(px + 70, py + 78, 58, 28, fill=PANEL_2, stroke=SIG, sw=1.6, r=4)
+    s.rect(px + 70, py + 78, 9, 28, fill=SIG, stroke=SIG, sw=1)
+    s.text(px + 158, py + 90, "band = cathode (K)", size=10.5, fill=FG_FAINT)
+    s.text(px + 158, py + 108, "D2: band to A23 (VBAT)", size=10.5, fill=WARN)
+    s.text(px + 62, py + 146, "3 pitches · A23 to D23", size=10, fill=SIG)
 
     # 3 -- polarity
-    px, py = _panel(s, X0 + 2 * (W + GX), Y0, W, H, "3 · POLARITY  —  get these four right", [
+    rows = polarity_rows()
+    px, py = _panel(s, X0 + 2 * (W + GX), Y0, W, H,
+                    f"3 · POLARITY  —  get these {len(rows)} right", [
         "A reversed electrolytic vents. A reversed TVS shorts 12 V to ground",
-        "and blows the fuse. Check all four against Fig. 12 before the iron is hot."],
+        "and blows the fuse. Check every one against Fig. 12 before the iron is hot."],
                     WARN)
-    rows = [("D1 SS34", "band -> A25 (cathode, toward the buck)"),
-            ("D2 SMAJ18A", "band = cathode -> A24 (VBAT), NOT ground"),
-            ("C1 470u/35V", "stripe = minus -> C23"),
-            ("C3 470u/16V", "stripe = minus -> B19")]
     for i, (a, b) in enumerate(rows):
         s.text(px, py + 24 + i * 26, a, size=11, fill=WARN, weight=700)
         s.text(px + 132, py + 24 + i * 26, b, size=10.5, fill=FG_DIM)

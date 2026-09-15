@@ -31,7 +31,7 @@ sets out how that constraint decides the hardware.
 | Detailed design | Closed at component level for Nodes A and B: per-stage values, perfboard layout, wiring |
 | Materials | Specified (see [BOM](../01-hardware/README.md#bom-with-indicative-prices)); being sourced |
 | Firmware | Behaviour specified (see [`docs/02-firmware/`](../02-firmware/README.md)); **not implemented** |
-| Vehicle validation | **Seven open checks** (`OC-01`–`OC-05`, `OC-07`, `OC-08`) — measurements, not assumptions. See [`docs/04-integration/`](../04-integration/README.md#open-checks-on-the-vehicle) |
+| Vehicle validation | **Eight open checks** for v0.1, listed and owned in [`docs/04-integration/`](../04-integration/README.md#open-checks-on-the-vehicle) — measurements, not assumptions. See [`docs/04-integration/`](../04-integration/README.md#open-checks-on-the-vehicle) |
 
 ## Architecture
 

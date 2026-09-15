@@ -48,7 +48,7 @@ in the changelog and what belongs in a decision record — are stated at the top
 [`CHANGELOG.md`](CHANGELOG.md) itself.
 
 ```bash
-git tag -a v0.1.6 -m "short description"
+git tag -a v0.1.8 -m "short description"
 git push --tags
 ```
 
@@ -97,6 +97,25 @@ Commit the regenerated PNGs together with the script change, so the figure and
 its source never drift apart. The generator fails loudly on label overflow or
 collisions — if it reports a problem, fix the layout rather than committing the
 image anyway.
+
+## Checks to run before committing
+
+Three scripts, all of which exit non-zero on a problem:
+
+```bash
+python3 scripts/node_a_build.py        # Node A: placement, nets, bodies, runs
+python3 scripts/node_b_build.py        # both Node B boards, plus the umbilical
+python3 scripts/check_links.py         # every relative link and heading anchor
+python3 scripts/generate_diagrams.py   # figure text vs. layout, then redraws
+```
+
+The build scripts are silent on success — they assert. They refuse a layout whose
+part bodies overlap, whose parts overhang the board edge, whose pads land in the
+antenna rows, whose jumper ends are on different nets, or whose two Node B boards
+disagree about the umbilical. `generate_diagrams.py` runs
+[`scripts/check_figure_text.py`](scripts/check_figure_text.py) first, which
+compares every label drawn inside a figure against the component tables, because
+a value typed into drawing code is exactly the kind of thing review misses.
 
 ## What must not be silently "fixed"
 

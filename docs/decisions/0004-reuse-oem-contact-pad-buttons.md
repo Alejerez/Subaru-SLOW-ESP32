@@ -39,7 +39,7 @@ no OEM silicon in the path.
 
 **The OEM contact pads are reused as the four gauge controls**, wired to the
 ESP32 with `INPUT_PULLUP` and the pad's other side to ground — the pin mapping
-already specified in [Node B, Stage 5](../01-hardware/node-b-gauge.md#stage-5--display-clock-and-buttons)
+already specified in [Node B, Stage 5](../01-hardware/node-b-gauge.md#stage-5--display-clock-and-buttons--on-b-gauge)
 (GPIO 32/33/25/26) is unchanged; what this record settles is *how* the buttons
 physically get there.
 

@@ -140,6 +140,8 @@ class Svg:
           orient="auto-start-reverse"><path d="M0,1.2 L9.5,5 L0,8.8 z" fill="{V12}"/></marker>
   <marker id="arw_v5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7"
           orient="auto-start-reverse"><path d="M0,1.2 L9.5,5 L0,8.8 z" fill="{V5}"/></marker>
+  <marker id="arw_v33" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7"
+          orient="auto-start-reverse"><path d="M0,1.2 L9.5,5 L0,8.8 z" fill="{V33}"/></marker>
   <marker id="arw_gnd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7"
           orient="auto-start-reverse"><path d="M0,1.2 L9.5,5 L0,8.8 z" fill="{GND}"/></marker>
   <marker id="arw_a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7"
@@ -156,7 +158,7 @@ class Svg:
         )
 
 
-MARKER = {V12: "arw_v12", V5: "arw_v5", SIG: "arw_sig", GND: "arw_gnd",
+MARKER = {V12: "arw_v12", V5: "arw_v5", V33: "arw_v33", SIG: "arw_sig", GND: "arw_gnd",
           RADIO: "arw_radio", NODE_A: "arw_a", NODE_C: "arw_c",
           FG_DIM: "arw", EDGE: "arw"}
 

@@ -197,7 +197,7 @@ schematics if that is preferable, at no technical cost to the project.
 ## Status and next steps
 
 - [ ] Complete `LICENSE-SOFTWARE.txt` with the official GPL-3.0 text
-- [ ] Close the seven v0.1 [open checks on the vehicle](docs/04-integration/README.md#open-checks-on-the-vehicle) — they are measurements, not assumptions
+- [ ] Close the eight v0.1 [open checks on the vehicle](docs/04-integration/README.md#open-checks-on-the-vehicle) — they are measurements, not assumptions
 - [ ] Define the ESP-NOW packet format before Node C is built
 - [ ] Write the firmware for Nodes A and B from [`docs/02-firmware/`](docs/02-firmware/README.md)
 

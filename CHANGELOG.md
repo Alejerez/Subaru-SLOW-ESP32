@@ -12,7 +12,7 @@ unchanged figure gets none.
 | Rule | |
 | --- | --- |
 | **Version** | `MAJOR.MINOR.PATCH`, tracking the [roadmap](ROADMAP.md#at-a-glance)'s feature releases. The repository is documentation-only for now, so it sits at `0.1.x` and the patch number advances with each documentation release. `0.2.0` arrives with the v0.2 feature set, not merely with the first firmware. |
-| **ID** | The version is the ID. Each entry also names the tag and the commit it closed at, so any entry can be diffed. |
+| **ID** | The version is the ID. Each entry names its tag; where the closing commit is known it is named too, so any entry can be diffed. The tag is created at release time — [`CONTRIBUTING`](CONTRIBUTING.md#releases-and-the-changelog) has the command. |
 | **Date** | ISO `YYYY-MM-DD`, the date of that commit. |
 | **Order** | Newest first. `[Unreleased]` collects work not yet tagged. |
 | **Categories** | Only these, in this order: **Added · Changed · Deprecated · Removed · Fixed · Resolved · Unresolved · Security**. Two are this project's own, and no entry invents a third: `Resolved` is an [open check](docs/04-integration/README.md#open-checks-on-the-vehicle) closed by an actual measurement, cited by its `OC-nn` id; `Unresolved` is a contradiction found and deliberately *not* reconciled, per [CONTRIBUTING](CONTRIBUTING.md#what-must-not-be-silently-fixed). Empty categories are omitted, not listed as "nothing". |
@@ -21,7 +21,7 @@ unchanged figure gets none.
 Tagging a release:
 
 ```bash
-git tag -a v0.1.7 -m "docs: remove the ignition divider from both nodes"
+git tag -a v0.1.8 -m "docs: split Node B into two boards, re-proportion its dividers"
 git push --tags
 ```
 
@@ -29,14 +29,204 @@ git push --tags
 
 Nothing yet.
 
+## [0.1.8] — 2026-09-14
+
+Tag `v0.1.8`
+
+**Node B became two boards, and a full audit of all three nodes found twelve
+defects that would have reached the bench.** The largest is that the DevKit's
+right-hand pin row had been indexed from the wrong end of the module since
+v0.1.0, so every layout in this repository put `3V3` where `D23` belongs. The
+rest are of a kind: values inherited from the source document and carried through
+seven releases without anyone doing the arithmetic.
+
+Nothing here is a new feature. It is the release where the documentation stopped
+describing a board that could not be built.
+
+### Added
+
+- **[`node-b-build.md`](docs/01-hardware/node-b-build.md)** — the bench build for
+  both Node B boards: hole-by-hole placement, 64 solder-side jumpers with cut
+  lists, eleven stages of work each gated on a measurement.
+- **[`scripts/board_lib.py`](scripts/board_lib.py)** — the board geometry, the
+  DevKit pin order and the structural checks, in **one** place. The pin order had
+  been duplicated in two files and was wrong in both.
+- **A body-collision check.** `check()` only ever tested hole occupancy, so five
+  parts on Node A shared the same cubic centimetre from v0.1.6 onward. The
+  checker now models each part's real body and refuses a layout where two
+  overlap, where anything taller than 8.5 mm sits under the module, or where a
+  part hangs off the board edge.
+- **`check_umbilical()`** — asserts that B-GAUGE's J1 and B-PWR's J8 carry the
+  same nets in the same order. A per-board checker structurally cannot see the
+  one interface where a mistake damages both boards at once.
+- **[`scripts/check_figure_text.py`](scripts/check_figure_text.py)** — reads every
+  string literal drawn inside every figure and compares it against the component
+  tables, refusing a retired part name or a value the layout disagrees with.
+  `generate_diagrams.py` runs it before it draws anything. Fig. 14's polarity
+  table is now generated from the layout rather than typed.
+- **[`scripts/check_links.py`](scripts/check_links.py)** — every relative link and
+  heading anchor in the repository, checked against GitHub's own slug rules.
+- **[ADR 0007](docs/decisions/0007-node-b-split-into-two-boards.md)** and
+  **[ADR 0008](docs/decisions/0008-node-b-runs-on-one-33-v-rail.md)** — why Node B
+  is split, and why it runs on a single 3.3 V rail.
+- **Six figures, 15 to 20**, and every other figure except 6 and 7 redrawn.
+- **B-PWR**, a second 3 × 7 cm board at the i59 carrying everything above 5 V.
+- **Parts Node A never had**: C2, C4 and C11 (the decoupling its page claimed it
+  shared with Node B), R8 (a resistor footprint for the tell-tale), R9 and C12
+  (series resistance and a filter on the only input that leaves the enclosure).
+- **Parts Node B never had**: C13–C16, 100 nF at each button pin, no longer
+  optional — those are the only wires in the node a person touches.
+- **An errata table** in [`docs/00-concept/source/`](docs/00-concept/source/README.md),
+  now listing eleven factual errors found in the source document.
+- **A "what must be specified before this node is built" section for
+  [Node C](docs/01-hardware/node-c-sensors.md)** — the node has no conditioning
+  arithmetic at all, which is the state Nodes A and B were in before their
+  dividers were checked.
+
+### Changed
+
+- **Node B runs on one 3.3 V rail.** U1 is the **R-78E3.3-1.0**, the DevKit is fed
+  on its `3V3` pin with `VIN` unconnected, and the umbilical drops from six wires
+  to **five**. Nothing in Node B runs at 5 V. Node A keeps the 5 V part, because
+  its relay coil needs it.
+- **Both electrolytics on both nodes: 470 µF → 100 µF, and 105 °C.** See *Fixed*.
+- **The fuse: 2 A → 1 A slow-blow**, on both nodes.
+- **The axial substitutes: 1N5822 → SB1100, P6KE18A → P6KE20A.** See *Fixed*.
+- **Every ceramic now names a dielectric** (X7R, or C0G for the K-line filter) and
+  the three that sit on clamped 12 V nets name 50 V. **R5 and R6 are 1 % metal
+  film**; R7 is ½ W metal oxide.
+- **The DS3231 takes a CR2032**, not the LIR2032 this project used to recommend.
+- **Molex Micro-Fit 3.0 is no longer recommended for board headers** — it is a
+  3.00 mm part and every board here is a 2.54 mm grid. Molex KK 254 replaces it;
+  Micro-Fit stays right for wire-to-wire at the enclosure wall.
+- **Node A's power stage is re-spaced**, and its jumper count goes 13 → 22 as the
+  three missing ceramics, the resistor footprint and the switch filter are wired.
+
+### Fixed
+
+- **The DevKit's right-hand header column was indexed backwards**, in both build
+  scripts, from v0.1.0. `3V3` and `VIN` are the pair at the **USB** end; `EN` and
+  `D23` are the pair at the antenna end. Pinout diagrams for this board are
+  published with the USB at the top in some sources and at the bottom in others,
+  and reading one from the wrong end reverses that column and nothing else.
+  Verified against four machine-readable sources — a KiCad symbol and footprint
+  whose silkscreen locates the USB connector, a Fritzing part, and Wokwi's board
+  geometry. Consequences: Node A's 3.3 V run landed on **GPIO23** instead of the
+  3V3 pin, so the relay module's logic side would never have been powered; and
+  eleven of B-GAUGE's signals were on the wrong holes.
+- **Five parts on Node A physically overlapped.** D1's body ran into J1's header,
+  D2 sat inside C1's can, C1 ran into U1, U1 ran into C3, and C3 intruded into the
+  antenna rows. The board as drawn could not be assembled.
+- **C3 exceeded the buck's maximum capacitive load, on both nodes.** The Recom's
+  limit is **220 µF** and C3 sits on its output; 470 µF is twice that, and the
+  module current-limits into it at start-up rather than coming up — worst at the
+  low input voltage of a cold crank.
+- **The SSD1322 draws ~310 mA at 3.3 V**, and Node B's supply was sized as though
+  it did not. The DevKit's AMS1117 would have dissipated about 1.0 W in a SOT-223
+  with no copper pour: a 120–160 °C rise, i.e. thermal shutdown on a 25 °C bench.
+  [ADR 0008](docs/decisions/0008-node-b-runs-on-one-33-v-rail.md).
+- **The axial substitutes could not be fitted.** A 1N5822 is DO-201AD, with
+  1.2–1.3 mm leads against 1 mm perfboard holes. A P6KE18A is DO-15, a 6.6 mm body
+  against a 5.08 mm hole span — and its 15.3 V standoff leaves 0.9 V of margin on
+  a 14.4 V charging rail. SB1100 and P6KE20A fit, and P6KE20A's 27.7 V clamp is
+  the first value in this design that stays under the buck's 28 V input maximum.
+- **The advice for a stubborn relay channel was backwards.** Moving VCC to 5 V and
+  switching the GPIO to open-drain does not stop current flowing; a released
+  open-drain pin passes none, so the opto LED drops nothing and the IN node floats
+  to the full 5 V, pushing ~1.3 mA into the 3.3 V rail through the pin's ESD clamp,
+  above the ESP32's absolute maximum. Corrected in
+  [Node A, stage 4](docs/01-hardware/node-a-build.md#4--relay-outputs).
+- **Firmware would have actuated the doors on every boot.** The ESP32's output
+  register holds 0 after reset, so `pinMode(pin, OUTPUT)` drives an active-LOW
+  relay input low the instant it takes effect. The required ordering — write high,
+  *then* make it an output — is now a stated firmware requirement, as is the
+  interlock that stops both channels energising together.
+- **The tell-tale was designed around two assumptions stated as fact**: that the
+  part is an LED, and that its series resistor is inside the OEM switch. Neither is
+  measured; a lamp on that GPIO would destroy it. The board now carries **R8** as a
+  0 Ω link so a value can be fitted once `OC-07` is measured, and the page says
+  plainly that pin 8's wire may not even reach the node.
+- **The 1 A / 2 A fuse.** Each node draws 215–250 mA. A 2 A fuse protects the
+  harness against a dead short and against nothing else — it carries a 1.9 A chafe
+  fault indefinitely, which is the failure a fuse in a fifteen-year installation
+  exists to catch.
+- **`budget()` charged all three connector rails the full board width** when two
+  of them span only columns E–L, and the prose that quoted it was 30 % pessimistic
+  in one direction and quoted the wrong quantity in the other. The argument for
+  splitting Node B is unchanged and is now about **shape** rather than area: the
+  three largest parts are 8.5–10.5 mm deep and the free strips are at most 3.5 mm.
+- **Node A's `check()` permitted the one short that matters** — a run declared
+  `V12` could legally land on a `VBAT` pad, bridging D1 and defeating the
+  reverse-polarity protection silently. The exemption is gone, and Node B's four
+  extra assertions are ported across.
+- **Ten figures still drew the parts this release replaced.** The layouts moved
+  to SB1100, P6KE20A, 100 µF reservoirs, a 1 A fuse and a 3.3 V-only Node B while
+  the drawing code went on labelling SS34, SMAJ18A, 470 µF, a 2 A fuse and a 5 V
+  Node B rail; Fig. 2 was titled *12 V → 5 V* for a node that has no 5 V; Fig. 14's
+  polarity panel named four holes the parts had moved out of and illustrated a
+  standing axial part this board no longer has; Fig. 10 drew one carrier where
+  there are three; Fig. 3 called the OLED connector J3 and put an LIR2032 in the
+  RTC; Fig. 20 fed the L9637D's VCC up the umbilical and told the builder to
+  expect 5 V from the buck. Prose was reviewed twice in this release; strings
+  buried in drawing code were not, which is why they are now checked
+  mechanically.
+- **`docs/01-hardware/diagrams/README.md` was a v0.1.6-era index** — fourteen
+  figures, three dead anchors, six figures missing. Six broken anchors elsewhere
+  in the repository, all created when Node B's headings gained board names.
+- **The open-check count was seven in four documents and eight in the one that
+  owns it** — the same defect v0.1.5 recorded fixing, in different documents.
+- Smaller corrections: Node A's stage-2 reverse-polarity rationale described
+  something that does not happen (D2 is *forward*-biased in that condition and
+  reverse-biases C1); the under-module hole count was 150 where the board has 135;
+  Node A's free-hole count was quoted three different ways; the root README stated
+  the display colour as settled while `OC-05` is open; the ROADMAP still counted
+  two carriers; the v0.1.7 entry ran its categories out of order and invented an
+  eighth; a v0.1.6 entry had been retro-annotated, which
+  [CONTRIBUTING](CONTRIBUTING.md) forbids.
+
+### Resolved
+
+- **The 3.3 V budget**, raised as unresolved by ADR 0007 and closed against it by
+  ADR 0008 — with a measured datasheet figure rather than a judgement.
+- **The L9637D with VS at 12 V and VCC at zero**, also raised by ADR 0007. U1 and
+  U2 are now on the same board and cannot be separated.
+
+### Unresolved
+
+- **The L9637D's pin 1.** These drawings use pin 1 = RX and pin 8 = LI. The
+  extraction was not consistent across attempts and ST publishes no application
+  note for the part, so the build page makes reading Figure 2 of the datasheet a
+  gate before the SOIC-8 is soldered, rather than asserting it.
+- **LI and LO termination for a K-line-only design.** The datasheet specifies what
+  an open LI does but recommends nothing. LI → VS is inference, recorded as such.
+- **The OLED module's actual 3.3 V current.** 310 mA is Newhaven's figure for the
+  reference design, and Node B's whole supply is sized from it.
+- **The relay module has no part number anywhere in this repository**, so neither
+  its polarity nor its behaviour at 3.3 V can be settled on paper.
+- **The K-line route through the i59**, narrowed but still open.
+- **`OC-12`** — whether the ILL feed is live with the key out.
+
 ## [0.1.7] — 2026-09-13
 
-Tag `v0.1.7`
+Tag `v0.1.7` · commit `2299faf`
 
 **The ignition divider is removed from both nodes.** It was specified in the v0.1
 source document, carried through four revisions of this repository, and documented
 as protected by a clamp that does not conduct. None of that was caught until the
 board layout forced a real number onto a real pin.
+
+### Added
+
+- **A feed-and-ground resistance check** in the
+  [multimeter checklist](docs/04-integration/README.md#multimeter-checklist) and as
+  stage 6 of the build: with the node unplugged, measure fuse output → J1's +12 V pin
+  and J1's GND pin → the chassis stud, each well under 1 Ω.
+
+  The first draft of this check asked for a *voltage droop* while pulsing a relay,
+  which does not work: the coil runs off the 5 V rail, so the step at the 12 V input
+  is only ~34 mA, and a properly bad 1 Ω joint produces 34 mV. It would have taken
+  about 12 Ω — a broken wire — to trip the stated 0.5 V threshold. Measuring the
+  joint's resistance directly is the test that actually finds the fault.
 
 ### Removed
 
@@ -69,34 +259,9 @@ board layout forced a real number onto a real pin.
   now **computed from the layout data** instead of typed into the drawing, which is
   how they went stale in the first place.
 
-### Added
-
-- **A feed-and-ground resistance check** in the
-  [multimeter checklist](docs/04-integration/README.md#multimeter-checklist) and as
-  stage 6 of the build: with the node unplugged, measure fuse output → J1's +12 V pin
-  and J1's GND pin → the chassis stud, each well under 1 Ω.
-
-  The first draft of this check asked for a *voltage droop* while pulsing a relay,
-  which does not work: the coil runs off the 5 V rail, so the step at the 12 V input
-  is only ~34 mA, and a properly bad 1 Ω joint produces 34 mV. It would have taken
-  about 12 Ω — a broken wire — to trip the stated 0.5 V threshold. Measuring the
-  joint's resistance directly is the test that actually finds the fault.
-
-### Why removed rather than re-ratioed
-
-Changing R2 would have made the input readable. It would not have given it a job.
-The node is **fed from IG**, so being powered already proves the ignition is on;
-battery voltage is polled by Node B over SSM2 and planned properly on Node C with a
-16-bit ADC at the battery. No use case survived that something else was not already
-doing better, and a component without a job is debt on a hand-soldered board.
-
-Cost of the error: none of these parts appears as its own BOM line — all four come
-from assortments bought for Node B regardless, so the removal produces spares, not
-waste.
-
 ## [0.1.6] — 2026-09-13
 
-Tag `v0.1.6`
+Tag `v0.1.6` · commit `e0917e3`
 
 The parts arrived, so Node A gets a bench build: not a schematic, but which hole
 every lead goes in and every jumper on the solder side.
@@ -153,7 +318,7 @@ every lead goes in and every jumper on the solder side.
 
 ## [0.1.5] — 2026-09-03
 
-Tag `v0.1.5`
+Tag `v0.1.5` · commit `ec41037`
 
 Node C was documented in its own files but never propagated into the documents
 that describe the system as a whole. Closing that exposed a wider problem — the
@@ -194,7 +359,7 @@ rules at the top of this file.
 
 - `docs/02-firmware/` described the ESP-NOW link as **bidirectional** in one
   paragraph and as **a star** fifteen lines later.
-- [Node B, Stage 3](docs/01-hardware/node-b-gauge.md#stage-3--analogue-input-0-5-v-sensor-optional)
+- [Node B, Stage 3](docs/01-hardware/node-b-gauge.md#stage-3--analogue-input-0-5-v-sensor-optional--on-b-gauge)
   and the BOM still recommended a **MAX31855 thermocouple amplifier**, which
   [ADR 0006](docs/decisions/0006-node-c-analogue-front-end.md) had replaced with
   PT1000 RTDs. Same error in the roadmap's *Discarded* section.
@@ -384,7 +549,8 @@ All documentation derives from the v0.1 design document, kept verbatim in
 
 <!--
 Compare links, once the remote exists. Replace OWNER:
-[Unreleased]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.7...HEAD
+[Unreleased]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.8...HEAD
+[0.1.8]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.7...v0.1.8
 [0.1.7]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/OWNER/Subaru-ESP32-SLOW/compare/v0.1.4...v0.1.5

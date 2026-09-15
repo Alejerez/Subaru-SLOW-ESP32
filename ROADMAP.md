@@ -48,7 +48,7 @@ The locked scope. Nothing outside this list is being designed, wired or costed
 until it works in the car: the point of v0.1 is to prove the SSM2 link, the
 display integration and the locking logic against real vehicle wiring.
 
-1. **SSM2 acquisition** — poll the ECU over the K-line (ISO 9141-2, 10400 baud)
+1. **SSM2 acquisition** — poll the ECU over the K-line (ISO 9141, 4800 baud 8N1)
    through an L9637D transceiver on OBD pin 7.
 2. **Monochrome OLED gauge** — SSD1322 256×64 in the OEM clock position, retained
    by a 3D-printed bezel. Amber or white is still open, see
@@ -72,7 +72,7 @@ stops answering. Both are specified in
 neither can be usefully retrofitted.
 
 Completion criteria are the install sequence and multimeter checklist in
-[`docs/04-integration/`](docs/04-integration/README.md), plus the seven open
+[`docs/04-integration/`](docs/04-integration/README.md), plus the eight open
 vehicle checks listed there.
 
 ## v0.2 — firmware only
@@ -233,7 +233,7 @@ Recorded so they are not re-proposed without new information.
 
 Independent of the feature releases above. Once v0.1 is validated in the car:
 
-- Move both carriers from perfboard to a **formal PCB** (KiCad or EasyEDA,
+- Move all three carriers from perfboard to a **formal PCB** (KiCad or EasyEDA,
   Gerbers under `hardware/`), keeping the modules socketed and the edge connectors
   latching.
 - The button contact-pad area has to be resolved at the same time: either the OEM
@@ -247,7 +247,7 @@ Independent of the feature releases above. Once v0.1 is validated in the car:
   board outline — the retromod constraint does not relax.
 
 Practically this lands around v0.3, when several new nodes are being built at
-once and hand-populating five perfboards stops being reasonable.
+once and hand-populating six perfboards stops being reasonable.
 
 ## Documentation and tooling
 

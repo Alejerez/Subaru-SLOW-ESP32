@@ -29,6 +29,8 @@ value that follows directly from a datasheet.
 | [0004](0004-reuse-oem-contact-pad-buttons.md) | Reuse the OEM contact-pad buttons as the gauge controls | Accepted |
 | [0005](0005-ota-in-maintenance-mode.md) | OTA firmware update in a deliberate maintenance mode | Accepted |
 | [0006](0006-node-c-analogue-front-end.md) | Node C: an analogue front end, in the cabin | Accepted |
+| [0007](0007-node-b-split-into-two-boards.md) | Node B is two boards, split by voltage domain | Accepted |
+| [0008](0008-node-b-runs-on-one-33-v-rail.md) | Node B runs on one 3.3 V rail, made at B-PWR | Accepted |
 
 Numbering is sequential and never reused. A superseded record is not deleted —
 its status changes to `Superseded by NNNN` and it stays in place, because the

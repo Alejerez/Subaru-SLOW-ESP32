@@ -15,7 +15,7 @@ The findings themselves live in those documents.
 | File | Subject | Used by |
 | --- | --- | --- |
 | `oem-switch-panel.jpg` | Switch panel left of the steering wheel. Outlined in red: the unused wiper de-icer switch, repurposed as the auto-lock ON/OFF control | [ADR 0003](../../decisions/0003-onoff-button-direct-to-node-a.md) |
-| `clock-unit-front.jpg` | The clock / trip-computer unit out of the dash. DISP bottom left, **− +** rocker and SET at the right | [Node B, Stage 5](../node-b-gauge.md#stage-5--display-clock-and-buttons) |
+| `clock-unit-front.jpg` | The clock / trip-computer unit out of the dash. DISP bottom left, **− +** rocker and SET at the right | [Node B, Stage 5](../node-b-gauge.md#stage-5--display-clock-and-buttons--on-b-gauge) |
 | `clock-bay-in-dash.jpg` | The bay in the centre console, outlined in red — the position the retromod constraint requires the gauge to keep | [Node B](../node-b-gauge.md#where-it-goes-in-the-car) |
 | `coolant-catch-tank.jpg` | The 2 L welded catch tank that replaced the OEM expansion bottle. Cap outlet open to atmosphere, pressure function defeated — the tank is **not pressurised** | [Node C](../node-c-sensors.md#coolant-level--catch-tank) |
 

@@ -23,6 +23,11 @@ from diagram_lib import (  # noqa: E402
 from node_a_build import (  # noqa: E402
     fig12_node_a_placement, fig13_node_a_solder_side, fig14_node_a_technique,
 )
+from node_b_build import (  # noqa: E402
+    fig04_node_b_spatial, fig05_node_b_grid,
+    fig15_b_split, fig16_b_gauge_placement, fig17_b_gauge_solder,
+    fig18_b_pwr_placement, fig19_b_pwr_solder, fig20_b_technique,
+)
 
 OUT = pathlib.Path(__file__).resolve().parent.parent / "docs" / "01-hardware" / "diagrams"
 SCALE = 2  # device pixel ratio for the PNG render
@@ -84,14 +89,14 @@ def fig01_system_architecture():
            title_color=FG_DIM)
     s.card(bx, y2, w, "WIRED INTERFACE",
            ["i59 connector: IG · GND · ILL",
-            "K-line -> OBD pin 7  (SSM2, 10400 bd)",
+            "K-line -> OBD pin 7  (SSM2, 4800 bd)",
             "OLED SSD1322 SPI · RTC DS3231 I2C",
             "4 OEM buttons -> GPIO 32/33/25/26",
             ""], accent=EDGE, title_size=12, title_color=FG_DIM)
     s.card(cx, y2, w, "WIRED INTERFACE",
            ["sealed bulkhead connector at the firewall",
             "ADS1115 channel bank on I2C",
-            "0-5 V ratiometric · NTC/RTD · digital in",
+            "0-5 V analogue · NTC/RTD · digital in",
             "engine-bay sensors on 2.5-3 m runs",
             ""], accent=EDGE, title_size=12, title_color=FG_DIM)
 
@@ -112,19 +117,20 @@ def _gnd_symbol(s, x, y, color=GND):
 
 def fig02_node_b_power():
     s = Svg(1140, 520)
-    s.text(40, 44, "NODE B  ·  POWER STAGE  (IG 12 V -> 5 V)", size=15, fill=FG, weight=700)
-    s.text(40, 64, "same stage is used on Node A", size=12, fill=FG_FAINT)
+    s.text(40, 44, "NODE B  ·  B-PWR POWER STAGE  (IG 12 V -> 3.3 V)", size=15, fill=FG, weight=700)
+    s.text(40, 64, "Node A's stage is the same shape but ends at 5 V, for the relay coil",
+           size=12, fill=FG_FAINT)
 
     # --- 12 V rail
     yr = 150
     s.card(40, 112, 160, "i59 pin 8", ["IG 12 V, switched"], accent=V12, title_size=13, line_size=11)
     s.line(200, yr, 940, yr, stroke=V12, sw=2.0)
-    s.label_box(265, yr - 16, "F1 · fuse 2 A", anchor="center")
-    s.label_box(400, yr - 16, "D1 · SS34", anchor="center")
+    s.label_box(265, yr - 16, "F1 · fuse 1 A T", anchor="center")
+    s.label_box(400, yr - 16, "D1 · SB1100", anchor="center")
     s.text(455, yr - 24, "VBAT", size=10.5, fill=FG_FAINT)
 
     ygnd = 268
-    for x, lbl in ((545, "D2 · SMAJ18A"), (700, "C1 · 470 µF / 35 V"), (850, "C2 · 100 nF")):
+    for x, lbl in ((545, "D2 · P6KE20A"), (700, "C1 · 100 µF / 35 V"), (850, "C2 · 100 nF")):
         s.dot(x, yr, 3.6, V12)
         s.line(x, yr, x, yr + 22, stroke=V12, sw=1.6)
         s.label_box(x, yr + 22, lbl, anchor="center")
@@ -133,31 +139,31 @@ def fig02_node_b_power():
     _gnd_symbol(s, 880, ygnd)
     s.text(508, ygnd + 4, "GND", size=11, fill=GND, anchor="end")
 
-    s.card(940, 112, 160, "U1", ["R-78E5.0-1.0", "12 V -> 5.0 V / 1 A"],
-           accent=V5, title_size=13, line_size=11)
+    s.card(940, 112, 160, "U1", ["R-78E3.3-1.0", "12 V -> 3.3 V / 1 A"],
+           accent=V33, title_size=13, line_size=11)
 
     # --- 5 V rail
     y5 = 372
-    s.poly([(1020, 194), (1020, y5), (250, y5)], stroke=V5, sw=2.0, marker="arw_v5")
-    s.text(1032, 250, "+5 V", size=11, fill=V5)
-    s.card(40, y5 - 38, 200, "-> ESP32", ["5V pin (on-board", "LDO makes 3.3 V)"],
-           accent=V5, title_size=13, line_size=11)
+    s.poly([(1020, 194), (1020, y5), (250, y5)], stroke=V33, sw=2.0, marker="arw_v33")
+    s.text(1032, 250, "+3.3 V", size=11, fill=V33)
+    s.card(40, y5 - 38, 200, "-> ESP32", ["3V3 pin · U2 VCC", "· up the umbilical"],
+           accent=V33, title_size=13, line_size=11)
 
     y5g = 470
-    for x, lbl in ((700, "C4 · 100 nF"), (850, "C3 · 470 µF / 16 V")):
-        s.dot(x, y5, 3.6, V5)
-        s.line(x, y5, x, y5 + 22, stroke=V5, sw=1.6)
+    for x, lbl in ((640, "C4 · 100 nF"), (880, "C3 · 100 µF / 16 V")):
+        s.dot(x, y5, 3.6, V33)
+        s.line(x, y5, x, y5 + 22, stroke=V33, sw=1.6)
         s.label_box(x, y5 + 22, lbl, anchor="center")
         s.line(x, y5 + 54, x, y5g, stroke=GND, sw=1.6)
-    s.line(660, y5g, 880, y5g, stroke=GND, sw=2.0)
+    s.line(600, y5g, 880, y5g, stroke=GND, sw=2.0)
     _gnd_symbol(s, 880, y5g)
-    s.text(648, y5g + 4, "GND", size=11, fill=GND, anchor="end")
+    s.text(588, y5g + 4, "GND", size=11, fill=GND, anchor="end")
 
-    s.text(40, y5g + 4, "C3 sits closest to the ESP32:", size=11, fill=FG_FAINT)
-    s.text(40, y5g + 22, "it is the local charge reserve", size=11, fill=FG_FAINT)
-    s.text(40, y5g + 40, "for the Wi-Fi/ESP-NOW bursts.", size=11, fill=FG_FAINT)
+    s.text(40, y5g + 4, "C4 is on B-PWR; C3 is on B-GAUGE, at the", size=11, fill=FG_FAINT)
+    s.text(40, y5g + 22, "far end of the umbilical. The whole rail", size=11, fill=FG_FAINT)
+    s.text(40, y5g + 40, "stays under the Recom's 220 µF limit.", size=11, fill=FG_FAINT)
 
-    for i, (col, lbl) in enumerate(((V12, "+12 V"), (V5, "+5 V"), (GND, "GND"))):
+    for i, (col, lbl) in enumerate(((V12, "+12 V"), (V33, "+3.3 V"), (GND, "GND"))):
         ly = 38 + i * 20
         s.line(986, ly, 1016, ly, stroke=col, sw=2.4)
         s.text(1026, ly + 4, lbl, size=11, fill=col)
@@ -170,17 +176,17 @@ def fig02_node_b_power():
 def fig03_node_b_signal():
     s = Svg(1140, 600)
     s.text(40, 44, "NODE B  ·  SIGNAL INTERFACE", size=15, fill=FG, weight=700)
-    s.text(40, 64, "no signal connector ever touches 12 V — only VS of the L9637D and the "
-                   "510 Ω pull-up do", size=12, fill=FG_FAINT)
+    s.text(40, 64, "all of this lives on B-PWR except the two connectors, which are on "
+                   "B-GAUGE (Fig. 15)", size=12, fill=FG_FAINT)
 
     cx, cy, cw, ch = 430, 130, 280, 120
     s.rect(cx, cy, cw, ch, fill=PANEL, stroke=SIG, sw=1.8, r=10)
     s.text(cx + cw / 2, cy + 42, "U2 · L9637D", size=15, fill=SIG, anchor="middle", weight=700)
     s.text(cx + cw / 2, cy + 66, "K-line transceiver", size=11.5, fill=FG_DIM, anchor="middle")
-    s.text(cx + cw / 2, cy + 86, "ISO 9141-2 · on breakout", size=11.5, fill=FG_DIM, anchor="middle")
+    s.text(cx + cw / 2, cy + 86, "ISO 9141-2 · SOIC-DIP adapter", size=11.5, fill=FG_DIM, anchor="middle")
 
     for yy, lbl, col in ((cy + 28, "VS · +12 V (IG)", V12),
-                         (cy + 60, "VCC · +3.3 V", V33),
+                         (cy + 60, "VCC · +3.3 V, local", V33),
                          (cy + 92, "GND", GND)):
         s.text(cx - 46, yy + 4, lbl, size=11.5, fill=col, anchor="end")
         s.line(cx - 38, yy, cx - 4, yy, stroke=col, sw=1.8, marker=marker_for(col))
@@ -206,15 +212,16 @@ def fig03_node_b_signal():
     for xx, lbl in ((500, "RX  ·  GPIO16"), (640, "TX  ·  GPIO17")):
         s.line(xx, cy + ch, xx, cy + ch + 40, stroke=SIG, sw=1.8, marker="arw_sig")
         s.text(xx, cy + ch + 60, lbl, size=12, fill=SIG, anchor="middle")
-    s.text(570, cy + ch + 84, "UART2 @ 10400 baud", size=11, fill=FG_FAINT, anchor="middle")
+    s.text(570, cy + ch + 84, "UART2 @ 4800 baud 8N1  ·  across the umbilical",
+           size=11, fill=FG_FAINT, anchor="middle")
 
-    s.card(60, 400, 490, "J3 · OLED connector  (7-pin, latching)",
+    s.card(60, 400, 490, "J2 · OLED connector  (7-pin, latching)",
            ["SSD1322 256×64 mono · 4-wire SPI",
             "+3.3 V · GND",
             "SCLK GPIO18 · MOSI GPIO23 · CS GPIO5",
             "DC GPIO19 · RST GPIO4"], accent=NODE_B, title_size=13)
     s.card(590, 400, 490, "J4 · RTC connector  (4-pin, latching)",
-           ["DS3231 + LIR2032 cell · I²C",
+           ["DS3231 + CR2032 cell · I²C",
             "+3.3 V · GND",
             "SDA GPIO21 · SCL GPIO22",
             "module carries its own I²C pull-ups"], accent=NODE_B, title_size=13)
@@ -231,54 +238,6 @@ def _zone(s, x, y, w, h, label, note=None, color=SIG, size=12):
         s.text(x + 12, y + h / 2 + 15, note, size=10.5, fill=FG_FAINT)
     else:
         s.text(x + 12, y + h / 2 + size * 0.36, label, size=size, fill=FG)
-
-
-def fig04_node_b_spatial():
-    s = Svg(1140, 700)
-    s.text(40, 44, "NODE B  ·  SPATIAL LAYOUT", size=15, fill=FG, weight=700)
-    s.text(40, 64, "solid border = on the board   ·   dashed = off the board, reached by cable",
-           size=12, fill=FG_FAINT)
-
-    bx, by, bw, bh = 60, 96, 520, 564
-    s.rect(bx, by, bw, bh, fill="none", stroke=NODE_B, sw=1.8, r=12)
-    s.text(bx + 16, by + 28, "CARRIER PERFBOARD — inside the clock housing",
-           size=12.5, fill=NODE_B, weight=700)
-    s.text(bx + 16, by + 48, "11 × 27 holes ≈ 3 × 7 cm at 2.54 mm pitch", size=10.5, fill=FG_FAINT)
-
-    zx, zw = bx + 16, bw - 32
-    _zone(s, zx, by + 64, zw, 118, "ESP32 DevKit V1 — socketed",
-          "header pins in col 1 and col 11 · passives sit UNDERNEATH", color=NODE_B)
-    _zone(s, zx, by + 192, zw, 40, "ILL divider  10 kΩ / 3.3 kΩ + 1 µF", color=SIG)
-    _zone(s, zx, by + 240, zw, 40, "free — headroom", color=EDGE, size=11)
-    _zone(s, zx, by + 288, zw, 40, "analog divider  10 kΩ / 20 kΩ", color=SIG)
-    _zone(s, zx, by + 336, zw, 34, "100 nF decoupling", color=SIG)
-    _zone(s, zx, by + 378, zw, 40, "buck R-78E5.0-1.0 · 470 µF ×2 · SS34 · TVS", color=V5)
-    _zone(s, zx, by + 426, zw, 40, "L9637D breakout + 510 Ω + 1 nF", color=V12)
-    _zone(s, zx, by + 472, zw, 34, "row 25 — vertical headers: RTC 4p · K-line 2p", color=EDGE, size=11)
-    _zone(s, zx, by + 514, zw, 34, "row 27 — 90° headers: OLED 7p · i59 3p", color=EDGE, size=11)
-
-    px, py, pw, ph = 640, 140, 440, 250
-    s.rect(px, py, pw, ph, fill="none", stroke=EDGE, sw=1.5, r=12, dash="7 6")
-    s.text(px + 16, py + 26, "OFF THE BOARD — CABLE ONLY", size=12, fill=FG_DIM, weight=700)
-    s.card(px + 16, py + 44, pw - 32, "RTC DS3231",
-           ["own LIR2032 cell, mounted separately"], accent=EDGE, title_size=13,
-           line_size=11, title_color=FG)
-    s.card(px + 16, py + 140, pw - 32, "OLED SSD1322",
-           ["anchored to the original clock PCB",
-            "retained by the 3D-printed bezel"], accent=EDGE, title_size=13,
-           line_size=11, title_color=FG)
-
-    s.poly([(bx + bw, by + 489), (610, by + 489), (610, py + 125), (px - 8, py + 125)],
-           stroke=EDGE, sw=1.4, dash="4 4", marker="arw")
-
-    for i, (lbl, col) in enumerate((("->  i59 connector (to the car harness)", V12),
-                                    ("->  OBD pin 7  (K-line, 1.2-1.5 m)", SIG))):
-        yy = 450 + i * 42
-        s.line(px, yy, px + 40, yy, stroke=col, sw=1.8, marker=marker_for(col))
-        s.text(px + 50, yy + 4, lbl, size=12, fill=col)
-    s.text(px, 546, "Both leave the housing through a grommet,", size=10.5, fill=FG_FAINT)
-    s.text(px, 564, "with strain relief on the inside.", size=10.5, fill=FG_FAINT)
-    return "04-node-b-spatial-layout", s
 
 
 # ---------------------------------------------------------------------------
@@ -313,25 +272,9 @@ def _grid_plan(title, subtitle, zones, name, accent):
             s.text(lx, cyy + 16, note, size=10.5, fill=FG_FAINT)
         else:
             s.text(lx, cyy + 4, label, size=11.5, fill=FG)
-    s.caption(s.h - 20, "Rows 25 and 27 carry the headers; row 26 is deliberately left empty "
-                        "so the two header rows cannot short.")
+    s.caption(s.h - 20, "Row 27 carries every off-board connector; rows 16-18 stay empty "
+                        "under the module body and the PCB antenna.")
     return name, s
-
-
-def fig05_node_b_grid():
-    return _grid_plan(
-        "NODE B  ·  PERFBOARD GRID PLAN",
-        "11 × 27 holes ≈ 3 × 7 cm at 2.54 mm pitch",
-        [(1, 14, "ESP32 DevKit V1 — socketed", "pins in col 1 and col 11; passives underneath", NODE_B),
-         (15, 16, "ILL divider 10k / 3.3k + 1 µF", None, SIG),
-         (17, 18, "free", "headroom", EDGE),
-         (19, 20, "analog divider 10k / 20k", None, SIG),
-         (21, 21, "100 nF decoupling", None, SIG),
-         (22, 23, "buck R-78 · 470 µF ×2 · SS34 · TVS", None, V5),
-         (24, 24, "L9637D breakout · 510 Ω · 1 nF", None, V12),
-         (25, 25, "vertical headers: RTC 4p · K-line 2p", None, EDGE),
-         (27, 27, "90° headers: OLED 7p · i59 3p", None, EDGE)],
-        "05-node-b-grid-plan", NODE_B)
 
 
 def fig09_node_a_grid():
@@ -340,9 +283,9 @@ def fig09_node_a_grid():
         "zones only — the hole-by-hole layout is Fig. 12",
         [(1, 15, "ESP32 DevKit V1 — socketed", "pins in col A and col L", NODE_A),
          (16, 18, "empty — module body and antenna overhang", None, EDGE),
-         (19, 21, "buck R-78E5.0 · 470 µF / 16 V", None, V5),
-         (22, 22, "free", "rows 19-26 keep 77 holes free in total", EDGE),
-         (23, 26, "470 µF / 35 V · TVS · SS34", None, V12),
+         (19, 21, "D1 SB1100 · U1 R-78E5.0-1.0 · C2", None, V5),
+         (22, 24, "D2 P6KE20A · the TVS clamp", None, V12),
+         (25, 26, "C1 · C3, 100 µF each · C4", "rows 19-26 keep 73 of 88 holes free", EDGE),
          (27, 27, "90° headers: IG 2p · relay 5p · switch 2p", None, EDGE)],
         "09-node-a-grid-plan", NODE_A)
 
@@ -448,8 +391,9 @@ def fig08_node_a_spatial():
     zx, zw = bx + 16, bw - 32
     _zone(s, zx, by + 64, zw, 96, "ESP32 DevKit V1 — socketed",
           "header pins in col 1 and col 11", color=NODE_A)
-    _zone(s, zx, by + 170, zw, 40, "buck R-78E5.0-1.0 · 470 µF ×2 · SS34 · TVS", color=V5)
-    _zone(s, zx, by + 220, zw, 84, "free — 77 holes of headroom for later I/O",
+    _zone(s, zx, by + 170, zw, 40, "buck R-78E5.0-1.0 · 100 µF ×2 · SB1100 · P6KE20A",
+          color=V5)
+    _zone(s, zx, by + 220, zw, 84, "free — 73 holes of headroom for later I/O",
           color=EDGE, size=11)
     _zone(s, zx, by + 312, zw, 50, "connector edge: relay 5p · IG · GND · SW1 · LED1",
           color=EDGE, size=11)
@@ -479,36 +423,41 @@ def fig08_node_a_spatial():
 # Fig. 10 -- carrier concept
 # ---------------------------------------------------------------------------
 def fig10_carrier():
-    s = Svg(1140, 420)
+    s = Svg(1140, 480)
     s.text(40, 44, "CARRIER BOARD CONCEPT", size=15, fill=FG, weight=700)
-    s.text(40, 64, "layout, not a schematic — boxes that do not touch, no crossing lines",
+    s.text(40, 64, "layout, not a schematic — three boards, all the same 3 × 7 cm part",
            size=12, fill=FG_FAINT)
 
-    bx, by, bw, bh = 60, 100, 1020, 210
-    s.rect(bx, by, bw, bh, fill="none", stroke=EDGE, sw=1.8, r=12)
-    s.text(bx + 16, by + 28, "CARRIER (double-sided perfboard) — sockets soldered, modules "
-                             "plugged in", size=12.5, fill=FG, weight=700)
+    boards = [("NODE A  ·  at the BIU", NODE_A,
+               ["ESP32 DevKit V1 — socketed",
+                "passives soldered flat",
+                "-> relay module (latch)",
+                "-> IG 12 V · OEM switch (latch)"]),
+              ("B-GAUGE  ·  clock bay", NODE_B,
+               ["ESP32 DevKit V1 — socketed",
+                "ten flat parts under it",
+                "-> OLED · buttons (latch)",
+                "-> RTC, in its own case (latch)"]),
+              ("B-PWR  ·  at the i59", V12,
+               ["L9637D — socketed on its adapter",
+                "buck, diodes, ILL divider",
+                "-> i59 12 V · K-line (latch)",
+                "-> umbilical to B-GAUGE (latch)"])]
+    bw, gap = 340, 26
+    for i, (title, col, lines) in enumerate(boards):
+        bx = 60 + i * (bw + gap)
+        s.rect(bx, 100, bw, 250, fill="none", stroke=col, sw=1.8, r=12)
+        s.text(bx + 16, 130, title, size=12.5, fill=col, weight=700)
+        s.text(bx + 16, 150, "11 × 27 holes", size=10.5, fill=FG_FAINT)
+        for j, ln in enumerate(lines):
+            s.text(bx + 16, 182 + j * 30, ln, size=11.5, fill=FG_DIM)
 
-    mods = [("ESP32", "socketed"), ("OLED", "latching conn."),
-            ("L9637D", "socketed"), ("RTC / buck", "socketed")]
-    mw, gap = 228, 24
-    for i, (t, sub) in enumerate(mods):
-        mx = bx + 20 + i * (mw + gap)
-        s.rect(mx, by + 48, mw, 76, fill=PANEL_2, stroke=NODE_B, sw=1.4, r=8)
-        s.text(mx + mw / 2, by + 78, t, size=13.5, fill=FG, anchor="middle", weight=700)
-        s.text(mx + mw / 2, by + 100, sub, size=11, fill=FG_DIM, anchor="middle")
-
-    s.rect(bx + 20, by + 140, bw - 40, 46, fill=PANEL_2, stroke=EDGE, sw=1.3, r=8)
-    s.text(bx + bw / 2, by + 168, "passives (dividers, K-line R/C) — soldered straight to the "
-                                  "carrier", size=11.5, fill=FG_DIM, anchor="middle")
-
-    for i, lbl in enumerate(("->  i59  (latch)", "->  K-line  (latch)", "->  12 V / BIU  (latch)")):
-        xx = bx + 180 + i * 330
-        s.line(xx, by + bh, xx, by + bh + 26, stroke=EDGE, sw=1.6, marker="arw")
-        s.label_box(xx, by + bh + 30, lbl, size=11.5, anchor="center")
-
-    s.caption(s.h - 24, "Modules = socket + removable retainer   ·   outputs to the car = latching "
-                        "connectors   ·   no Dupont anywhere.")
+    s.caption(s.h - 98, "Modules = socket + removable retainer   ·   outputs to the car = "
+                        "latching connectors   ·   no Dupont anywhere.")
+    s.caption(s.h - 66, "Nothing expensive is soldered down: the ESP32s and the L9637D plug "
+                        "into sockets and can be pulled out with the board in place.")
+    s.caption(s.h - 34, "One printed tray design fits all three, because all three are the "
+                        "same board.")
     return "10-carrier-concept", s
 
 
@@ -519,8 +468,9 @@ def fig10_carrier():
 def fig11_node_c_channels():
     s = Svg(1240, 700)
     s.text(40, 44, "NODE C  ·  ANALOGUE FRONT END", size=15, fill=FG, weight=700)
-    s.text(40, 64, "channels are defined by type, not by sensor — adding a sensor means "
-                   "using a free channel of the matching type", size=12, fill=FG_FAINT)
+    s.text(40, 64, "v0.3, designed and NOT built: no channel has its conditioning "
+                   "arithmetic yet — see the open questions in the Node C page",
+           size=12, fill=FG_FAINT)
 
     # --- the two environments, split by the firewall
     s.rect(40, 96, 470, 520, fill="none", stroke=WARN, sw=1.5, r=12, dash="7 6")
@@ -532,13 +482,12 @@ def fig11_node_c_channels():
     s.text(676, 144, "project-standard connectors, no sealing needed", size=10.5, fill=FG_FAINT)
 
     # --- bulkhead connector, the boundary
-    s.rect(540, 250, 80, 220, fill=PANEL_2, stroke=SIG, sw=1.8, r=8)
-    for row in range(6):
-        for col in range(2):
-            s.dot(562 + col * 36, 278 + row * 33, 4.4, SIG)
+    s.rect(540, 250, 80, 220, fill=PANEL_2, stroke=SIG, sw=1.8, r=8, dash="6 5")
+    for row in range(5):
+        s.line(552, 282 + row * 38, 608, 282 + row * 38, stroke=EDGE, sw=1.4)
     s.text(580, 240, "BULKHEAD", size=11, fill=SIG, anchor="middle", weight=700)
-    s.text(580, 492, "sealed, with", size=10.5, fill=FG_FAINT, anchor="middle")
-    s.text(580, 508, "spare pins", size=10.5, fill=FG_FAINT, anchor="middle")
+    s.text(580, 492, "pin count is OC-11:", size=10.5, fill=WARN, anchor="middle")
+    s.text(580, 508, "not drawn, not settled", size=10.5, fill=FG_FAINT, anchor="middle")
 
     # --- sensors on the engine-bay side
     sensors = [
@@ -546,7 +495,7 @@ def fig11_node_c_channels():
         ("Caliper temp  ×2", "PT1000 surface, ~3 m", V33),
         ("Radiator dT", "in / out, surface", SIG),
         ("Ambient air", "NTC", SIG),
-        ("Battery voltage", "divider at the battery", V12),
+        ("Battery voltage", "divider — still OC-12", V12),
         ("Boost", "provision only — 0-5 V", FG_FAINT),
     ]
     for i, (name, note, col) in enumerate(sensors):
@@ -558,7 +507,7 @@ def fig11_node_c_channels():
 
     # --- channel bank
     s.card(680, 168, 500, "CHANNEL BANK  ·  ADS1115 ×n on I²C",
-           ["0-5 V ratiometric  · single-ended or differential",
+           ["0-5 V analogue    · single-ended or differential",
             "resistive NTC / RTD · 3-wire",
             "digital in         · float switches, states",
             "16-bit, programmable gain, 4 addresses on one bus"],
@@ -590,10 +539,15 @@ FIGURES = [fig01_system_architecture, fig02_node_b_power, fig03_node_b_signal,
            fig04_node_b_spatial, fig05_node_b_grid, fig06_node_a_state_machine,
            fig07_node_a_interface, fig08_node_a_spatial, fig09_node_a_grid, fig10_carrier,
            fig11_node_c_channels, fig12_node_a_placement,
-           fig13_node_a_solder_side, fig14_node_a_technique]
+           fig13_node_a_solder_side, fig14_node_a_technique,
+           fig15_b_split, fig16_b_gauge_placement, fig17_b_gauge_solder,
+           fig18_b_pwr_placement, fig19_b_pwr_solder, fig20_b_technique]
 
 
 def main():
+    import check_figure_text
+    if check_figure_text.main():
+        raise SystemExit("figure text does not match the layout — fix it before drawing")
     OUT.mkdir(parents=True, exist_ok=True)
     tmp = pathlib.Path("/tmp/diagram_svg")
     tmp.mkdir(exist_ok=True)
