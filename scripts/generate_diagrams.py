@@ -10,7 +10,9 @@ PNGs are rebuilt. Only the PNGs are committed -- this file is the editable sourc
 Requires playwright (chromium) for the SVG -> PNG step.
 """
 import pathlib
+import shutil
 import subprocess
+import tempfile
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -549,16 +551,21 @@ def main():
     if check_figure_text.main():
         raise SystemExit("figure text does not match the layout — fix it before drawing")
     OUT.mkdir(parents=True, exist_ok=True)
-    tmp = pathlib.Path("/tmp/diagram_svg")
-    tmp.mkdir(exist_ok=True)
-    names = []
-    for fn in FIGURES:
-        name, svg = fn()
-        (tmp / f"{name}.svg").write_text(svg.render(), encoding="utf-8")
-        names.append(name)
-        print(f"  drew {name}  ({svg.w}×{svg.h})")
-    subprocess.run([sys.executable, str(pathlib.Path(__file__).parent / "svg_to_png.py"),
-                    str(tmp), str(OUT), str(SCALE)], check=True)
+    # A temp directory from the platform, not a hard-coded "/tmp": this script has
+    # to run on Windows too, where /tmp does not exist.
+    tmp = pathlib.Path(tempfile.mkdtemp(prefix="diagram-svg-"))
+    try:
+        names = []
+        for fn in FIGURES:
+            name, svg = fn()
+            (tmp / f"{name}.svg").write_text(svg.render(), encoding="utf-8")
+            names.append(name)
+            print(f"  drew {name}  ({svg.w}×{svg.h})")
+        subprocess.run([sys.executable,
+                        str(pathlib.Path(__file__).resolve().parent / "svg_to_png.py"),
+                        str(tmp), str(OUT), str(SCALE)], check=True)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
     print(f"\n{len(names)} figures written to {OUT}")
 
 

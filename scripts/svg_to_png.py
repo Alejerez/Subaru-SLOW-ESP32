@@ -14,7 +14,13 @@ source and only shows up once rendered.
 import pathlib
 import sys
 
-from playwright.sync_api import sync_playwright
+try:
+    from playwright.sync_api import sync_playwright
+except ModuleNotFoundError:                                          # pragma: no cover
+    raise SystemExit(
+        "playwright is not installed, so the SVGs cannot be rendered to PNG.\n"
+        "  pip install playwright\n"
+        "  python -m playwright install chromium")
 
 BG = "#0d1117"
 
